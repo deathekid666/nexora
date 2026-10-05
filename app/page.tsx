@@ -88,6 +88,56 @@ export default function Home() {
         </div>
       </section>
 
+
+      <section className="visual-showcase">
+        <article className="visual-showcase-main" data-reveal-scale>
+          <img src={APPLE_IMG} alt="iPhone 17 Pro lineup" />
+          <div className="visual-showcase-overlay" />
+          <div className="visual-showcase-copy">
+            <span>THE FLAGSHIP EDIT</span>
+            <h2>One device.<br/>A clearer reason to choose it.</h2>
+            <div className="visual-showcase-specs">
+              <b>48 MP Pro camera</b>
+              <b>A19 Pro</b>
+              <b>6.9″ OLED</b>
+            </div>
+            <a href="/products/iphone-17-pro-max">Explore the product <ArrowRight size={16}/></a>
+          </div>
+          <div className="visual-showcase-price">
+            <small>FROM</small>
+            <strong>14,999 MAD</strong>
+          </div>
+        </article>
+
+        <div className="visual-showcase-side">
+          <article className="visual-side-card visual-side-compute" data-reveal-scale>
+            <div className="visual-side-copy">
+              <span>POWER / PORTABLE</span>
+              <h3>Work without the workstation.</h3>
+              <p>Performance, battery, display and weight — balanced for real work.</p>
+              <a href="#computing">Shop computing <ArrowRight size={14}/></a>
+            </div>
+            <div className="visual-laptop-art" aria-hidden="true">
+              <div className="visual-laptop-screen"><i/><i/></div>
+              <div className="visual-laptop-base"/>
+            </div>
+          </article>
+
+          <article className="visual-side-card visual-side-tv" data-reveal-scale>
+            <div className="visual-side-copy">
+              <span>ROOM / SCREEN</span>
+              <h3>Pick the panel before the size.</h3>
+              <p>OLED, Mini LED and QLED explained by how your room actually looks.</p>
+              <a href="#tv">Shop TV <ArrowRight size={14}/></a>
+            </div>
+            <div className="visual-tv-art" aria-hidden="true">
+              <div className="visual-tv-frame"><div className="visual-tv-gradient"/></div>
+              <div className="visual-tv-stand"/>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <section className="luxe-section" id="edit">
         <div className="luxe-section-head" data-reveal>
           <div><span>CURATED NOW</span><h2>Shop the edit.</h2></div>
@@ -110,6 +160,9 @@ export default function Home() {
                 <div className="luxe-product-brand">{product.brand}</div>
                 <a href={product.href} className="luxe-product-name">{product.name}</a>
                 <div className="luxe-rating"><Star size={12} fill="currentColor"/><strong>{product.rating}</strong><span>{product.reviews}</span></div>
+                <div className="luxe-product-swatches" aria-hidden="true">
+                  <i className="swatch-dark"/><i className="swatch-silver"/><i className="swatch-blue"/>
+                </div>
                 <div className="luxe-product-price"><strong>{product.price}</strong><del>{product.old}</del><b>{product.saving} MAD</b></div>
                 <div className="luxe-product-actions"><button>Add to cart</button><label><input type="checkbox"/> Compare</label></div>
               </div>
