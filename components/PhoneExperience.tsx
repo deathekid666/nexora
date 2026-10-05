@@ -1,7 +1,16 @@
 "use client";
 
+import {
+  Bounds,
+  Center,
+  ContactShadows,
+  Environment,
+  Html,
+  OrbitControls,
+  RoundedBox,
+  useGLTF,
+} from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows, Environment, OrbitControls, RoundedBox } from "@react-three/drei";
 import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 
@@ -13,184 +22,366 @@ type Props = {
   mode?: "hero" | "anatomy";
 };
 
-function Lens({ x, y, z }: { x: number; y: number; z: number }) {
+const MODEL_URL = "/api/model/smartphone";
+
+function ProductModel({ finish }: { finish: string }) {
+  const { scene } = useGLTF(MODEL_URL);
+
+  const product = useMemo(() => {
+    const clone = scene.clone(true);
+    const tint = new THREE.Color(finish);
+
+    clone.traverse((object) => {
+      if (!(object instanceof THREE.Mesh)) return;
+
+      object.castShadow = true;
+      object.receiveShadow = true;
+
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      const cloned = materials.map((material) => {
+        const next = material.clone();
+        const name = (next.name || "").toLowerCase();
+
+        if (name === "base" || name === "material") {
+          if ("color" in next && next.color instanceof THREE.Color) {
+            next.color.copy(tint);
+          }
+          if (next instanceof THREE.MeshStandardMaterial) {
+            next.metalness = Math.max(next.metalness, 0.42);
+            next.roughness = Math.min(next.roughness, 0.32);
+          }
+        }
+
+        return next;
+      });
+
+      object.material = Array.isArray(object.material) ? cloned : cloned[0];
+    });
+
+    return clone;
+  }, [scene, finish]);
+
+  return <primitive object={product} />;
+}
+
+type AnimatedPartProps = {
+  children: React.ReactNode;
+  targetZ: number;
+  targetX?: number;
+  targetY?: number;
+  baseZ?: number;
+  baseX?: number;
+  baseY?: number;
+};
+
+function AnimatedPart({
+  children,
+  targetZ,
+  targetX = 0,
+  targetY = 0,
+  baseZ = 0,
+  baseX = 0,
+  baseY = 0,
+}: AnimatedPartProps) {
+  const ref = useRef<THREE.Group>(null);
+
+  useFrame((_, delta) => {
+    if (!ref.current) return;
+    ref.current.position.x = THREE.MathUtils.damp(ref.current.position.x, baseX + targetX, 7.5, delta);
+    ref.current.position.y = THREE.MathUtils.damp(ref.current.position.y, baseY + targetY, 7.5, delta);
+    ref.current.position.z = THREE.MathUtils.damp(ref.current.position.z, baseZ + targetZ, 7.5, delta);
+  });
+
   return (
-    <group position={[x, y, z]} rotation={[Math.PI / 2, 0, 0]}>
-      <mesh>
-        <cylinderGeometry args={[0.315, 0.315, 0.115, 64]} />
-        <meshPhysicalMaterial color="#131820" metalness={0.82} roughness={0.16} clearcoat={0.6} />
+    <group ref={ref} position={[baseX, baseY, baseZ]}>
+      {children}
+    </group>
+  );
+}
+
+function CameraModule({ x, y, active }: { x: number; y: number; active: boolean }) {
+  return (
+    <group position={[x, y, 0]}>
+      <RoundedBox args={[0.62, 0.62, 0.24]} radius={0.12} smoothness={5}>
+        <meshPhysicalMaterial color="#474f5a" metalness={0.7} roughness={0.24} />
+      </RoundedBox>
+      <mesh position={[0, 0, 0.18]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.24, 0.24, 0.19, 48]} />
+        <meshPhysicalMaterial color="#0b0f15" metalness={0.65} roughness={0.15} clearcoat={0.9} />
       </mesh>
-      <mesh position={[0, 0.072, 0]}>
-        <cylinderGeometry args={[0.235, 0.235, 0.068, 64]} />
-        <meshPhysicalMaterial color="#080d14" roughness={0.08} metalness={0.18} clearcoat={1} />
-      </mesh>
-      <mesh position={[0, 0.111, 0]}>
-        <cylinderGeometry args={[0.13, 0.13, 0.012, 64]} />
-        <meshPhysicalMaterial color="#193754" roughness={0.04} clearcoat={1} />
-      </mesh>
-      <mesh position={[0.03, 0.119, 0.045]}>
-        <sphereGeometry args={[0.045, 20, 20]} />
-        <meshBasicMaterial color="#78a9dc" transparent opacity={0.7} />
+      <mesh position={[0, 0, 0.29]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.14, 0.14, 0.025, 48]} />
+        <meshPhysicalMaterial
+          color={active ? "#2c6cae" : "#112841"}
+          emissive={active ? "#2a78d0" : "#000000"}
+          emissiveIntensity={active ? 0.55 : 0}
+          roughness={0.05}
+          clearcoat={1}
+        />
       </mesh>
     </group>
   );
 }
 
-function SideButton({ x, y, z, h }: { x: number; y: number; z: number; h: number }) {
+function LogicBoard({ active }: { active: boolean }) {
   return (
-    <RoundedBox args={[0.055, h, 0.12]} radius={0.025} smoothness={4} position={[x, y, z]}>
-      <meshStandardMaterial color="#9da5af" metalness={0.8} roughness={0.25} />
-    </RoundedBox>
-  );
-}
-
-function PhoneModel({ finish, anatomyPart, mode = "hero" }: Props) {
-  const root = useRef<THREE.Group>(null);
-  const display = useRef<THREE.Group>(null);
-  const rear = useRef<THREE.Group>(null);
-  const cameras = useRef<THREE.Group>(null);
-  const board = useRef<THREE.Group>(null);
-  const battery = useRef<THREE.Group>(null);
-
-  const finishMaterial = useMemo(
-    () =>
-      new THREE.MeshPhysicalMaterial({
-        color: finish,
-        roughness: 0.3,
-        metalness: 0.58,
-        clearcoat: 0.35,
-        clearcoatRoughness: 0.22,
-      }),
-    [finish]
-  );
-
-  useFrame((state, delta) => {
-    if (!root.current) return;
-    root.current.position.y = Math.sin(state.clock.elapsedTime * 0.65) * 0.022;
-
-    const anatomy = mode === "anatomy" && anatomyPart !== "overview";
-    const displayGoal = anatomy ? (anatomyPart === "display" ? -1.25 : -0.88) : -0.225;
-    const rearGoal = anatomy ? 0.72 : 0.215;
-    const cameraGoal = anatomy ? (anatomyPart === "camera" ? 1.28 : 0.93) : 0.355;
-    const boardGoal = anatomy ? (anatomyPart === "chip" ? 0.27 : 0.08) : 0;
-    const batteryGoal = anatomy ? (anatomyPart === "battery" ? -0.35 : -0.1) : -0.025;
-
-    if (display.current) display.current.position.z = THREE.MathUtils.damp(display.current.position.z, displayGoal, 7, delta);
-    if (rear.current) rear.current.position.z = THREE.MathUtils.damp(rear.current.position.z, rearGoal, 7, delta);
-    if (cameras.current) cameras.current.position.z = THREE.MathUtils.damp(cameras.current.position.z, cameraGoal, 7, delta);
-    if (board.current) board.current.position.z = THREE.MathUtils.damp(board.current.position.z, boardGoal, 7, delta);
-    if (battery.current) battery.current.position.z = THREE.MathUtils.damp(battery.current.position.z, batteryGoal, 7, delta);
-  });
-
-  const anatomy = mode === "anatomy";
-
-  return (
-    <group ref={root} scale={mode === "hero" ? 0.93 : 0.84} rotation={[0.02, 0.42, -0.018]}>
-      <RoundedBox args={[2.64, 5.5, 0.46]} radius={0.3} smoothness={12}>
-        <primitive object={finishMaterial} attach="material" />
+    <group>
+      <RoundedBox args={[1.2, 2.3, 0.12]} radius={0.16} smoothness={5}>
+        <meshStandardMaterial color="#162b24" metalness={0.15} roughness={0.5} />
       </RoundedBox>
 
-      <group ref={rear} position={[0, 0, 0.215]}>
-        <RoundedBox args={[2.49, 5.34, 0.055]} radius={0.27} smoothness={12}>
-          <meshPhysicalMaterial color={finish} roughness={0.39} metalness={0.12} clearcoat={0.32} clearcoatRoughness={0.28} />
-        </RoundedBox>
-        <RoundedBox args={[2.28, 1.55, 0.105]} radius={0.22} smoothness={10} position={[0, 1.72, 0.08]}>
-          <meshPhysicalMaterial color={finish} roughness={0.32} metalness={0.25} clearcoat={0.38} />
-        </RoundedBox>
-      </group>
-
-      <group ref={cameras} position={[0, 0, 0.355]}>
-        <Lens x={-0.68} y={1.98} z={0} />
-        <Lens x={0.05} y={1.98} z={0} />
-        <Lens x={-0.315} y={1.31} z={0} />
-        <mesh position={[0.7, 1.38, 0.02]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.105, 0.105, 0.035, 40]} />
-          <meshPhysicalMaterial color="#f4efe5" roughness={0.3} />
-        </mesh>
-        <mesh position={[0.67, 1.76, 0.02]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.085, 0.085, 0.035, 40]} />
-          <meshPhysicalMaterial color="#1d2833" roughness={0.16} clearcoat={0.8} />
-        </mesh>
-      </group>
-
-      <group ref={display} position={[0, 0, -0.225]}>
-        <RoundedBox args={[2.49, 5.35, 0.068]} radius={0.275} smoothness={12}>
-          <meshPhysicalMaterial color="#020408" roughness={0.07} metalness={0.04} clearcoat={0.92} />
-        </RoundedBox>
-        <mesh position={[0, 0, -0.043]}>
-          <planeGeometry args={[2.29, 5.11]} />
-          <meshBasicMaterial color="#07111f" side={THREE.DoubleSide} />
-        </mesh>
-        <mesh position={[0.2, 0.35, -0.052]}>
-          <circleGeometry args={[0.86, 64]} />
-          <meshBasicMaterial color="#173f72" transparent opacity={0.65} side={THREE.DoubleSide} />
-        </mesh>
-        <mesh position={[-0.36, -0.5, -0.056]}>
-          <circleGeometry args={[0.72, 64]} />
-          <meshBasicMaterial color="#6b2f45" transparent opacity={0.52} side={THREE.DoubleSide} />
-        </mesh>
-        <RoundedBox args={[0.76, 0.17, 0.035]} radius={0.085} smoothness={6} position={[0, 2.28, -0.078]}>
-          <meshStandardMaterial color="#000" />
-        </RoundedBox>
-      </group>
-
-      <SideButton x={-1.342} y={1.34} z={0.02} h={0.43} />
-      <SideButton x={-1.342} y={0.68} z={0.02} h={0.58} />
-      <SideButton x={-1.342} y={-0.06} z={0.02} h={0.58} />
-      <SideButton x={1.342} y={1.02} z={0.02} h={0.78} />
-      <SideButton x={1.342} y={-0.82} z={0.02} h={0.48} />
-
-      <mesh position={[0, -2.756, -0.01]} rotation={[Math.PI / 2, 0, 0]}>
-        <boxGeometry args={[0.52, 0.12, 0.055]} />
-        <meshStandardMaterial color="#20262e" />
-      </mesh>
-
-      {[-0.92, -0.72, -0.52, 0.52, 0.72, 0.92].map((x) => (
-        <mesh key={x} position={[x, -2.755, 0.01]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.04, 0.04, 0.025, 18]} />
-          <meshStandardMaterial color="#242a31" />
+      {[
+        [-0.32, 0.68, 0.13, 0.42, 0.34],
+        [0.27, 0.66, 0.13, 0.34, 0.3],
+        [-0.32, 0.17, 0.13, 0.3, 0.25],
+        [0.28, -0.38, 0.13, 0.38, 0.42],
+        [-0.28, -0.76, 0.13, 0.36, 0.28],
+      ].map(([x, y, z, w, h], index) => (
+        <mesh key={index} position={[x, y, z]}>
+          <boxGeometry args={[w, h, 0.075]} />
+          <meshStandardMaterial color="#27313a" metalness={0.45} roughness={0.32} />
         </mesh>
       ))}
 
-      {anatomy && (
-        <>
-          <group ref={board} position={[0.18, 0.62, 0]}>
-            <RoundedBox args={[1.2, 1.5, 0.09]} radius={0.09} smoothness={4}>
-              <meshStandardMaterial color={anatomyPart === "chip" ? "#6ca9ff" : "#203047"} metalness={0.34} roughness={0.42} />
-            </RoundedBox>
-            <mesh position={[0, 0.2, 0.065]}>
-              <boxGeometry args={[0.69, 0.6, 0.04]} />
-              <meshStandardMaterial color={anatomyPart === "chip" ? "#c7ddff" : "#7893b7"} />
-            </mesh>
-            {[
-              [-0.37, -0.48],
-              [0.36, -0.52],
-              [0.38, 0.56],
-            ].map(([x, y], i) => (
-              <mesh key={i} position={[x, y, 0.062]}>
-                <boxGeometry args={[0.22, 0.18, 0.035]} />
-                <meshStandardMaterial color="#556a84" />
-              </mesh>
-            ))}
-          </group>
+      {[-0.42, -0.15, 0.12, 0.42].map((x, index) => (
+        <mesh key={index} position={[x, 1.0, 0.13]}>
+          <boxGeometry args={[0.16, 0.11, 0.06]} />
+          <meshStandardMaterial color="#c59d50" metalness={0.72} roughness={0.25} />
+        </mesh>
+      ))}
 
-          <group ref={battery} position={[-0.05, -1.26, -0.025]}>
-            <RoundedBox args={[1.58, 2.35, 0.12]} radius={0.15} smoothness={5}>
-              <meshStandardMaterial color={anatomyPart === "battery" ? "#58d69a" : "#353d47"} roughness={0.48} />
-            </RoundedBox>
-            <mesh position={[0, 0.65, 0.07]}>
-              <boxGeometry args={[0.55, 0.08, 0.03]} />
-              <meshStandardMaterial color="#b0b7c0" />
-            </mesh>
-          </group>
-
-          <mesh position={[0, -2.42, 0]}>
-            <boxGeometry args={[1.42, 0.16, 0.055]} />
-            <meshStandardMaterial color="#61748b" />
-          </mesh>
-        </>
-      )}
+      <RoundedBox args={[0.55, 0.55, 0.1]} radius={0.055} smoothness={3} position={[0.1, 0.15, 0.18]}>
+        <meshStandardMaterial
+          color={active ? "#7cb7ff" : "#46596b"}
+          emissive={active ? "#2b7be1" : "#000000"}
+          emissiveIntensity={active ? 1.25 : 0}
+          metalness={0.5}
+          roughness={0.25}
+        />
+      </RoundedBox>
     </group>
+  );
+}
+
+function BatteryCell({ active }: { active: boolean }) {
+  return (
+    <group>
+      <RoundedBox args={[1.45, 2.72, 0.16]} radius={0.18} smoothness={6}>
+        <meshPhysicalMaterial
+          color={active ? "#334e44" : "#282d34"}
+          roughness={0.44}
+          metalness={0.12}
+          clearcoat={0.2}
+        />
+      </RoundedBox>
+      <mesh position={[0, 0.78, 0.1]}>
+        <planeGeometry args={[0.92, 0.22]} />
+        <meshBasicMaterial color={active ? "#83e6b7" : "#a8b0ba"} />
+      </mesh>
+      <mesh position={[0.48, 1.22, 0.09]}>
+        <boxGeometry args={[0.22, 0.32, 0.045]} />
+        <meshStandardMaterial color="#b88b43" metalness={0.55} roughness={0.35} />
+      </mesh>
+    </group>
+  );
+}
+
+function MidFrame() {
+  return (
+    <group>
+      <RoundedBox args={[2.42, 4.82, 0.2]} radius={0.28} smoothness={8}>
+        <meshPhysicalMaterial color="#7f8790" metalness={0.82} roughness={0.25} />
+      </RoundedBox>
+
+      <RoundedBox args={[2.1, 4.48, 0.23]} radius={0.21} smoothness={7} position={[0, 0, 0.02]}>
+        <meshStandardMaterial color="#171c22" roughness={0.48} />
+      </RoundedBox>
+
+      <mesh position={[0, -2.29, 0.15]}>
+        <boxGeometry args={[0.55, 0.14, 0.1]} />
+        <meshStandardMaterial color="#202a34" />
+      </mesh>
+    </group>
+  );
+}
+
+function SpeakerAssembly() {
+  return (
+    <group position={[0, -2.04, 0.1]}>
+      <RoundedBox args={[0.92, 0.34, 0.16]} radius={0.07} smoothness={4}>
+        <meshStandardMaterial color="#252d36" metalness={0.32} roughness={0.42} />
+      </RoundedBox>
+      {[-0.28, -0.14, 0, 0.14, 0.28].map((x) => (
+        <mesh key={x} position={[x, 0, 0.095]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.035, 0.035, 0.025, 16]} />
+          <meshStandardMaterial color="#07090c" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function AnatomyModel({ finish, anatomyPart }: { finish: string; anatomyPart: AnatomyPart }) {
+  const root = useRef<THREE.Group>(null);
+  const exploded = anatomyPart !== "overview";
+
+  useFrame((state) => {
+    if (!root.current) return;
+    root.current.position.y = Math.sin(state.clock.elapsedTime * 0.55) * 0.025;
+  });
+
+  const z = {
+    frontGlass: anatomyPart === "display" ? -2.3 : exploded ? -1.55 : -0.29,
+    display: anatomyPart === "display" ? -1.65 : exploded ? -1.06 : -0.21,
+    displayFrame: anatomyPart === "display" ? -1.05 : exploded ? -0.64 : -0.14,
+    frame: 0,
+    board: anatomyPart === "chip" ? 0.95 : exploded ? 0.34 : 0.04,
+    chip: anatomyPart === "chip" ? 1.4 : exploded ? 0.44 : 0.06,
+    battery: anatomyPart === "battery" ? 0.95 : exploded ? 0.3 : 0.035,
+    coil: anatomyPart === "battery" ? 1.55 : exploded ? 0.54 : 0.055,
+    cameras: anatomyPart === "camera" ? 1.9 : exploded ? 0.78 : 0.18,
+    plateau: anatomyPart === "camera" ? 2.42 : exploded ? 1.0 : 0.23,
+    rear: anatomyPart === "camera" || anatomyPart === "battery" ? 2.9 : exploded ? 1.32 : 0.31,
+  };
+
+  return (
+    <group ref={root} rotation={[0.02, 0.58, -0.015]} scale={0.92}>
+      <AnimatedPart targetZ={z.frontGlass}>
+        <RoundedBox args={[2.3, 4.66, 0.055]} radius={0.29} smoothness={10}>
+          <meshPhysicalMaterial
+            color="#0c1119"
+            transparent
+            opacity={0.72}
+            transmission={0.12}
+            roughness={0.08}
+            clearcoat={1}
+          />
+        </RoundedBox>
+        {anatomyPart === "display" && (
+          <Html position={[1.45, 1.65, 0]} className="hotspot-label" center>
+            <b>Front glass</b><span>Protective cover</span>
+          </Html>
+        )}
+      </AnimatedPart>
+
+      <AnimatedPart targetZ={z.display}>
+        <RoundedBox args={[2.18, 4.5, 0.075]} radius={0.245} smoothness={8}>
+          <meshStandardMaterial
+            color="#09182a"
+            emissive={anatomyPart === "display" ? "#0d4f93" : "#06111e"}
+            emissiveIntensity={anatomyPart === "display" ? 0.55 : 0.18}
+            roughness={0.25}
+          />
+        </RoundedBox>
+        {anatomyPart === "display" && (
+          <Html position={[-1.45, 0.55, 0]} className="hotspot-label" center>
+            <b>OLED panel</b><span>Display layer</span>
+          </Html>
+        )}
+      </AnimatedPart>
+
+      <AnimatedPart targetZ={z.displayFrame}>
+        <RoundedBox args={[2.22, 4.56, 0.11]} radius={0.25} smoothness={8}>
+          <meshStandardMaterial color="#3e4650" metalness={0.62} roughness={0.28} />
+        </RoundedBox>
+      </AnimatedPart>
+
+      <AnimatedPart targetZ={z.frame}>
+        <MidFrame />
+        <SpeakerAssembly />
+      </AnimatedPart>
+
+      <AnimatedPart targetZ={z.board} targetX={anatomyPart === "chip" ? 0.15 : 0} baseX={0.45} baseY={0.72}>
+        <LogicBoard active={anatomyPart === "chip"} />
+        {anatomyPart === "chip" && (
+          <Html position={[1.15, 0.2, 0.3]} className="hotspot-label hotspot-blue" center>
+            <b>Logic board</b><span>Power + compute</span>
+          </Html>
+        )}
+      </AnimatedPart>
+
+      <AnimatedPart targetZ={z.chip} baseX={0.56} baseY={0.85}>
+        {anatomyPart === "chip" && (
+          <group>
+            <RoundedBox args={[0.58, 0.58, 0.12]} radius={0.06} smoothness={4}>
+              <meshStandardMaterial color="#9ac8ff" emissive="#2d7ee4" emissiveIntensity={1.3} metalness={0.42} roughness={0.2} />
+            </RoundedBox>
+            <Html position={[0.88, 0.15, 0.15]} className="hotspot-label hotspot-blue" center>
+              <b>A-series SoC</b><span>CPU · GPU · neural compute</span>
+            </Html>
+          </group>
+        )}
+      </AnimatedPart>
+
+      <AnimatedPart targetZ={z.battery} baseX={-0.38} baseY={-0.7}>
+        <BatteryCell active={anatomyPart === "battery"} />
+        {anatomyPart === "battery" && (
+          <Html position={[-1.45, -0.1, 0.1]} className="hotspot-label hotspot-green" center>
+            <b>Battery cell</b><span>Main energy pack</span>
+          </Html>
+        )}
+      </AnimatedPart>
+
+      <AnimatedPart targetZ={z.coil} baseX={0.05} baseY={0.05}>
+        <group>
+          <mesh rotation={[0, 0, 0]}>
+            <torusGeometry args={[0.72, 0.052, 20, 72]} />
+            <meshStandardMaterial color="#bb7e35" metalness={0.72} roughness={0.25} />
+          </mesh>
+          <mesh>
+            <torusGeometry args={[0.56, 0.027, 16, 72]} />
+            <meshStandardMaterial color="#d19a53" metalness={0.7} roughness={0.24} />
+          </mesh>
+          <mesh>
+            <cylinderGeometry args={[0.19, 0.19, 0.08, 40]} />
+            <meshStandardMaterial color="#242a31" metalness={0.45} roughness={0.38} />
+          </mesh>
+        </group>
+        {anatomyPart === "battery" && (
+          <Html position={[1.25, 0.4, 0.1]} className="hotspot-label hotspot-green" center>
+            <b>Charging coil</b><span>Wireless power</span>
+          </Html>
+        )}
+      </AnimatedPart>
+
+      <AnimatedPart targetZ={z.cameras} baseX={-0.55} baseY={1.45}>
+        <group>
+          <CameraModule x={-0.36} y={0.36} active={anatomyPart === "camera"} />
+          <CameraModule x={0.36} y={0.36} active={anatomyPart === "camera"} />
+          <CameraModule x={-0.02} y={-0.36} active={anatomyPart === "camera"} />
+        </group>
+        {anatomyPart === "camera" && (
+          <Html position={[1.35, 0.2, 0.4]} className="hotspot-label hotspot-blue" center>
+            <b>Camera modules</b><span>Individual optical assemblies</span>
+          </Html>
+        )}
+      </AnimatedPart>
+
+      <AnimatedPart targetZ={z.plateau} baseX={-0.55} baseY={1.45}>
+        <RoundedBox args={[1.62, 1.58, 0.09]} radius={0.24} smoothness={7}>
+          <meshPhysicalMaterial color={finish} metalness={0.46} roughness={0.32} clearcoat={0.35} />
+        </RoundedBox>
+      </AnimatedPart>
+
+      <AnimatedPart targetZ={z.rear}>
+        <RoundedBox args={[2.3, 4.66, 0.07]} radius={0.29} smoothness={10}>
+          <meshPhysicalMaterial color={finish} metalness={0.24} roughness={0.3} clearcoat={0.5} />
+        </RoundedBox>
+        {(anatomyPart === "camera" || anatomyPart === "battery") && (
+          <Html position={[1.45, -1.55, 0]} className="hotspot-label" center>
+            <b>Rear plate</b><span>Back enclosure</span>
+          </Html>
+        )}
+      </AnimatedPart>
+    </group>
+  );
+}
+
+function LoadingModel() {
+  return (
+    <Html center className="model-loading">
+      Loading 3D model…
+    </Html>
   );
 }
 
@@ -200,42 +391,52 @@ export default function PhoneExperience({ mode = "hero", ...props }: Props) {
   return (
     <div
       className={isHero ? "phone-canvas hero-phone-canvas" : "phone-canvas anatomy-phone-canvas"}
-      aria-label="Interactive 360 degree smartphone viewer"
+      aria-label={isHero ? "Interactive 360 degree smartphone viewer" : "Interactive exploded smartphone anatomy"}
     >
       <Canvas
-        camera={{
-          position: isHero ? [0, 0.04, 10.6] : [0, 0.04, 11.2],
-          fov: isHero ? 31 : 32,
-        }}
+        camera={{ position: [0, 0.1, isHero ? 8 : 9.2], fov: isHero ? 34 : 35 }}
         dpr={[1, 1.5]}
+        gl={{ antialias: true, alpha: true }}
       >
-        <Suspense fallback={null}>
-          <ambientLight intensity={1.45} />
-          <directionalLight position={[5, 7, 7]} intensity={3.6} />
-          <directionalLight position={[-5, 2, 5]} intensity={1.8} color="#a3c3ff" />
-          <directionalLight position={[0, -4, -6]} intensity={1.35} color="#ffd6c2" />
-          <directionalLight position={[1, 3, -7]} intensity={1.1} color="#ffffff" />
+        <ambientLight intensity={1.25} />
+        <directionalLight position={[4, 7, 6]} intensity={3.6} />
+        <directionalLight position={[-5, 1, 4]} intensity={1.5} color="#9fc5ff" />
+        <directionalLight position={[1, -4, -5]} intensity={1.15} color="#ffd8c2" />
 
-          <PhoneModel {...props} mode={mode} />
+        <Suspense fallback={<LoadingModel />}>
+          {isHero ? (
+            <Bounds fit clip margin={1.18}>
+              <Center>
+                <ProductModel finish={props.finish} />
+              </Center>
+            </Bounds>
+          ) : (
+            <AnatomyModel finish={props.finish} anatomyPart={props.anatomyPart} />
+          )}
 
-          <Environment preset="studio" />
-          <ContactShadows position={[0, -3.18, 0]} opacity={0.3} scale={8} blur={3.2} far={8} />
-
-          <OrbitControls
-            enablePan={false}
-            enableZoom={false}
-            enableRotate
-            minPolarAngle={THREE.MathUtils.degToRad(24)}
-            maxPolarAngle={THREE.MathUtils.degToRad(156)}
-            rotateSpeed={0.72}
-            dampingFactor={0.065}
-            enableDamping
-          />
+          <Environment preset={isHero ? "studio" : "city"} />
+          <ContactShadows position={[0, -3.15, 0]} opacity={0.32} scale={8} blur={3} far={8} />
         </Suspense>
+
+        <OrbitControls
+          makeDefault
+          enablePan={false}
+          enableZoom={false}
+          enableRotate
+          minPolarAngle={THREE.MathUtils.degToRad(22)}
+          maxPolarAngle={THREE.MathUtils.degToRad(158)}
+          rotateSpeed={0.72}
+          dampingFactor={0.065}
+          enableDamping
+        />
       </Canvas>
 
       <div className="orbit-guide" aria-hidden="true"><span>360°</span></div>
-      <div className="canvas-hint">drag left or right for full 360°</div>
+      <div className="canvas-hint">
+        {isHero ? "drag for full 360°" : "drag to inspect · choose a component"}
+      </div>
     </div>
   );
 }
+
+useGLTF.preload(MODEL_URL);
