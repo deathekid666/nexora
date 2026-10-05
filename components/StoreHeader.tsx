@@ -97,6 +97,8 @@ export default function StoreHeader() {
         )}
       </header>
 
+      <div className="site-progress" aria-hidden="true"><span /></div>
+
       <nav className={open ? "store-nav open" : "store-nav"}>
         <a href="/#phones">Smartphones</a>
         <a href="/#tv">TV & Home Cinema</a>
