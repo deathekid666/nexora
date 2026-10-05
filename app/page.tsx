@@ -2,12 +2,18 @@
 
 import {
   ArrowRight,
+  BadgeCheck,
   BadgePercent,
+  Box,
+  ChevronDown,
   ChevronRight,
+  CreditCard,
   Gamepad2,
   Headphones,
   Heart,
   Laptop,
+  MessageCircle,
+  RotateCcw,
   ShieldCheck,
   Smartphone,
   Star,
@@ -162,10 +168,105 @@ export default function Home() {
         </div>
       </section>
 
+
+      <section className="retail-services-section" id="services">
+        <div className="retail-services-head" data-reveal>
+          <div>
+            <span>SERVICES</span>
+            <h2>Everything around buying new tech.</h2>
+          </div>
+          <p>NEXORA is built for new smartphones, tablets and consumer electronics — with clear product condition, warranty, delivery and buying support before you pay.</p>
+        </div>
+
+        <div className="retail-services-grid">
+          <article data-reveal>
+            <div className="retail-service-icon"><BadgeCheck size={23}/></div>
+            <span>01</span>
+            <h3>Brand-new products</h3>
+            <p>Our catalog focuses on new smartphones, tablets, wearables, audio, gaming, computing and connected devices. Product condition is shown clearly on each listing.</p>
+          </article>
+          <article data-reveal>
+            <div className="retail-service-icon"><ShieldCheck size={23}/></div>
+            <span>02</span>
+            <h3>Warranty made clear</h3>
+            <p>Warranty type and coverage are shown with the product so you know what support comes with the device before ordering.</p>
+          </article>
+          <article data-reveal>
+            <div className="retail-service-icon"><Truck size={23}/></div>
+            <span>03</span>
+            <h3>Delivery across Morocco</h3>
+            <p>See availability, delivery estimates and any applicable shipping cost before checkout instead of discovering them after payment.</p>
+          </article>
+          <article data-reveal>
+            <div className="retail-service-icon"><RotateCcw size={23}/></div>
+            <span>04</span>
+            <h3>Returns & exchanges</h3>
+            <p>Eligible products can be returned or exchanged according to the displayed return policy, with the applicable conditions shown before purchase.</p>
+          </article>
+          <article data-reveal>
+            <div className="retail-service-icon"><CreditCard size={23}/></div>
+            <span>05</span>
+            <h3>Secure payment</h3>
+            <p>Available payment options are presented at checkout with a clear order summary, total price and delivery information.</p>
+          </article>
+          <article data-reveal>
+            <div className="retail-service-icon"><MessageCircle size={23}/></div>
+            <span>06</span>
+            <h3>Buying guidance</h3>
+            <p>Compare devices by camera, battery, display, performance, connectivity and price so you can choose the right product instead of the loudest marketing.</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="retail-faq-section" id="faq">
+        <div className="retail-faq-intro" data-reveal>
+          <span>FAQ</span>
+          <h2>Before you order.</h2>
+          <p>Quick answers about new products, delivery, warranty, returns and compatibility.</p>
+          <a href="#latest">Browse products <ArrowRight size={15}/></a>
+        </div>
+
+        <div className="retail-faq-list">
+          <details data-reveal>
+            <summary><span>Are NEXORA products new?</span><ChevronDown size={18}/></summary>
+            <p>Yes. NEXORA is positioned around new consumer electronics. The condition of each product is displayed on its product page so there is no ambiguity before purchase.</p>
+          </details>
+          <details data-reveal>
+            <summary><span>What kinds of products do you sell?</span><ChevronDown size={18}/></summary>
+            <p>The catalog is designed for smartphones, tablets, wearables, audio products, gaming hardware, computers, TVs, accessories and other connected consumer electronics.</p>
+          </details>
+          <details data-reveal>
+            <summary><span>Do products include a warranty?</span><ChevronDown size={18}/></summary>
+            <p>Warranty information is shown per product. The product page should state the warranty type, duration and any relevant coverage details before you add the item to your cart.</p>
+          </details>
+          <details data-reveal>
+            <summary><span>Do you deliver across Morocco?</span><ChevronDown size={18}/></summary>
+            <p>Yes. Delivery availability, timing and any shipping charge are shown during the buying flow based on the product and destination.</p>
+          </details>
+          <details data-reveal>
+            <summary><span>Can I return or exchange a product?</span><ChevronDown size={18}/></summary>
+            <p>Eligible products can be returned or exchanged under NEXORA's return policy. Condition requirements, return windows and exceptions should be displayed clearly before checkout.</p>
+          </details>
+          <details data-reveal>
+            <summary><span>How do I know which phone or tablet is right for me?</span><ChevronDown size={18}/></summary>
+            <p>Use NEXORA comparison to evaluate equivalent specifications side by side — including display, cameras, battery, processor, connectivity, storage and price — then choose based on your priorities.</p>
+          </details>
+          <details data-reveal>
+            <summary><span>Can I check compatibility before buying?</span><ChevronDown size={18}/></summary>
+            <p>Yes. Product pages are intended to show practical compatibility information such as SIM type, mobile network support, charging standard, ports and important ecosystem requirements.</p>
+          </details>
+          <details data-reveal>
+            <summary><span>What happens if a product is out of stock?</span><ChevronDown size={18}/></summary>
+            <p>Stock status should be visible on the product page. When available, an out-of-stock product can be marked for restock notification or preorder instead of appearing as immediately purchasable.</p>
+          </details>
+        </div>
+      </section>
+
+
       <section className="source-services">
-        <article data-reveal><Truck size={21}/><strong>Fast delivery</strong><p>Clear stock and delivery windows before checkout.</p></article>
-        <article data-reveal><ShieldCheck size={21}/><strong>Official warranty</strong><p>Coverage visible before you make the decision.</p></article>
-        <article data-reveal><BadgePercent size={21}/><strong>Real savings</strong><p>Original price, discount and actual value shown together.</p></article>
+        <article data-reveal><Box size={21}/><strong>New products</strong><p>Product condition shown clearly across the catalog.</p></article>
+        <article data-reveal><ShieldCheck size={21}/><strong>Warranty</strong><p>Coverage visible before you make the decision.</p></article>
+        <article data-reveal><BadgePercent size={21}/><strong>Clear pricing</strong><p>Original price, discount and total value shown together.</p></article>
         <article data-reveal><Zap size={21}/><strong>Easy comparison</strong><p>Equivalent hardware, normalized across brands.</p></article>
       </section>
 
@@ -179,7 +280,7 @@ export default function Home() {
           <a href="/" className="source-footer-logo">NEXORA<span>.</span></a>
           <p>Technology shopping made clearer.</p>
         </div>
-        <nav><a href="#latest">Latest</a><a href="#compare">Compare</a><a href="#">Buying guides</a><a href="#">Delivery</a><a href="#">Warranty</a></nav>
+        <nav><a href="#latest">Latest</a><a href="#compare">Compare</a><a href="#services">Services</a><a href="#faq">FAQ</a><a href="#">Buying guides</a></nav>
         <div className="source-footer-bottom"><span>© 2026 NEXORA</span><span>Morocco · MAD</span></div>
       </footer>
     </main>
