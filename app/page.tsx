@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import {
   ArrowRight,
   BadgePercent,
   ChevronRight,
+  CircleDollarSign,
   Gamepad2,
   Headphones,
   Heart,
@@ -11,6 +13,7 @@ import {
   Monitor,
   ShieldCheck,
   Smartphone,
+  Sparkles,
   Star,
   Tablet,
   Truck,
@@ -40,6 +43,39 @@ const products = [
   { brand:"Sony", name:"PlayStation 5 Slim", rating:"4.9", reviews:"2.1k", price:"6,299 MAD", old:"6,799 MAD", saving:"Save 500", badge:"Popular", tone:"white", type:"console" },
 ];
 
+const heroSlides = [
+  {
+    kicker:"FLAGSHIP SMARTPHONES",
+    title:"Choose better. Not just newer.",
+    copy:"Compare the phones everyone is talking about, see the specifications that matter and find the right model for your budget.",
+    cta:"Shop smartphones",
+    href:"#deals",
+    secondary:"See iPhone 17 Pro Max",
+    secondaryHref:"/products/iphone-17-pro-max",
+    type:"phone",
+  },
+  {
+    kicker:"GAMING WEEK",
+    title:"Build the setup you actually want.",
+    copy:"Consoles, displays, headsets and accessories brought together in one shopping flow — with the specs that affect real gameplay.",
+    cta:"Shop gaming",
+    href:"#gaming",
+    secondary:"See gaming picks",
+    secondaryHref:"#deals",
+    type:"gaming",
+  },
+  {
+    kicker:"TV & HOME CINEMA",
+    title:"Big screen. Clearer choice.",
+    copy:"Compare panel type, brightness, refresh rate, ports and room fit without jumping between five different product pages.",
+    cta:"Shop TVs",
+    href:"#tv",
+    secondary:"See buying guide",
+    secondaryHref:"#guides",
+    type:"tv",
+  },
+];
+
 const guides = [
   ["PHONE GUIDE","How to choose a smartphone in 2026","Camera, battery, software support and the specs that actually matter."],
   ["TV GUIDE","OLED vs Mini LED vs QLED","Understand brightness, contrast, gaming features and room conditions."],
@@ -47,41 +83,59 @@ const guides = [
 ];
 
 export default function Home() {
+  const [heroIndex,setHeroIndex]=useState(0);
+  const slide=heroSlides[heroIndex];
+
   return (
     <main className="store-page">
       <StoreHeader />
 
-      <section className="retail-hero">
+      <section className={"retail-hero retail-hero-"+slide.type}>
         <div className="retail-hero-primary">
           <div className="retail-hero-copy">
-            <span className="retail-kicker">FLAGSHIP SMARTPHONES</span>
-            <h1>Choose better.<br/>Not just newer.</h1>
-            <p>Compare the phones everyone is talking about, see the specifications that matter and find the right model for your budget.</p>
+            <span className="retail-kicker">{slide.kicker}</span>
+            <h1>{slide.title}</h1>
+            <p>{slide.copy}</p>
             <div className="retail-hero-actions">
-              <a className="retail-primary-btn" href="#deals">Shop smartphones <ArrowRight size={17}/></a>
-              <a className="retail-link-btn" href="/products/iphone-17-pro-max">See iPhone 17 Pro Max <ChevronRight size={16}/></a>
+              <a className="retail-primary-btn" href={slide.href}>{slide.cta} <ArrowRight size={17}/></a>
+              <a className="retail-link-btn" href={slide.secondaryHref}>{slide.secondary} <ChevronRight size={16}/></a>
+            </div>
+
+            <div className="hero-pagination">
+              {heroSlides.map((item,index)=>(
+                <button key={item.kicker} className={heroIndex===index?"active":""} onClick={()=>setHeroIndex(index)}>
+                  <span>{String(index+1).padStart(2,"0")}</span>
+                  <b>{item.kicker}</b>
+                </button>
+              ))}
             </div>
           </div>
+
           <div className="retail-hero-image">
-            <img src={APPLE_IMG} alt="iPhone 17 Pro lineup" />
-            <div className="retail-image-chip"><small>iPhone 17 Pro Max</small><strong>From 14,999 MAD</strong></div>
+            {slide.type==="phone" && <img src={APPLE_IMG} alt="iPhone 17 Pro lineup" />}
+            {slide.type==="gaming" && <div className="hero-gaming-art"><div className="hero-console"/><div className="hero-controller"><i/><i/></div></div>}
+            {slide.type==="tv" && <div className="hero-tv-art"><div className="hero-tv-screen"><span>4K</span></div><div className="hero-soundbar"/></div>}
+            <div className="retail-image-chip">
+              <small>{slide.type==="phone"?"Editor pick":slide.type==="gaming"?"Gaming essentials":"Best for living rooms"}</small>
+              <strong>{slide.type==="phone"?"From 14,999 MAD":slide.type==="gaming"?"Consoles + displays":"OLED · QLED · Mini LED"}</strong>
+            </div>
           </div>
         </div>
 
         <div className="retail-hero-secondary">
-          <article className="retail-promo gaming-promo">
-            <span>GAMING WEEK</span>
-            <h3>Level up your setup.</h3>
-            <p>Consoles, monitors and accessories.</p>
-            <a href="#gaming">Shop gaming <ArrowRight size={15}/></a>
-            <Gamepad2 className="promo-watermark" />
+          <article className="retail-promo promo-blue">
+            <span>SMART PICKS</span>
+            <h3>Best camera phones.</h3>
+            <p>Compare zoom, low light and video quality.</p>
+            <a href="#priority">See picks <ArrowRight size={15}/></a>
+            <Sparkles className="promo-watermark" />
           </article>
-          <article className="retail-promo tv-promo">
-            <span>TV & HOME CINEMA</span>
-            <h3>Make the screen count.</h3>
-            <p>Compare panel types, sizes and gaming features.</p>
-            <a href="#tv">Shop TVs <ArrowRight size={15}/></a>
-            <Tv className="promo-watermark" />
+          <article className="retail-promo promo-warm">
+            <span>LIMITED OFFERS</span>
+            <h3>Deals worth opening.</h3>
+            <p>See the discount and the trade-off at a glance.</p>
+            <a href="#deals">Shop deals <ArrowRight size={15}/></a>
+            <CircleDollarSign className="promo-watermark" />
           </article>
         </div>
       </section>
@@ -93,7 +147,7 @@ export default function Home() {
         <div><Zap size={21}/><span><strong>Easy comparison</strong><small>Specs normalized across brands</small></span></div>
       </section>
 
-      <section className="retail-section">
+      <section className="retail-section category-showcase">
         <div className="retail-section-head">
           <div><span>SHOP BY CATEGORY</span><h2>Start with what you need.</h2></div>
           <a href="#">All categories <ArrowRight size={16}/></a>
@@ -139,6 +193,11 @@ export default function Home() {
             </article>
           ))}
         </div>
+
+        <div className="deal-rail">
+          <div><span>FLASH DEAL</span><strong>Save up to 1,000 MAD on selected phones</strong><small>While stock lasts</small></div>
+          <a href="#">View all offers <ArrowRight size={15}/></a>
+        </div>
       </section>
 
       <section className="campaign-grid">
@@ -162,19 +221,34 @@ export default function Home() {
         </article>
       </section>
 
-      <section className="retail-section recommendation-section">
+      <section className="retail-section recommendation-section" id="priority">
         <div className="retail-section-head">
           <div><span>SHOP BY PRIORITY</span><h2>What matters most?</h2></div>
         </div>
         <div className="priority-grid">
-          <a href="#"><span>01</span><strong>Best camera phones</strong><small>Low light · zoom · video</small></a>
-          <a href="#"><span>02</span><strong>Best battery life</strong><small>Long days · travel · work</small></a>
-          <a href="#"><span>03</span><strong>Best gaming gear</strong><small>High refresh · cooling · latency</small></a>
-          <a href="#"><span>04</span><strong>Best value</strong><small>Maximum hardware for the price</small></a>
+          <a href="#"><span>01</span><strong>Best camera phones</strong><small>Low light · zoom · video</small><CameraBadge/></a>
+          <a href="#"><span>02</span><strong>Best battery life</strong><small>Long days · travel · work</small><BatteryBadge/></a>
+          <a href="#"><span>03</span><strong>Best gaming gear</strong><small>High refresh · cooling · latency</small><GamingBadge/></a>
+          <a href="#"><span>04</span><strong>Best value</strong><small>Maximum hardware for the price</small><ValueBadge/></a>
         </div>
       </section>
 
-      <section className="retail-section guide-section">
+      <section className="editor-picks">
+        <div className="editor-picks-head">
+          <div><span>EDITOR’S PICKS</span><h2>Three devices we’d start with.</h2></div>
+          <p>Not because they are the newest — because they make the strongest case for their price and use case.</p>
+        </div>
+        <div className="editor-pick-grid">
+          <article className="editor-pick editor-pick-featured">
+            <div className="editor-pick-copy"><span>BEST ALL-ROUND FLAGSHIP</span><h3>iPhone 17 Pro Max</h3><p>Premium display, strong cameras and long software support.</p><a href="/products/iphone-17-pro-max">See product <ArrowRight size={14}/></a></div>
+            <img src={APPLE_IMG} alt="iPhone 17 Pro lineup"/>
+          </article>
+          <article className="editor-pick"><div className="mini-device graphite"><i/><i/><i/></div><span>BEST ANDROID CAMERA</span><h3>Galaxy S26 Ultra</h3><p>Built for zoom, display quality and power users.</p></article>
+          <article className="editor-pick"><div className="mini-device blue"><i/><i/><i/></div><span>BEST VALUE FLAGSHIP</span><h3>HONOR Magic8 Pro</h3><p>Strong hardware at a more aggressive price.</p></article>
+        </div>
+      </section>
+
+      <section className="retail-section guide-section" id="guides">
         <div className="retail-section-head">
           <div><span>BUYING GUIDES</span><h2>Make sense of the specs.</h2></div>
           <a href="#">View all guides <ArrowRight size={16}/></a>
@@ -189,7 +263,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="retail-section">
+      <section className="retail-section brand-section">
         <div className="retail-section-head"><div><span>TOP BRANDS</span><h2>Shop your favorites.</h2></div></div>
         <div className="brand-market-grid">
           {["Apple","Samsung","HONOR","Sony","LG","Xiaomi","Lenovo","ASUS","JBL","Logitech"].map(b=><a href="#" key={b}>{b}</a>)}
@@ -203,13 +277,18 @@ export default function Home() {
 
       <footer className="retail-footer">
         <div className="retail-footer-top">
-          <div><a href="/" className="retail-footer-logo">NEXORA</a><p>Technology shopping made clearer.</p></div>
+          <div><a href="/" className="retail-footer-logo">NEXORA<span>.</span></a><p>Technology shopping made clearer.</p></div>
           <div><strong>Shop</strong><a href="#phones">Smartphones</a><a href="#tv">TV & Home Cinema</a><a href="#computing">Computers</a><a href="#gaming">Gaming</a></div>
           <div><strong>Customer care</strong><a href="#">Delivery</a><a href="#">Returns</a><a href="#">Warranty</a><a href="#">Contact us</a></div>
-          <div><strong>Discover</strong><a href="#">Compare</a><a href="#">Buying guides</a><a href="#">Deals</a><a href="#">New releases</a></div>
+          <div><strong>Discover</strong><a href="#">Compare</a><a href="#guides">Buying guides</a><a href="#deals">Deals</a><a href="#">New releases</a></div>
         </div>
         <div className="retail-footer-bottom"><span>© 2026 NEXORA</span><span>Morocco · MAD</span></div>
       </footer>
     </main>
   );
 }
+
+function CameraBadge(){return <div className="priority-art priority-camera"><i/><i/><i/></div>}
+function BatteryBadge(){return <div className="priority-art priority-battery"><b/></div>}
+function GamingBadge(){return <div className="priority-art priority-gaming"><i/><i/></div>}
+function ValueBadge(){return <div className="priority-art priority-value">MAD</div>}
