@@ -105,7 +105,7 @@ export default function SiteMotion() {
       });
 
       const spotlightTargets = gsap.utils.toArray<HTMLElement>(
-        ".luxe-product-card,.luxe-category-card,.luxe-campaign,.luxe-guide-card,.luxe-compare-board,.highlight-card"
+        ".luxe-product-card,.luxe-category-card,.luxe-campaign,.luxe-guide-card,.luxe-compare-board,.highlight-card,.visual-showcase-main,.visual-side-card"
       );
 
       spotlightTargets.forEach((el) => {
@@ -118,7 +118,7 @@ export default function SiteMotion() {
         cleanups.push(() => el.removeEventListener("mousemove", move));
       });
 
-      const tiltTargets = gsap.utils.toArray<HTMLElement>(".luxe-campaign,.luxe-guide-card");
+      const tiltTargets = gsap.utils.toArray<HTMLElement>(".luxe-campaign,.luxe-guide-card,.visual-side-card");
       tiltTargets.forEach((el) => {
         const xTo = gsap.quickTo(el, "rotationY", { duration: 0.45, ease: "power3.out" });
         const yTo = gsap.quickTo(el, "rotationX", { duration: 0.45, ease: "power3.out" });
