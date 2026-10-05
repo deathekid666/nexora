@@ -112,8 +112,8 @@ export default function Home() {
         <div className="section-kicker">EXPLORE THE HARDWARE</div>
         <h2>Specifications, attached to the parts that create them.</h2>
         <p className="section-lead">
-          The product stays intact in the hero. Here, and only here, the customer can separate the
-          layers and understand the display, cameras, processor and battery spatially.
+          The hero now uses a real GLB product asset. The anatomy view is a separate technical assembly,
+          so every layer can move independently without destroying the exterior product model.
         </p>
 
         <div className="anatomy-layout">
@@ -177,7 +177,7 @@ export default function Home() {
 
       <footer>
         <div><strong>NEXORA</strong><span>Explore technology before you buy.</span></div>
-        <span>Phase 1 · Product experience</span>
+        <span>Phase 1 · Product experience · <a href="https://sketchfab.com/3d-models/realistic-smartphone-3d-model-77e5794dde144965b5bd4aeab9cb50e8" target="_blank" rel="noreferrer">3D base model: LukeModels75 · CC BY 4.0</a></span>
       </footer>
     </main>
   );
