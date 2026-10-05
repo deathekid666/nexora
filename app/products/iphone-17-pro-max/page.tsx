@@ -122,6 +122,30 @@ export default function ProductPage() {
         <div><Zap size={21}/><span><small>CHARGING</small><strong>USB-C</strong></span></div>
       </section>
 
+
+      <section className="product-visual-story">
+        <article className="product-visual-story-main" data-reveal-scale>
+          <img src={APPLE_IMG} alt="iPhone 17 Pro Max design" />
+          <div className="product-visual-story-overlay"/>
+          <div className="product-visual-story-copy">
+            <span>DESIGN</span>
+            <h2>Built to feel like a flagship before you unlock it.</h2>
+            <p>Premium materials, bold finishes and a camera system designed as part of the object — not added after it.</p>
+          </div>
+        </article>
+
+        <div className="product-visual-story-side">
+          <article className="product-story-card story-chip" data-reveal-scale>
+            <div><span>PERFORMANCE</span><h3>A19 Pro</h3><p>Fast where it matters, efficient where it should be.</p></div>
+            <div className="story-chip-art"><Cpu size={76}/><i/><i/><i/></div>
+          </article>
+          <article className="product-story-card story-display" data-reveal-scale>
+            <div><span>DISPLAY</span><h3>6.9″ OLED</h3><p>Large canvas. Deep contrast. Smooth motion.</p></div>
+            <div className="story-display-art"><div className="story-display-screen"/></div>
+          </article>
+        </div>
+      </section>
+
       <section className="product-editorial" id="highlights" data-reveal>
         <div className="product-editorial-head">
           <div><span>PRODUCT HIGHLIGHTS</span><h2>Know what you’re paying for.</h2></div>
