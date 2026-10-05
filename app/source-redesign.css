@@ -46,3 +46,160 @@
 .source-footer{padding:54px 5vw 22px;background:#0d0f12;color:#fff;display:grid;grid-template-columns:1fr auto;gap:45px}.source-footer-logo{font-size:32px;font-weight:900;letter-spacing:-.045em}.source-footer-logo span{color:#7186ff}.source-footer p{margin:8px 0 0;color:#737b86;font-size:9px}.source-footer nav{display:flex;flex-wrap:wrap;gap:20px}.source-footer nav a{color:#b6bdc6;font-size:9px}.source-footer-bottom{grid-column:1/-1;padding-top:18px;border-top:1px solid #272b31;display:flex;justify-content:space-between;color:#606772;font-size:8px}
 @media(max-width:1050px){.source-hero{grid-template-columns:1fr}.source-categories{grid-template-columns:repeat(4,1fr)}.source-latest-card{flex-basis:54vw}.source-editorial{grid-template-columns:1fr}.source-editorial-stack{grid-template-columns:1fr 1fr;grid-template-rows:none}.source-services{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.source-hero{padding:40px 18px 32px}.source-hero h1{font-size:54px}.source-hero-copy>p{font-size:13px}.source-hero-actions{flex-direction:column;align-items:stretch}.source-btn-dark,.source-text-link{justify-content:center}.source-hero-meta{display:grid;grid-template-columns:1fr;margin-top:34px}.source-hero-media,.source-hero-media img{min-height:450px;height:450px}.source-categories{margin:0 18px;grid-template-columns:repeat(3,1fr)}.source-section{padding:72px 18px}.source-heading,.source-compare-head{grid-template-columns:1fr}.source-heading>p,.source-compare-head>p{justify-self:start}.source-latest-rail{margin-right:-18px;padding-right:18px}.source-latest-card{flex-basis:82vw;height:500px}.source-compare{padding:76px 18px}.source-compare-labels{display:none}.source-compare-row{grid-template-columns:1fr auto}.source-compare-row>span,.source-compare-row>svg{display:none}.source-editorial{padding:72px 18px}.source-editorial-feature{min-height:520px}.source-editorial-feature h2{font-size:40px}.source-editorial-stack{grid-template-columns:1fr}.source-editorial-small{min-height:300px}.source-services{padding:0 18px 72px;grid-template-columns:1fr}.source-services article{border-right:1px solid var(--line);border-bottom:0}.source-services article:last-child{border-bottom:1px solid var(--line)}.source-newsletter{margin:0 18px 72px;padding:28px 22px;flex-direction:column;align-items:stretch}.source-newsletter form{width:100%}.source-footer{padding:44px 18px 20px;grid-template-columns:1fr}}
+
+
+/* TRANSITION PASS */
+.source-home{
+  --ease-premium:cubic-bezier(.2,.8,.2,1);
+}
+.source-home a,
+.source-home button,
+.source-home img{
+  -webkit-tap-highlight-color:transparent;
+}
+.source-hero-media,
+.source-latest-card,
+.source-editorial-feature,
+.source-editorial-small{
+  will-change:transform;
+  transform-style:preserve-3d;
+  backface-visibility:hidden;
+}
+.source-hero-media-copy,
+.source-latest-copy,
+.source-editorial-feature>div:last-child,
+.source-editorial-small>div:last-child{
+  transition:transform .4s var(--ease-premium);
+}
+.source-hero-media:hover .source-hero-media-copy,
+.source-latest-card:hover .source-latest-copy,
+.source-editorial-feature:hover>div:last-child,
+.source-editorial-small:hover>div:last-child{
+  transform:translateY(-4px);
+}
+.source-categories a>span{
+  transition:transform .28s var(--ease-premium),background .28s ease,color .28s ease;
+}
+.source-categories a:hover>span{
+  transform:scale(1.08) rotate(-2deg);
+  background:#111318;
+  color:#fff;
+}
+.source-latest-card:after,
+.source-editorial-feature:after,
+.source-editorial-gaming:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(115deg,transparent 24%,rgba(255,255,255,.12) 48%,transparent 72%);
+  transform:translateX(-120%);
+  transition:transform .85s var(--ease-premium);
+  z-index:2;
+}
+.source-latest-card:hover:after,
+.source-editorial-feature:hover:after,
+.source-editorial-gaming:hover:after{
+  transform:translateX(120%);
+}
+.source-latest-copy,
+.source-editorial-feature>div:last-child,
+.source-editorial-gaming>div:last-child{
+  z-index:3;
+}
+.source-compare-row{
+  position:relative;
+  overflow:hidden;
+}
+.source-compare-row:before{
+  content:"";
+  position:absolute;
+  left:0;top:0;bottom:0;
+  width:2px;
+  background:#7790ff;
+  transform:scaleY(0);
+  transform-origin:center;
+  transition:transform .24s var(--ease-premium);
+}
+.source-compare-row:hover:before{
+  transform:scaleY(1);
+}
+.source-compare-row>*{
+  position:relative;
+  z-index:2;
+}
+.source-services article svg{
+  transition:transform .3s var(--ease-premium),color .3s ease;
+}
+.source-services article:hover svg{
+  transform:translateY(-4px) scale(1.06);
+  color:#536bea;
+}
+.source-newsletter{
+  overflow:hidden;
+  position:relative;
+}
+.source-newsletter:after{
+  content:"";
+  position:absolute;
+  width:320px;
+  height:320px;
+  right:-120px;
+  top:-170px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(107,130,255,.22),transparent 70%);
+  transition:transform .8s var(--ease-premium);
+}
+.source-newsletter:hover:after{
+  transform:scale(1.12) translate(-12px,10px);
+}
+.source-newsletter>*{
+  position:relative;
+  z-index:2;
+}
+.source-newsletter input,
+.source-newsletter button{
+  transition:border-color .22s ease,background .22s ease,color .22s ease,transform .22s var(--ease-premium);
+}
+.source-newsletter button:hover{
+  transform:translateX(2px);
+  background:#dce4ff;
+}
+.source-footer nav a{
+  position:relative;
+}
+.source-footer nav a:after{
+  content:"";
+  position:absolute;
+  left:0;right:0;bottom:-4px;
+  height:1px;
+  background:#fff;
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:transform .22s ease;
+}
+.source-footer nav a:hover:after{
+  transform:scaleX(1);
+}
+@media (prefers-reduced-motion:reduce){
+  .source-home *,
+  .source-home *:before,
+  .source-home *:after{
+    animation:none!important;
+    transition:none!important;
+    scroll-behavior:auto!important;
+  }
+}
+@media(max-width:760px){
+  .source-hero-media,
+  .source-latest-card,
+  .source-editorial-feature,
+  .source-editorial-small{
+    transform:none!important;
+  }
+  .source-latest-card:after,
+  .source-editorial-feature:after,
+  .source-editorial-gaming:after{
+    display:none;
+  }
+}
