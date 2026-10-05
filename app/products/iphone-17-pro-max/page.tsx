@@ -19,6 +19,7 @@ import {
   Zap,
 } from "lucide-react";
 import StoreHeader from "@/components/StoreHeader";
+import SiteMotion from "@/components/SiteMotion";
 import Comparison from "@/components/Comparison";
 import { iphone17ProMax } from "@/lib/products";
 
@@ -31,7 +32,8 @@ export default function ProductPage() {
   const finish=iphone17ProMax.finishes[finishIndex];
 
   return (
-    <main className="store-page">
+    <main className="store-page luxe-product-page">
+      <SiteMotion />
       <StoreHeader />
 
       <div className="product-subnav">
@@ -46,7 +48,7 @@ export default function ProductPage() {
         <a href="/">Home</a><ChevronRight size={13}/><a href="/#phones">Smartphones</a><ChevronRight size={13}/><span>iPhone 17 Pro Max</span>
       </div>
 
-      <section className="product-commerce" id="overview">
+      <section className="product-commerce" id="overview" data-reveal>
         <div className="product-gallery-static">
           <div className="gallery-badge">Official product imagery</div>
           <button className="gallery-favorite"><Heart size={18}/></button>
@@ -113,14 +115,14 @@ export default function ProductPage() {
         </aside>
       </section>
 
-      <section className="product-value-strip">
+      <section className="product-value-strip" data-reveal>
         <div><MonitorUp size={21}/><span><small>DISPLAY</small><strong>6.9″ Super Retina XDR</strong></span></div>
         <div><Cpu size={21}/><span><small>PERFORMANCE</small><strong>A19 Pro</strong></span></div>
         <div><Camera size={21}/><span><small>CAMERA</small><strong>48 MP Pro system</strong></span></div>
         <div><Zap size={21}/><span><small>CHARGING</small><strong>USB-C</strong></span></div>
       </section>
 
-      <section className="product-editorial" id="highlights">
+      <section className="product-editorial" id="highlights" data-reveal>
         <div className="product-editorial-head">
           <div><span>PRODUCT HIGHLIGHTS</span><h2>Know what you’re paying for.</h2></div>
           <p>Important specifications are grouped by how they affect everyday use instead of buried inside a long technical sheet.</p>
@@ -142,7 +144,7 @@ export default function ProductPage() {
         </div>
       </section>
 
-      <section className="specs-section" id="specs">
+      <section className="specs-section" id="specs" data-reveal>
         <div className="specs-heading"><span>TECHNICAL SPECIFICATIONS</span><h2>Everything, organized.</h2></div>
         <div className="specs-table">
           <div><strong>Display</strong><span>6.9″ Super Retina XDR OLED</span><span>High refresh rate</span></div>
@@ -155,7 +157,7 @@ export default function ProductPage() {
         <button className="all-specs-btn">View complete specifications <ChevronDown size={16}/></button>
       </section>
 
-      <section className="reviews-section" id="reviews">
+      <section className="reviews-section" id="reviews" data-reveal>
         <div className="reviews-summary">
           <span>CUSTOMER REVIEWS</span><h2>4.9</h2>
           <div className="review-stars">{[1,2,3,4,5].map(x=><Star key={x} size={18} fill="currentColor"/>)}</div>
