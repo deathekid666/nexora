@@ -203,3 +203,89 @@
     display:none;
   }
 }
+
+
+/* APPLE-LIKE MOTION OVERRIDES */
+.source-hero,
+.source-compare,
+.source-editorial{
+  transform-origin:center top;
+}
+.source-hero-copy,
+.source-hero-media,
+.source-hero-media img,
+.source-latest-card,
+.source-latest-card img,
+.source-editorial-feature,
+.source-editorial-feature img,
+.source-editorial-gaming img,
+.source-editorial-stack,
+.source-compare{
+  will-change:transform,opacity;
+}
+.source-heading h2,
+.source-compare-head h2{
+  will-change:transform,opacity,clip-path;
+}
+.source-latest-card,
+.source-editorial-feature,
+.source-editorial-small,
+.source-hero-media{
+  transform-style:flat;
+}
+.source-latest-card:after,
+.source-editorial-feature:after,
+.source-editorial-gaming:after{
+  display:none!important;
+}
+.source-latest-card:hover,
+.source-editorial-feature:hover,
+.source-editorial-small:hover,
+.source-hero-media:hover{
+  transform:none;
+}
+.source-latest-card:hover .source-latest-copy,
+.source-editorial-feature:hover>div:last-child,
+.source-editorial-small:hover>div:last-child,
+.source-hero-media:hover .source-hero-media-copy{
+  transform:none;
+}
+.source-hero-media,
+.source-latest-card,
+.source-editorial-feature,
+.source-editorial-small{
+  transition:box-shadow .35s cubic-bezier(.25,.1,.25,1);
+}
+.source-latest-card:hover{
+  box-shadow:0 26px 58px rgba(30,28,24,.13);
+}
+.source-hero-media:hover{
+  box-shadow:0 34px 76px rgba(35,32,26,.13);
+}
+.source-editorial-feature:hover,
+.source-editorial-small:hover{
+  box-shadow:0 24px 56px rgba(30,28,24,.11);
+}
+.source-categories a:hover{
+  transform:none;
+}
+.source-categories a:hover>span{
+  transform:scale(1.04);
+}
+.source-compare{
+  overflow:hidden;
+}
+.source-compare-row:hover{
+  padding-left:10px;
+  padding-right:10px;
+}
+@media(max-width:760px){
+  .source-hero-copy,
+  .source-hero-media,
+  .source-hero-media img,
+  .source-editorial-feature,
+  .source-editorial-stack,
+  .source-compare{
+    transform:none!important;
+  }
+}
