@@ -135,7 +135,6 @@ export default function SiteMotion() {
           yTo(0);
         };
 
-        el.style.transformPerspective = "1000px";
         el.addEventListener("mousemove", move);
         el.addEventListener("mouseleave", leave);
         cleanups.push(() => {
