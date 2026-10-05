@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./source-redesign.css";
 
 export const metadata: Metadata = {
   title: "NEXORA — Technology, clearly compared",
