@@ -289,3 +289,39 @@
     transform:none!important;
   }
 }
+
+
+/* PINNED APPLE-STYLE STORY MOTION */
+@media(min-width:900px){
+  .source-hero{
+    min-height:calc(100vh - 68px);
+    overflow:visible;
+  }
+  .source-hero-copy,
+  .source-hero-media,
+  .source-hero-media img{
+    will-change:transform,opacity;
+  }
+  .source-hero-media{
+    transform-origin:center center;
+  }
+  .source-compare{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    overflow:hidden;
+  }
+  .source-compare-head,
+  .source-compare-labels,
+  .source-compare-row{
+    will-change:transform,opacity;
+  }
+  .source-editorial{
+    overflow:hidden;
+  }
+  .source-editorial-feature img,
+  .source-editorial-stack{
+    will-change:transform;
+  }
+}
