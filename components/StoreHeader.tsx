@@ -1,10 +1,35 @@
 "use client";
 
-import { ChevronDown, Heart, MapPin, Menu, Search, ShoppingCart, User, X } from "lucide-react";
+import {
+  ChevronDown,
+  Gamepad2,
+  Headphones,
+  Heart,
+  Laptop,
+  MapPin,
+  Menu,
+  Search,
+  ShoppingCart,
+  Smartphone,
+  Tv,
+  User,
+  Watch,
+  X,
+} from "lucide-react";
 import { useState } from "react";
+
+const departments = [
+  { label:"Smartphones", detail:"Apple · Samsung · HONOR · Xiaomi", icon:Smartphone, href:"/#phones" },
+  { label:"TV & Home Cinema", detail:"OLED · QLED · Mini LED · Soundbars", icon:Tv, href:"/#tv" },
+  { label:"Computers", detail:"Laptops · Desktops · Monitors", icon:Laptop, href:"/#computing" },
+  { label:"Gaming", detail:"PlayStation · Xbox · Nintendo", icon:Gamepad2, href:"/#gaming" },
+  { label:"Audio", detail:"Headphones · Speakers · Microphones", icon:Headphones, href:"/#audio" },
+  { label:"Wearables", detail:"Watches · Bands · Smart rings", icon:Watch, href:"/#wearables" },
+];
 
 export default function StoreHeader() {
   const [open, setOpen] = useState(false);
+  const [shopOpen, setShopOpen] = useState(false);
 
   return (
     <>
@@ -18,9 +43,9 @@ export default function StoreHeader() {
       </div>
 
       <header className="store-header">
-        <a href="/" className="store-logo">NEXORA</a>
+        <a href="/" className="store-logo">NEXORA<span>.</span></a>
 
-        <button className="category-menu-button">
+        <button className={shopOpen ? "category-menu-button active" : "category-menu-button"} onClick={() => setShopOpen(v => !v)}>
           <Menu size={18} />
           Shop
           <ChevronDown size={14} />
@@ -28,7 +53,7 @@ export default function StoreHeader() {
 
         <label className="store-search">
           <Search size={19} />
-          <input placeholder="What are you looking for?" />
+          <input placeholder="Search phones, TVs, laptops, gaming and more" />
           <button type="button">Search</button>
         </label>
 
@@ -45,6 +70,31 @@ export default function StoreHeader() {
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
+
+        {shopOpen && (
+          <div className="mega-menu">
+            <div className="mega-menu-main">
+              <div className="mega-menu-heading">
+                <span>SHOP ALL</span>
+                <strong>Explore by department</strong>
+              </div>
+              <div className="mega-menu-grid">
+                {departments.map(({label,detail,icon:Icon,href})=>(
+                  <a href={href} key={label} onClick={()=>setShopOpen(false)}>
+                    <div><Icon size={21}/></div>
+                    <span><strong>{label}</strong><small>{detail}</small></span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <aside className="mega-menu-promo">
+              <span>THIS WEEK</span>
+              <h3>Flagship phones, better compared.</h3>
+              <p>See the models people are choosing and the trade-offs that matter.</p>
+              <a href="/#deals">Shop the edit</a>
+            </aside>
+          </div>
+        )}
       </header>
 
       <nav className={open ? "store-nav open" : "store-nav"}>
