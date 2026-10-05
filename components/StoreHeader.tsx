@@ -11,6 +11,8 @@ import {
   Search,
   ShoppingCart,
   Smartphone,
+  Tablet,
+  Cable,
   Tv,
   User,
   Watch,
@@ -19,12 +21,14 @@ import {
 import { useState } from "react";
 
 const departments = [
-  { label:"Smartphones", detail:"Apple · Samsung · HONOR · Xiaomi", icon:Smartphone, href:"/#phones" },
-  { label:"TV & Home Cinema", detail:"OLED · QLED · Mini LED · Soundbars", icon:Tv, href:"/#tv" },
-  { label:"Computers", detail:"Laptops · Desktops · Monitors", icon:Laptop, href:"/#computing" },
-  { label:"Gaming", detail:"PlayStation · Xbox · Nintendo", icon:Gamepad2, href:"/#gaming" },
-  { label:"Audio", detail:"Headphones · Speakers · Microphones", icon:Headphones, href:"/#audio" },
-  { label:"Wearables", detail:"Watches · Bands · Smart rings", icon:Watch, href:"/#wearables" },
+  { label:"Smartphones", detail:"Apple · Samsung · HONOR · Xiaomi", icon:Smartphone, href:"/#latest" },
+  { label:"Tablets", detail:"iPad · Galaxy Tab · HONOR Pad", icon:Tablet, href:"/#latest" },
+  { label:"Computers", detail:"Laptops · Desktops · Monitors", icon:Laptop, href:"/#latest" },
+  { label:"TV & Home Cinema", detail:"OLED · QLED · Mini LED · Soundbars", icon:Tv, href:"/#latest" },
+  { label:"Gaming", detail:"PlayStation · Xbox · Nintendo", icon:Gamepad2, href:"/#latest" },
+  { label:"Audio", detail:"Headphones · Speakers · Microphones", icon:Headphones, href:"/#latest" },
+  { label:"Wearables", detail:"Watches · Bands · Smart rings", icon:Watch, href:"/#latest" },
+  { label:"Accessories", detail:"Chargers · Cases · Cables · Keyboards", icon:Cable, href:"/#latest" },
 ];
 
 export default function StoreHeader() {
@@ -35,9 +39,9 @@ export default function StoreHeader() {
     <>
       <div className="top-strip">
         <div className="top-strip-inner">
-          <span>Free delivery from 500 MAD</span>
-          <span>30-day returns</span>
-          <span>Official warranty</span>
+          <span>Brand-new products</span>
+          <span>Delivery across Morocco</span>
+          <span>Warranty shown clearly</span>
           <span className="top-strip-right">Morocco · MAD</span>
         </div>
       </div>
@@ -53,7 +57,7 @@ export default function StoreHeader() {
 
         <label className="store-search">
           <Search size={19} />
-          <input placeholder="Search phones, TVs, laptops, gaming and more" />
+          <input placeholder="Search smartphones, tablets, wearables, audio and more" />
           <button type="button">Search</button>
         </label>
 
@@ -100,15 +104,15 @@ export default function StoreHeader() {
       <div className="site-progress" aria-hidden="true"><span /></div>
 
       <nav className={open ? "store-nav open" : "store-nav"}>
-        <a href="/#phones">Smartphones</a>
-        <a href="/#tv">TV & Home Cinema</a>
-        <a href="/#computing">Computers</a>
-        <a href="/#tablets">Tablets</a>
-        <a href="/#gaming">Gaming</a>
-        <a href="/#audio">Audio</a>
-        <a href="/#wearables">Wearables</a>
-        <a href="/#accessories">Accessories</a>
-        <a href="/#deals" className="nav-deal">Deals</a>
+        <a href="/#latest">Smartphones</a>
+        <a href="/#latest">Tablets</a>
+        <a href="/#latest">Computers</a>
+        <a href="/#latest">TV & Home Cinema</a>
+        <a href="/#latest">Gaming</a>
+        <a href="/#latest">Audio</a>
+        <a href="/#latest">Wearables</a>
+        <a href="/#services">Services</a>
+        <a href="/#faq">FAQ</a>
       </nav>
     </>
   );
