@@ -178,6 +178,18 @@ export default function ProductPage() {
 
       <Comparison />
 
+      <div className="pdp-floating-buy">
+        <div>
+          <span>iPhone 17 Pro Max</span>
+          <strong>14,999 MAD</strong>
+        </div>
+        <div className="pdp-floating-meta">
+          <span>{finish.name}</span>
+          <span>{storage}</span>
+        </div>
+        <button><ShoppingCart size={17}/> Add to cart</button>
+      </div>
+
       <a href="/" className="back-to-store"><ArrowLeft size={16}/> Back to store</a>
     </main>
   );
