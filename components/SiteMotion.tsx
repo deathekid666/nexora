@@ -11,44 +11,49 @@ export default function SiteMotion() {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) return;
 
-    const cleanups: Array<() => void> = [];
-
     const ctx = gsap.context(() => {
       const heroTl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
       heroTl
-        .from(".source-eyebrow", { opacity: 0, y: 16, duration: 0.55 })
-        .from(".source-hero h1", { opacity: 0, y: 34, duration: 0.9 }, "-=0.3")
-        .from(".source-hero-copy > p", { opacity: 0, y: 20, duration: 0.65 }, "-=0.5")
-        .from(".source-hero-actions > *", { opacity: 0, y: 16, duration: 0.5, stagger: 0.08 }, "-=0.35")
-        .from(".source-hero-meta span", { opacity: 0, y: 12, duration: 0.45, stagger: 0.06 }, "-=0.25");
+        .from(".source-eyebrow", { autoAlpha: 0, y: 14, duration: 0.5 })
+        .from(".source-hero h1", { autoAlpha: 0, y: 28, duration: 0.85 }, "-=0.28")
+        .from(".source-hero-copy > p", { autoAlpha: 0, y: 18, duration: 0.58 }, "-=0.46")
+        .from(".source-hero-actions > *", { autoAlpha: 0, y: 12, duration: 0.46, stagger: 0.07 }, "-=0.32")
+        .from(".source-hero-meta span", { autoAlpha: 0, y: 10, duration: 0.4, stagger: 0.05 }, "-=0.24");
 
       gsap.fromTo(
         ".source-hero-media",
-        { clipPath: "inset(0 0 100% 0 round 28px)", y: 22 },
-        { clipPath: "inset(0 0 0% 0 round 28px)", y: 0, duration: 1.15, ease: "power4.out", delay: 0.15 }
+        { clipPath: "inset(7% 7% 7% 7% round 34px)", scale: 0.97, autoAlpha: 0 },
+        {
+          clipPath: "inset(0% 0% 0% 0% round 28px)",
+          scale: 1,
+          autoAlpha: 1,
+          duration: 1.15,
+          ease: "power4.out",
+          delay: 0.12,
+        }
       );
 
       gsap.fromTo(
         ".source-hero-media img",
         { scale: 1.08 },
-        { scale: 1, duration: 1.65, ease: "power3.out", delay: 0.2 }
+        { scale: 1, duration: 1.45, ease: "power3.out", delay: 0.16 }
       );
 
       gsap.from(".source-hero-media-copy > *", {
-        opacity: 0,
-        y: 12,
-        duration: 0.5,
-        stagger: 0.07,
-        delay: 0.85,
+        autoAlpha: 0,
+        y: 10,
+        duration: 0.46,
+        stagger: 0.06,
+        delay: 0.82,
         ease: "power3.out",
       });
 
       gsap.from(".source-categories a", {
-        opacity: 0,
-        y: 18,
-        duration: 0.6,
-        stagger: 0.055,
+        autoAlpha: 0,
+        y: 14,
+        duration: 0.56,
+        stagger: 0.045,
         ease: "power3.out",
         scrollTrigger: {
           trigger: ".source-categories",
@@ -57,14 +62,39 @@ export default function SiteMotion() {
         },
       });
 
-      gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) => {
+      gsap.utils.toArray<HTMLElement>(".source-heading h2,.source-compare-head h2").forEach((el) => {
         gsap.fromTo(
           el,
-          { autoAlpha: 0, y: 34 },
+          {
+            autoAlpha: 0,
+            y: 34,
+            clipPath: "inset(0 0 100% 0)",
+          },
           {
             autoAlpha: 1,
             y: 0,
+            clipPath: "inset(0 0 0% 0)",
             duration: 0.9,
+            ease: "power4.out",
+            scrollTrigger: {
+              trigger: el,
+              start: "top 88%",
+              once: true,
+            },
+          }
+        );
+      });
+
+      gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) => {
+        if (el.matches(".source-heading,.source-compare-head")) return;
+
+        gsap.fromTo(
+          el,
+          { autoAlpha: 0, y: 26 },
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.8,
             ease: "power3.out",
             scrollTrigger: { trigger: el, start: "top 90%", once: true },
           }
@@ -72,14 +102,16 @@ export default function SiteMotion() {
       });
 
       gsap.utils.toArray<HTMLElement>("[data-reveal-scale]").forEach((el) => {
+        if (el.matches(".source-hero-media")) return;
+
         gsap.fromTo(
           el,
-          { autoAlpha: 0, scale: 0.965, y: 24 },
+          { autoAlpha: 0, scale: 0.975, y: 18 },
           {
             autoAlpha: 1,
             scale: 1,
             y: 0,
-            duration: 1,
+            duration: 0.9,
             ease: "power3.out",
             scrollTrigger: { trigger: el, start: "top 90%", once: true },
           }
@@ -89,10 +121,11 @@ export default function SiteMotion() {
       const latestCards = gsap.utils.toArray<HTMLElement>(".source-latest-card");
       if (latestCards.length) {
         gsap.from(latestCards, {
-          opacity: 0,
-          x: 44,
-          duration: 0.82,
-          stagger: 0.11,
+          autoAlpha: 0,
+          y: 34,
+          scale: 0.985,
+          duration: 0.8,
+          stagger: 0.09,
           ease: "power3.out",
           scrollTrigger: {
             trigger: ".source-latest-rail",
@@ -105,14 +138,14 @@ export default function SiteMotion() {
       const compareRows = gsap.utils.toArray<HTMLElement>(".source-compare-row");
       if (compareRows.length) {
         gsap.from(compareRows, {
-          opacity: 0,
-          y: 20,
-          duration: 0.6,
+          autoAlpha: 0,
+          y: 24,
+          duration: 0.62,
           stagger: 0.08,
           ease: "power3.out",
           scrollTrigger: {
             trigger: ".source-compare-table",
-            start: "top 88%",
+            start: "top 87%",
             once: true,
           },
         });
@@ -123,14 +156,15 @@ export default function SiteMotion() {
       );
       if (editorialCards.length) {
         gsap.from(editorialCards, {
-          opacity: 0,
+          autoAlpha: 0,
           y: 30,
-          duration: 0.82,
+          scale: 0.985,
+          duration: 0.85,
           stagger: 0.1,
           ease: "power3.out",
           scrollTrigger: {
             trigger: ".source-editorial",
-            start: "top 86%",
+            start: "top 88%",
             once: true,
           },
         });
@@ -139,10 +173,10 @@ export default function SiteMotion() {
       const serviceCards = gsap.utils.toArray<HTMLElement>(".source-services article");
       if (serviceCards.length) {
         gsap.from(serviceCards, {
-          opacity: 0,
-          y: 20,
-          duration: 0.58,
-          stagger: 0.07,
+          autoAlpha: 0,
+          y: 18,
+          duration: 0.55,
+          stagger: 0.06,
           ease: "power3.out",
           scrollTrigger: {
             trigger: ".source-services",
@@ -152,37 +186,102 @@ export default function SiteMotion() {
         });
       }
 
-      gsap.utils.toArray<HTMLElement>(".source-heading h2,.source-compare-head h2").forEach((el) => {
+      gsap.matchMedia().add("(min-width: 761px)", () => {
+        gsap.to(".source-hero-copy", {
+          y: -72,
+          autoAlpha: 0.22,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".source-hero",
+            start: "top top",
+            end: "bottom top",
+            scrub: 1.1,
+          },
+        });
+
+        gsap.to(".source-hero-media", {
+          y: -26,
+          scale: 0.955,
+          borderRadius: 42,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".source-hero",
+            start: "top top",
+            end: "bottom top",
+            scrub: 1.1,
+          },
+        });
+
+        gsap.to(".source-hero-media img", {
+          scale: 1.07,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".source-hero",
+            start: "top top",
+            end: "bottom top",
+            scrub: 1.1,
+          },
+        });
+
         gsap.fromTo(
-          el,
-          { opacity: 0.45, y: 24, letterSpacing: "-0.075em" },
+          ".source-compare",
+          { scale: 0.965, borderRadius: 34, y: 34 },
           {
-            opacity: 1,
+            scale: 1,
+            borderRadius: 0,
             y: 0,
-            letterSpacing: "-0.055em",
-            duration: 0.9,
-            ease: "power3.out",
+            ease: "none",
             scrollTrigger: {
-              trigger: el,
-              start: "top 91%",
-              once: true,
+              trigger: ".source-compare",
+              start: "top 92%",
+              end: "top 24%",
+              scrub: 1,
             },
           }
         );
-      });
 
-      gsap.utils.toArray<HTMLElement>(".source-latest-card,.source-editorial-feature,.source-editorial-gaming").forEach((el) => {
-        const image = el.querySelector("img");
-        if (!image) return;
+        gsap.utils.toArray<HTMLElement>(
+          ".source-latest-card,.source-editorial-feature,.source-editorial-gaming"
+        ).forEach((el) => {
+          const image = el.querySelector("img");
+          if (!image) return;
 
-        gsap.to(image, {
-          yPercent: -5,
+          gsap.fromTo(
+            image,
+            { scale: 1.045, yPercent: 2 },
+            {
+              scale: 1,
+              yPercent: -4,
+              ease: "none",
+              scrollTrigger: {
+                trigger: el,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1.15,
+              },
+            }
+          );
+        });
+
+        gsap.to(".source-editorial-feature", {
+          y: -22,
           ease: "none",
           scrollTrigger: {
-            trigger: el,
+            trigger: ".source-editorial",
             start: "top bottom",
             end: "bottom top",
-            scrub: 1.15,
+            scrub: 1.2,
+          },
+        });
+
+        gsap.to(".source-editorial-stack", {
+          y: 18,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".source-editorial",
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1.2,
           },
         });
       });
@@ -207,69 +306,27 @@ export default function SiteMotion() {
         },
       });
 
-      const hoverTargets = gsap.utils.toArray<HTMLElement>(
-        ".source-latest-card,.source-editorial-feature,.source-editorial-small,.source-hero-media"
-      );
-
-      hoverTargets.forEach((el) => {
-        const move = (event: MouseEvent) => {
-          const rect = el.getBoundingClientRect();
-          const px = (event.clientX - rect.left) / rect.width - 0.5;
-          const py = (event.clientY - rect.top) / rect.height - 0.5;
-
-          gsap.to(el, {
-            rotationY: px * 1.6,
-            rotationX: py * -1.2,
-            transformPerspective: 1200,
-            duration: 0.45,
-            ease: "power3.out",
-            overwrite: "auto",
-          });
-        };
-
-        const leave = () => {
-          gsap.to(el, {
-            rotationX: 0,
-            rotationY: 0,
-            duration: 0.55,
-            ease: "power3.out",
-            overwrite: "auto",
-          });
-        };
-
-        el.addEventListener("mousemove", move);
-        el.addEventListener("mouseleave", leave);
-
-        cleanups.push(() => {
-          el.removeEventListener("mousemove", move);
-          el.removeEventListener("mouseleave", leave);
-        });
-      });
-
-      const links = gsap.utils.toArray<HTMLElement>(".source-home a");
-      links.forEach((el) => {
+      const arrowLinks = gsap.utils.toArray<HTMLElement>(".source-home a");
+      arrowLinks.forEach((el) => {
         const arrow = el.querySelector("svg");
         if (!arrow) return;
 
-        const enter = () => gsap.to(arrow, { x: 3, duration: 0.2, ease: "power2.out" });
-        const leave = () => gsap.to(arrow, { x: 0, duration: 0.25, ease: "power2.out" });
+        const enter = () => gsap.to(arrow, { x: 3, duration: 0.18, ease: "power2.out" });
+        const leave = () => gsap.to(arrow, { x: 0, duration: 0.22, ease: "power2.out" });
 
         el.addEventListener("mouseenter", enter);
         el.addEventListener("mouseleave", leave);
 
-        cleanups.push(() => {
+        return () => {
           el.removeEventListener("mouseenter", enter);
           el.removeEventListener("mouseleave", leave);
-        });
+        };
       });
     });
 
     ScrollTrigger.refresh();
 
-    return () => {
-      cleanups.forEach((fn) => fn());
-      ctx.revert();
-    };
+    return () => ctx.revert();
   }, []);
 
   return null;
