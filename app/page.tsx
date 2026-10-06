@@ -83,6 +83,14 @@ export default function Home() {
             <strong>iPhone 17 Pro Max</strong>
             <small>From 14,999 MAD</small>
           </div>
+          <div className="source-hero-float source-hero-float-top">
+            <small>CONDITION</small>
+            <strong>Brand new</strong>
+          </div>
+          <div className="source-hero-float source-hero-float-bottom">
+            <small>BUY WITH CONFIDENCE</small>
+            <strong>Warranty shown clearly</strong>
+          </div>
         </a>
       </section>
 
@@ -101,7 +109,8 @@ export default function Home() {
           <p>Large, useful product stories instead of a wall of tiny cards.</p>
         </div>
 
-        <div className="source-latest-rail">
+        <div className="source-latest-rail-wrap">
+          <div className="source-latest-rail">
           {latest.map((item,index)=>(
             <a href={item.href} className={"source-latest-card "+(item.light?"is-light":"")} data-reveal-scale key={item.title}>
               <img src={item.image} alt={item.title} />
@@ -115,6 +124,9 @@ export default function Home() {
               <div className="source-latest-index">0{index+1}</div>
             </a>
           ))}
+          </div>
+          <div className="source-rail-fade source-rail-fade-left"/>
+          <div className="source-rail-fade source-rail-fade-right"/>
         </div>
       </section>
 
@@ -124,7 +136,12 @@ export default function Home() {
           <p>Equivalent information in the same place. No spec-sheet scavenger hunt.</p>
         </div>
 
-        <div className="source-compare-table" data-reveal-scale>
+        <div className="source-compare-shell" data-reveal-scale>
+          <div className="source-compare-topline">
+            <span>3 devices selected</span>
+            <span>Normalized specifications</span>
+          </div>
+          <div className="source-compare-table">
           <div className="source-compare-labels">
             <span>PRODUCT</span><span>CAMERA</span><span>DISPLAY</span><span>CHIP</span><span>PRICE</span>
           </div>
@@ -138,6 +155,7 @@ export default function Home() {
               <ArrowRight size={16}/>
             </a>
           ))}
+          </div>
         </div>
       </section>
 
@@ -179,7 +197,7 @@ export default function Home() {
         </div>
 
         <div className="retail-services-grid">
-          <article data-reveal>
+          <article className="retail-service-featured" data-reveal>
             <div className="retail-service-icon"><BadgeCheck size={23}/></div>
             <span>01</span>
             <h3>Brand-new products</h3>
@@ -224,6 +242,15 @@ export default function Home() {
           <h2>Before you order.</h2>
           <p>Quick answers about new products, delivery, warranty, returns and compatibility.</p>
           <a href="#latest">Browse products <ArrowRight size={15}/></a>
+
+          <div className="retail-faq-support-card">
+            <span>SHOPPING SUPPORT</span>
+            <strong>Need help choosing?</strong>
+            <p>Start with what matters most: camera, battery, display, gaming, work or price.</p>
+            <div>
+              <b>Smartphones</b><b>Tablets</b><b>Wearables</b><b>Audio</b>
+            </div>
+          </div>
         </div>
 
         <div className="retail-faq-list">
