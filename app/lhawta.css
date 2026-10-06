@@ -303,3 +303,21 @@
     padding:24px 14px 0;
   }
 }
+
+
+/* FULL HERO PNG FIT */
+.lhawta-hero-product-png>img{
+  height:112%!important;
+  width:100%!important;
+  top:-4%!important;
+  bottom:auto!important;
+  padding:0!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+}
+@media(max-width:760px){
+  .lhawta-hero-product-png>img{
+    height:105%!important;
+    top:-2%!important;
+  }
+}
