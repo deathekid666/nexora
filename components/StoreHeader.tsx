@@ -33,6 +33,7 @@ const categories=[
   {label:"Gaming",href:"/category/gaming",icon:Gamepad2},
   {label:"Audio",href:"/category/audio",icon:Headphones},
   {label:"Wearables",href:"/category/wearables",icon:Watch},
+  {label:"Informatique",href:"/category/informatique",icon:Monitor},
   {label:"Accessoires",href:"/category/accessoires",icon:ShoppingBag},
 ];
 
