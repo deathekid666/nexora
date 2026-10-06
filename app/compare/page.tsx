@@ -1,3 +1,5 @@
+export const metadata={title:"Comparer les produits | LHAWTA"};
+
 import ComparePageClient from "@/components/ComparePageClient";
 
 export default async function ComparePage({
