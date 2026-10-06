@@ -3,18 +3,21 @@
 import {
   ArrowRight,
   BadgeCheck,
-  BatteryCharging,
-  Box,
+  BadgePercent,
   Cable,
   ChevronDown,
   ChevronRight,
+  Clock3,
   Gamepad2,
   Headphones,
+  Heart,
   Laptop,
   MessageCircle,
+  Monitor,
   RotateCcw,
   SearchCheck,
   ShieldCheck,
+  ShoppingCart,
   Smartphone,
   Sparkles,
   Star,
@@ -28,64 +31,70 @@ import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 import LhawtaLogo from "@/components/LhawtaLogo";
 
-const HERO_PNG="/images/lhawta-iphone-trio.png";
 const APPLE_IMG="https://www.apple.com/newsroom/images/2025/09/apple-unveils-iphone-17-pro-and-iphone-17-pro-max/article/Apple-iPhone-17-Pro-color-lineup-250909_inline.jpg.large_2x.jpg";
 const LAPTOP_IMG="https://images.unsplash.com/photo-1782012505157-aca188bd6921?auto=format&fit=crop&w=1800&q=88";
 const GAMING_IMG="https://images.unsplash.com/photo-1763258986479-0962883e1747?auto=format&fit=crop&w=1800&q=88";
 const TV_IMG="https://images.unsplash.com/photo-1735078254602-b7818942c324?auto=format&fit=crop&w=1800&q=88";
 
 const categories = [
-  { name:"Smartphones", icon:Smartphone },
-  { name:"Tablets", icon:Tablet },
-  { name:"Computers", icon:Laptop },
-  { name:"TV", icon:Tv },
-  { name:"Gaming", icon:Gamepad2 },
-  { name:"Audio", icon:Headphones },
-  { name:"Wearables", icon:Watch },
-  { name:"Accessories", icon:Cable },
+  { name:"Smartphones", icon:Smartphone, sub:"Apple · Samsung · HONOR" },
+  { name:"Tablets", icon:Tablet, sub:"iPad · Galaxy Tab · Pad" },
+  { name:"Computers", icon:Laptop, sub:"Laptops · Desktops" },
+  { name:"TV & Home", icon:Tv, sub:"OLED · QLED · Mini LED" },
+  { name:"Gaming", icon:Gamepad2, sub:"PS5 · Xbox · Nintendo" },
+  { name:"Audio", icon:Headphones, sub:"Headphones · Speakers" },
+  { name:"Wearables", icon:Watch, sub:"Watches · Bands" },
+  { name:"Accessories", icon:Cable, sub:"Cases · Chargers · Cables" },
 ];
 
-const latest = [
+const deals = [
   {
-    eyebrow:"APPLE · NEW",
-    title:"iPhone 17 Pro Max",
-    copy:"Flagship camera, display and performance in one premium device.",
+    brand:"Apple",
+    name:"iPhone 17 Pro Max",
+    image:APPLE_IMG,
     price:"14,999 MAD",
     old:"15,499 MAD",
-    image:APPLE_IMG,
+    save:"Save 500 MAD",
+    rating:"4.9",
+    reviews:"639",
+    badge:"Deal",
     href:"/products/iphone-17-pro-max",
-    tone:"dark",
-    tag:"Bestseller",
   },
   {
-    eyebrow:"COMPUTING",
-    title:"Portable power, properly chosen.",
-    copy:"Compare CPU, GPU, battery and display before choosing your next laptop.",
-    price:"Explore laptops",
-    image:LAPTOP_IMG,
+    brand:"Samsung",
+    name:"Galaxy flagship",
+    image:APPLE_IMG,
+    price:"13,499 MAD",
+    old:"14,499 MAD",
+    save:"Save 1,000 MAD",
+    rating:"4.8",
+    reviews:"999+",
+    badge:"Hot",
     href:"#",
-    tone:"light",
-    tag:"Work & study",
   },
   {
-    eyebrow:"GAMING",
-    title:"Build the setup around play.",
-    copy:"Console, display, audio and latency — considered as one experience.",
-    price:"Explore gaming",
+    brand:"HONOR",
+    name:"Magic flagship",
+    image:APPLE_IMG,
+    price:"10,999 MAD",
+    old:"11,999 MAD",
+    save:"Save 1,000 MAD",
+    rating:"4.7",
+    reviews:"184",
+    badge:"Value",
+    href:"#",
+  },
+  {
+    brand:"Sony",
+    name:"PlayStation 5 Slim",
     image:GAMING_IMG,
+    price:"6,299 MAD",
+    old:"6,799 MAD",
+    save:"Save 500 MAD",
+    rating:"4.9",
+    reviews:"2.1k",
+    badge:"Bestseller",
     href:"#",
-    tone:"dark",
-    tag:"Gaming",
-  },
-  {
-    eyebrow:"TV & HOME",
-    title:"Choose the panel before the size.",
-    copy:"OLED, Mini LED and QLED compared around your room and how you watch.",
-    price:"Explore TV",
-    image:TV_IMG,
-    href:"#",
-    tone:"light",
-    tag:"Home",
   },
 ];
 
@@ -96,129 +105,132 @@ const compareRows = [
 ];
 
 const services = [
-  { icon:BadgeCheck, title:"Brand-new products", copy:"New smartphones, tablets and electronics with product condition shown clearly before purchase." },
-  { icon:ShieldCheck, title:"Warranty clarity", copy:"Warranty type and coverage are visible on the product page before you order." },
-  { icon:Truck, title:"Delivery across Morocco", copy:"Availability, delivery estimate and shipping cost are shown before checkout." },
-  { icon:RotateCcw, title:"Returns & exchanges", copy:"Eligible products follow a clearly displayed return and exchange policy." },
-  { icon:SearchCheck, title:"Buying guidance", copy:"Compare the specifications that actually affect camera, battery, gaming, work and value." },
-  { icon:MessageCircle, title:"Shopping support", copy:"Get help choosing the right phone, tablet or device for your priorities and budget." },
+  { icon:BadgeCheck, title:"Brand-new products", copy:"New smartphones, tablets and electronics with condition shown clearly." },
+  { icon:ShieldCheck, title:"Warranty clarity", copy:"Warranty type and coverage visible before purchase." },
+  { icon:Truck, title:"Delivery across Morocco", copy:"Availability and estimated delivery shown before checkout." },
+  { icon:RotateCcw, title:"Returns & exchanges", copy:"Clear return policy and eligibility before you buy." },
+  { icon:SearchCheck, title:"Buying guidance", copy:"Compare what actually changes camera, battery, gaming and value." },
+  { icon:MessageCircle, title:"Shopping support", copy:"Help choosing the right device for your budget and priorities." },
 ];
 
 export default function Home() {
   return (
-    <main className="store-page lhawta-site">
+    <main className="store-page lhawta-site amazonized">
       <SiteMotion />
       <StoreHeader />
 
-      <section className="lhawta-hero">
-        <div className="lhawta-hero-grid">
-          <div className="lhawta-hero-copy">
-            <span className="lhawta-eyebrow"><Sparkles size={13}/> LHAWTA / MOROCCO</span>
-            <h1>New tech.<br/><em>Clear choices.</em></h1>
-            <p>Brand-new smartphones, tablets and electronics — with the specs, warranty, price and delivery information you need before you buy.</p>
+      <div className="lhawta-offer-strip">
+        <div><Clock3 size={15}/><strong>Today’s tech deals</strong><span>New smartphones, tablets and electronics</span></div>
+        <a href="#deals">Shop deals <ArrowRight size={14}/></a>
+      </div>
 
-            <div className="lhawta-hero-actions">
-              <a href="#latest" className="lhawta-btn-primary">Shop new arrivals <ArrowRight size={16}/></a>
-              <a href="#compare" className="lhawta-btn-ghost">Compare flagships <ChevronRight size={15}/></a>
-            </div>
+      <section className="commerce-hero">
+        <div className="commerce-hero-copy">
+          <span className="lhawta-eyebrow"><Sparkles size={13}/> LHAWTA / MOROCCO</span>
+          <h1>New tech.<br/><em>Better deals.</em></h1>
+          <p>Brand-new smartphones, tablets and electronics with clear prices, warranty and delivery before checkout.</p>
 
-            <div className="lhawta-hero-proof">
-              <span><BadgeCheck size={15}/><b>Brand new</b></span>
-              <span><ShieldCheck size={15}/><b>Warranty</b></span>
-              <span><Truck size={15}/><b>Morocco delivery</b></span>
-            </div>
+          <div className="commerce-price-block">
+            <span>Deal of the week</span>
+            <div><strong>14,999 MAD</strong><del>15,499 MAD</del></div>
+            <b>Save 500 MAD</b>
           </div>
 
-          <a href="/products/iphone-17-pro-max" className="lhawta-hero-product lhawta-hero-product-png">
-            <img src={HERO_PNG} alt="iPhone 17 Pro Max lineup" />
-            <div className="lhawta-hero-overlay"/>
-            <div className="lhawta-hero-product-top">
-              <span>NEW / FLAGSHIP</span>
-              <b>Brand new</b>
-            </div>
-            <div className="lhawta-hero-product-bottom">
-              <div><small>APPLE</small><strong>iPhone 17 Pro Max</strong></div>
-              <div><small>FROM</small><strong>14,999 MAD</strong></div>
-            </div>
-            <div className="lhawta-blue-line"/>
-          </a>
+          <div className="lhawta-hero-actions">
+            <a href="/products/iphone-17-pro-max" className="lhawta-btn-primary">Shop iPhone 17 Pro Max <ShoppingCart size={16}/></a>
+            <a href="#compare" className="lhawta-btn-ghost">Compare flagships <ChevronRight size={15}/></a>
+          </div>
+
+          <div className="commerce-trust-row">
+            <span><BadgeCheck size={15}/>Brand new</span>
+            <span><ShieldCheck size={15}/>Warranty</span>
+            <span><Truck size={15}/>Morocco delivery</span>
+          </div>
         </div>
 
-        <div className="lhawta-category-dock">
-          {categories.map(({name,icon:Icon},index)=>(
-            <a href="#latest" key={name}>
-              <div><Icon size={23}/></div>
-              <strong>{name}</strong>
-              <span>0{index+1}</span>
-            </a>
+        <a href="/products/iphone-17-pro-max" className="commerce-hero-media">
+          <img src={APPLE_IMG} alt="iPhone 17 Pro Max lineup" />
+          <div className="commerce-hero-shade"/>
+          <div className="commerce-hero-top">
+            <span>NEW / FLAGSHIP</span>
+            <b>Brand new</b>
+          </div>
+          <div className="commerce-hero-bottom">
+            <div><small>APPLE</small><strong>iPhone 17 Pro Max</strong></div>
+            <div><small>PRICE</small><strong>14,999 MAD</strong></div>
+          </div>
+        </a>
+      </section>
+
+      <section className="commerce-categories">
+        {categories.map(({name,icon:Icon,sub})=>(
+          <a href="#deals" key={name}>
+            <div className="commerce-category-icon"><Icon size={24}/></div>
+            <strong>{name}</strong>
+            <span>{sub}</span>
+          </a>
+        ))}
+      </section>
+
+      <section className="deal-section" id="deals">
+        <div className="commerce-section-head">
+          <div>
+            <span>TOP DEALS</span>
+            <h2>Popular right now.</h2>
+          </div>
+          <a href="#">See all deals <ArrowRight size={15}/></a>
+        </div>
+
+        <div className="deal-grid">
+          {deals.map((item)=>(
+            <article className="deal-card" key={item.name}>
+              <div className="deal-badge">{item.badge}</div>
+              <button className="deal-heart" aria-label="Save"><Heart size={18}/></button>
+              <a href={item.href} className="deal-media"><img src={item.image} alt={item.name}/></a>
+              <div className="deal-body">
+                <small>{item.brand}</small>
+                <a href={item.href} className="deal-name">{item.name}</a>
+                <div className="deal-rating"><Star size={13} fill="currentColor"/><strong>{item.rating}</strong><span>{item.reviews}</span></div>
+                <div className="deal-price"><strong>{item.price}</strong><del>{item.old}</del></div>
+                <div className="deal-save">{item.save}</div>
+                <div className="deal-delivery"><Truck size={14}/><span>Delivery available</span></div>
+                <div className="deal-actions">
+                  <button><ShoppingCart size={16}/> Add to cart</button>
+                  <a href={item.href}>View</a>
+                </div>
+              </div>
+            </article>
           ))}
         </div>
       </section>
 
-      <section className="lhawta-latest-section" id="latest">
-        <div className="lhawta-section-heading">
+      <section className="retail-story-grid">
+        <article className="retail-story large">
+          <img src={LAPTOP_IMG} alt="Laptop setup"/>
+          <div className="retail-story-shade"/>
           <div>
-            <span>NEW ARRIVALS</span>
-            <h2>Start with what’s worth seeing.</h2>
+            <span>COMPUTING</span>
+            <h3>Work. Study. Create.</h3>
+            <p>Compare processor, RAM, battery and display before choosing.</p>
+            <a href="#deals">Shop computers <ArrowRight size={14}/></a>
           </div>
-          <p>Big product stories, real prices and clear reasons to choose — not an endless wall of tiny cards.</p>
-        </div>
-
-        <div className="lhawta-horizontal-shell">
-          <div className="lhawta-horizontal-track">
-            {latest.map((item,index)=>(
-              <a href={item.href} className={"lhawta-feature-card tone-"+item.tone} key={item.title}>
-                <img src={item.image} alt={item.title}/>
-                <div className="lhawta-feature-shade"/>
-                <div className="lhawta-feature-top">
-                  <span>{item.eyebrow}</span>
-                  <b>{item.tag}</b>
-                </div>
-                <div className="lhawta-feature-copy">
-                  <span>0{index+1}</span>
-                  <h3>{item.title}</h3>
-                  <p>{item.copy}</p>
-                  <div className="lhawta-feature-price">
-                    <strong>{item.price}</strong>
-                    {item.old && <del>{item.old}</del>}
-                    <ArrowRight size={16}/>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="lhawta-merch-section">
-        <article className="lhawta-merch-main">
-          <img src={APPLE_IMG} alt="Premium smartphone lineup"/>
-          <div className="lhawta-merch-overlay"/>
-          <div className="lhawta-merch-copy">
-            <span>SMARTPHONE EDIT</span>
-            <h2>Buy the phone.<br/>Understand the reason.</h2>
-            <p>Camera, battery, display, performance and price — compared in the same language.</p>
-            <a href="#compare">Compare smartphones <ArrowRight size={15}/></a>
-          </div>
-          <div className="lhawta-merch-badge"><BatteryCharging size={18}/><span><small>SHOP BY PRIORITY</small><strong>Battery · Camera · Gaming</strong></span></div>
         </article>
-
-        <div className="lhawta-merch-side">
-          <article className="lhawta-mini-story lhawta-mini-blue">
-            <Laptop size={86}/>
-            <div><span>COMPUTING</span><h3>Work. Study. Create.</h3><p>Find the machine that fits the workload.</p><a href="#latest">Shop computing <ArrowRight size={14}/></a></div>
-          </article>
-          <article className="lhawta-mini-story lhawta-mini-black">
-            <Gamepad2 size={92}/>
-            <div><span>GAMING</span><h3>Build for the experience.</h3><p>Refresh, latency, performance and audio.</p><a href="#latest">Shop gaming <ArrowRight size={14}/></a></div>
-          </article>
-        </div>
+        <article className="retail-story">
+          <img src={GAMING_IMG} alt="Gaming setup"/>
+          <div className="retail-story-shade"/>
+          <div><span>GAMING</span><h3>Build the setup around play.</h3><a href="#deals">Shop gaming <ArrowRight size={14}/></a></div>
+        </article>
+        <article className="retail-story">
+          <img src={TV_IMG} alt="Modern television"/>
+          <div className="retail-story-shade"/>
+          <div><span>TV & HOME</span><h3>Choose the panel before the size.</h3><a href="#deals">Shop TV <ArrowRight size={14}/></a></div>
+        </article>
       </section>
 
-      <section className="lhawta-compare-section" id="compare">
+      <section className="lhawta-compare-section commerce-compare" id="compare">
         <div className="lhawta-compare-heading">
-          <div><span>COMPARE / SMARTPHONES</span><h2>Difference,<br/><em>without the noise.</em></h2></div>
-          <p>Equivalent specifications side by side, with useful labels instead of a meaningless overall score.</p>
+          <div><span>COMPARE / SMARTPHONES</span><h2>Choose with facts,<br/><em>not marketing.</em></h2></div>
+          <p>Equivalent specifications side by side, with useful labels that help you decide faster.</p>
         </div>
 
         <div className="lhawta-compare-panel">
@@ -244,11 +256,10 @@ export default function Home() {
       </section>
 
       <section className="lhawta-services-section" id="services">
-        <div className="lhawta-section-heading">
-          <div><span>SERVICES</span><h2>Everything around buying new tech.</h2></div>
-          <p>LHAWTA is designed as a new-electronics store, not a classifieds marketplace. Product condition, warranty and buying support are part of the experience.</p>
+        <div className="commerce-section-head">
+          <div><span>WHY LHAWTA</span><h2>Everything around buying new tech.</h2></div>
+          <p>We make product condition, warranty, delivery and buying support obvious before you pay.</p>
         </div>
-
         <div className="lhawta-services-grid">
           {services.map(({icon:Icon,title,copy},index)=>(
             <article className={index===0?"featured":""} key={title}>
@@ -266,12 +277,11 @@ export default function Home() {
         <div className="lhawta-faq-intro">
           <span>FAQ / BEFORE YOU ORDER</span>
           <h2>Questions should be easy.</h2>
-          <p>Quick answers about new products, delivery, warranty, returns and compatibility.</p>
-
+          <p>Quick answers about products, warranty, delivery, returns and compatibility.</p>
           <div className="lhawta-help-card">
             <LhawtaLogo compact />
             <div><small>NEED HELP CHOOSING?</small><strong>Tell us what matters.</strong></div>
-            <p>Camera, battery, gaming, work, display or budget — start there.</p>
+            <p>Camera, battery, gaming, display or budget — start there.</p>
             <a href="#compare">Compare products <ArrowRight size={14}/></a>
           </div>
         </div>
@@ -279,7 +289,7 @@ export default function Home() {
         <div className="lhawta-faq-list">
           <details open>
             <summary><span>Are LHAWTA products new?</span><ChevronDown size={18}/></summary>
-            <p>Yes. LHAWTA is positioned around brand-new smartphones, tablets and consumer electronics. Product condition is shown clearly on the product page.</p>
+            <p>Yes. LHAWTA is positioned around brand-new smartphones, tablets and consumer electronics. Product condition is shown clearly on each product page.</p>
           </details>
           <details>
             <summary><span>What products do you sell?</span><ChevronDown size={18}/></summary>
@@ -295,11 +305,7 @@ export default function Home() {
           </details>
           <details>
             <summary><span>Can I return or exchange a product?</span><ChevronDown size={18}/></summary>
-            <p>Eligible products can be returned or exchanged under the displayed return policy, including the applicable condition requirements and return window.</p>
-          </details>
-          <details>
-            <summary><span>How do I choose between similar phones?</span><ChevronDown size={18}/></summary>
-            <p>Use LHAWTA comparison to line up equivalent camera, display, battery, processor, storage, connectivity and price information, then choose around your priorities.</p>
+            <p>Eligible products can be returned or exchanged under the displayed return policy.</p>
           </details>
         </div>
       </section>
@@ -320,21 +326,18 @@ export default function Home() {
         <footer className="lhawta-footer">
           <div className="lhawta-footer-brand">
             <LhawtaLogo light />
-            <p>New tech. Clear choices.</p>
+            <p>New tech. Better deals.</p>
             <span>Morocco · MAD</span>
           </div>
-
           <div className="lhawta-footer-links">
-            <div><strong>SHOP</strong><a href="#latest">Smartphones</a><a href="#latest">Tablets</a><a href="#latest">Computers</a><a href="#latest">Gaming</a></div>
+            <div><strong>SHOP</strong><a href="#deals">Smartphones</a><a href="#deals">Tablets</a><a href="#deals">Computers</a><a href="#deals">Gaming</a></div>
             <div><strong>DISCOVER</strong><a href="#compare">Compare</a><a href="#services">Services</a><a href="#">Buying guides</a><a href="#faq">FAQ</a></div>
             <div><strong>SUPPORT</strong><a href="#services">Delivery</a><a href="#services">Warranty</a><a href="#services">Returns</a><a href="#">Contact</a></div>
           </div>
-
           <div className="lhawta-footer-statement">
-            <span>NEW TECH / CLEAR CHOICES</span>
+            <span>NEW TECH / BETTER DEALS</span>
             <strong>Smartphones. Tablets. Electronics.</strong>
           </div>
-
           <div className="lhawta-footer-bottom"><span>© 2026 LHAWTA</span><div><a href="#">Privacy</a><a href="#">Terms</a><span>Morocco · MAD</span></div></div>
         </footer>
       </section>
