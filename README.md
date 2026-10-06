@@ -33,3 +33,5 @@ npm run dev
 Then open http://localhost:3000.
 
 Preview branch: full LHAWTA product detail pages and linked catalog cards.
+
+Preview refresh: cart + compare + WhatsApp COD ready for Vercel preview.
