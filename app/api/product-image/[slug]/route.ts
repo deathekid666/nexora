@@ -110,7 +110,7 @@ async function fetchImage(url: string) {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
@@ -142,6 +142,14 @@ export async function GET(
   }
 
   candidates.push(...product.fallbacks);
+
+  if (request.nextUrl.searchParams.get("debug") === "1") {
+    return NextResponse.json({
+      slug,
+      page: product.page,
+      candidates,
+    });
+  }
 
   for (const candidate of candidates) {
     try {
