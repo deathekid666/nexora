@@ -114,6 +114,7 @@ export default function ComparePageClient({initialSlugs}:{initialSlugs:string[]}
           product={left}
           options={sameCategoryProducts.filter(p=>p.slug!==rightSlug)}
           onChange={changeLeft}
+          hrefForProduct={slug=>rightSlug?"/compare?products="+slug+","+rightSlug:"/compare?products="+slug}
           title="Produit 1"
           prompt="Choisir le premier produit"
           lockedCategory={category}
@@ -125,6 +126,7 @@ export default function ComparePageClient({initialSlugs}:{initialSlugs:string[]}
           product={right}
           options={sameCategoryProducts.filter(p=>p.slug!==leftSlug)}
           onChange={changeRight}
+          hrefForProduct={slug=>"/compare?products="+leftSlug+","+slug}
           onClear={right?()=>setRightSlug(""):undefined}
           title="Comparer avec"
           prompt="Rechercher un autre produit"
@@ -214,6 +216,7 @@ function CompareProductPicker({
   product,
   options,
   onChange,
+  hrefForProduct,
   onClear,
   title,
   prompt,
@@ -223,6 +226,7 @@ function CompareProductPicker({
   product?:StoreProduct;
   options:StoreProduct[];
   onChange:(slug:string)=>void;
+  hrefForProduct:(slug:string)=>string;
   onClear?:()=>void;
   title:string;
   prompt:string;
@@ -295,10 +299,15 @@ function CompareProductPicker({
 
           <div className="compare-search-results">
             {filtered.length ? filtered.map(p=>(
-              <button key={p.slug} onClick={()=>pick(p.slug)}>
+              <a
+                key={p.slug}
+                href={hrefForProduct(p.slug)}
+                onClick={()=>{setQuery("");setOpen(false);}}
+                className="compare-result-link"
+              >
                 <ProductVisual src={p.gallery[0]} alt={p.name}/>
                 <span><small>{p.brand}</small><b>{p.name}</b><em>{p.price}</em></span>
-              </button>
+              </a>
             )) : (
               <div className="compare-no-results">Aucun produit correspondant.</div>
             )}
