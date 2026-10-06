@@ -1957,3 +1957,47 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
   .admin-order-items>div{grid-template-columns:1fr auto}
   .admin-order-items strong{grid-column:2/3}
 }
+
+
+/* favorites */
+.favorite-toggle{
+  transition:transform .16s ease,background .16s ease,color .16s ease,border-color .16s ease;
+}
+.favorite-toggle:hover{transform:translateY(-1px)}
+.favorite-toggle.is-favorite{
+  color:#e31b36!important;
+  border-color:#efc6cd!important;
+  background:#fff6f7!important;
+}
+.exact-favorites{
+  position:relative;
+}
+.exact-favorites em{
+  position:absolute;
+  top:-7px;
+  left:15px;
+  min-width:18px;
+  height:18px;
+  padding:0 4px;
+  border-radius:999px;
+  background:#e31b36;
+  color:#fff;
+  font-style:normal;
+  font-size:8px;
+  font-weight:900;
+  display:grid;
+  place-items:center;
+}
+.exact-favorites span{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.exact-favorites small{
+  color:#7a8798;
+  font-size:7px;
+}
+.exact-favorites>svg{
+  transition:color .16s ease,fill .16s ease,transform .16s ease;
+}
+.exact-favorites:hover>svg{transform:scale(1.08)}
