@@ -1,0 +1,21 @@
+name: Preview Build
+
+on:
+  push:
+    branches:
+      - preview/product-detail-pages
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: npm install
+      - name: Build preview
+        run: npm run build
