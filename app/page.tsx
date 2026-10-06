@@ -21,12 +21,12 @@ import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 
 const MOROCCO_BG="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=2400&q=92";
-const S26_IMG="https://images.samsung.com/n_africa/smartphones/galaxy-s26-ultra/buy/kv_animated_PC_noText.jpg?imbypass=true";
-const XIAOMI17T_IMG="https://i02.appmifile.com/mi-com-product/fly-birds/xiaomi-17t-pro/pc/screen01-bg.png";
-const HONOR_IMG="https://www-file.honor.com/content/dam/honor/common/product-list/honor-600-series/honor-600/green.png";
-const REDMI_IMG="https://i02.appmifile.com/mi-com-product/fly-birds/redmi-note-15-pro-plus-5g/pc/1e62d6973df9124095c38d8ed31b142a.jpg";
-const TAB_IMG="https://images.samsung.com/is/image/samsung/p6pim/n_africa/feature/166494293/n_africa-feature--nbsp-548796580?imbypass=true";
-const PS5_IMG="https://gmedia.playstation.com/is/image/SIEPDC/ps5-slim-edition-left-image-block-01-en-24jun24";
+const S26_IMG="/api/product-image/galaxy-s26-ultra";
+const XIAOMI17T_IMG="/api/product-image/xiaomi-17t-pro";
+const HONOR_IMG="/api/product-image/honor-600";
+const REDMI_IMG="/api/product-image/redmi-note-15-pro-plus-5g";
+const TAB_IMG="/api/product-image/galaxy-tab-s11-ultra";
+const PS5_IMG="/api/product-image/playstation-5";
 
 const products=[
   {badge:"Nouveau",tone:"blue",brand:"SAMSUNG",name:"Galaxy S26 Ultra",img:S26_IMG,specs:[["display","6.9″ Display"],["camera","200 MP main camera"],["battery","5000 mAh battery"]],price:"13 999 DH"},
