@@ -30,12 +30,12 @@ const TAB_IMG="/api/product-image/galaxy-tab-s11-ultra";
 const PS5_IMG="/api/product-image/playstation-5";
 
 const products=[
-  {badge:"Nouveau",tone:"blue",brand:"SAMSUNG",name:"Galaxy S26 Ultra",img:S26_IMG,specs:[["display","6.9″ Display"],["camera","200 MP main camera"],["battery","5000 mAh battery"]],price:"13 999 DH"},
-  {badge:"Top vente",tone:"red",brand:"XIAOMI",name:"Xiaomi 17T Pro",img:XIAOMI17T_IMG,specs:[["display","6.83″ 144 Hz AMOLED"],["chip","MediaTek Dimensity 9500"],["battery","7000 mAh"]],price:"8 999 DH"},
-  {badge:"Nouveau",tone:"blue",brand:"HONOR",name:"HONOR 600",img:HONOR_IMG,specs:[["camera","200 MP camera"],["display","6.57″ display"],["battery","7000 mAh battery"]],price:"7 999 DH"},
-  {badge:"Disponible",tone:"green",brand:"REDMI",name:"Note 15 Pro+ 5G",img:REDMI_IMG,specs:[["camera","200 MP camera"],["chip","Snapdragon 7s Gen 4"],["battery","6500 mAh"]],price:"5 999 DH"},
-  {badge:"Nouveau",tone:"blue",brand:"SAMSUNG",name:"Galaxy Tab S11 Ultra",img:TAB_IMG,specs:[["display","14.6″ Dynamic AMOLED 2X"],["pen","S Pen"],["memory","12 GB + 256 GB"]],price:"11 999 DH"},
-  {badge:"Top vente",tone:"red",brand:"SONY",name:"PlayStation 5",img:PS5_IMG,specs:[["storage","1 TB SSD"],["controller","DualSense"],["gaming","4K gaming"]],price:"6 999 DH"},
+  {slug:"galaxy-s26-ultra",badge:"Nouveau",tone:"blue",brand:"SAMSUNG",name:"Galaxy S26 Ultra",img:S26_IMG,specs:[["display","6.9″ Display"],["camera","200 MP main camera"],["battery","5000 mAh battery"]],price:"13 999 DH"},
+  {slug:"xiaomi-17t-pro",badge:"Top vente",tone:"red",brand:"XIAOMI",name:"Xiaomi 17T Pro",img:XIAOMI17T_IMG,specs:[["display","6.83″ 144 Hz AMOLED"],["chip","MediaTek Dimensity 9500"],["battery","7000 mAh"]],price:"8 999 DH"},
+  {slug:"honor-600",badge:"Nouveau",tone:"blue",brand:"HONOR",name:"HONOR 600",img:HONOR_IMG,specs:[["camera","200 MP camera"],["display","6.57″ display"],["battery","7000 mAh battery"]],price:"7 999 DH"},
+  {slug:"redmi-note-15-pro-plus-5g",badge:"Disponible",tone:"green",brand:"REDMI",name:"Note 15 Pro+ 5G",img:REDMI_IMG,specs:[["camera","200 MP camera"],["chip","Snapdragon 7s Gen 4"],["battery","6500 mAh"]],price:"5 999 DH"},
+  {slug:"galaxy-tab-s11-ultra",badge:"Nouveau",tone:"blue",brand:"SAMSUNG",name:"Galaxy Tab S11 Ultra",img:TAB_IMG,specs:[["display","14.6″ Dynamic AMOLED 2X"],["pen","S Pen"],["memory","12 GB + 256 GB"]],price:"11 999 DH"},
+  {slug:"playstation-5",badge:"Top vente",tone:"red",brand:"SONY",name:"PlayStation 5",img:PS5_IMG,specs:[["storage","1 TB SSD"],["controller","DualSense"],["gaming","4K gaming"]],price:"6 999 DH"},
 ];
 
 function SpecIcon({type}:{type:string}){
@@ -116,7 +116,7 @@ export default function Home(){
                 </ul>
                 <strong className="exact-price">{p.price}</strong>
                 <div className="exact-card-actions">
-                  <button><ShoppingCart size={14}/>Voir détails</button>
+                  <a href={`/products/${p.slug}`}><ShoppingCart size={14}/>Voir le produit</a>
                   <button><BarChart3 size={14}/>Comparer</button>
                 </div>
               </div>
