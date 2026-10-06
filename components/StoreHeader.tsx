@@ -156,7 +156,7 @@ export default function StoreHeader(){
             ))}
           </div>
           <div className="exact-nav-special">
-            <a href="/#deals" className="promo"><Tag size={17}/>Promotions</a>
+            <a href="/promotions" className="promo"><Tag size={17}/>Promotions</a>
             <a href="/#products" className="new"><Sparkles size={17}/>Nouveautés</a>
           </div>
         </div>
