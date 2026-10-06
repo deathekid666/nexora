@@ -54,6 +54,41 @@ export default function SiteMotion(){
         gsap.to(".line-xiaomi",{y:6,ease:"none",scrollTrigger:{trigger:".exact-hero",start:"top top",end:"bottom top",scrub:1.05}});
         gsap.to(".line-tab",{y:-7,ease:"none",scrollTrigger:{trigger:".exact-hero",start:"top top",end:"bottom top",scrub:1.1}});
         gsap.to(".line-ps5",{y:7,ease:"none",scrollTrigger:{trigger:".exact-hero",start:"top top",end:"bottom top",scrub:1.15}});
+
+        const hero=document.querySelector<HTMLElement>(".exact-hero");
+        const lineup=document.querySelector<HTMLElement>(".exact-product-lineup");
+        if(!hero||!lineup) return;
+
+        const moveX=gsap.quickTo(lineup,"x",{duration:.55,ease:"power3.out"});
+        const moveY=gsap.quickTo(lineup,"y",{duration:.55,ease:"power3.out"});
+        const tiltX=gsap.quickTo(lineup,"rotationX",{duration:.65,ease:"power3.out"});
+        const tiltY=gsap.quickTo(lineup,"rotationY",{duration:.65,ease:"power3.out"});
+
+        const onPointerMove=(event:PointerEvent)=>{
+          const rect=hero.getBoundingClientRect();
+          const nx=((event.clientX-rect.left)/rect.width-.5)*2;
+          const ny=((event.clientY-rect.top)/rect.height-.5)*2;
+          moveX(nx*5);
+          moveY(ny*2.5);
+          tiltY(nx*1.5);
+          tiltX(-ny*.75);
+        };
+
+        const resetDepth=()=>{
+          moveX(0);
+          moveY(0);
+          tiltX(0);
+          tiltY(0);
+        };
+
+        hero.addEventListener("pointermove",onPointerMove);
+        hero.addEventListener("pointerleave",resetDepth);
+
+        return()=>{
+          hero.removeEventListener("pointermove",onPointerMove);
+          hero.removeEventListener("pointerleave",resetDepth);
+          resetDepth();
+        };
       });
 
       const progress=document.querySelector<HTMLElement>(".site-progress>span");
