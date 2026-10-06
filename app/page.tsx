@@ -17,6 +17,7 @@ import {
   Tag,
   Truck,
 } from "lucide-react";
+import { useRef } from "react";
 import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 import { HeroProductVisual, ProductVisual } from "@/components/ProductVisual";
@@ -54,6 +55,13 @@ function SpecIcon({type}:{type:string}){
 }
 
 export default function Home(){
+  const productTrackRef=useRef<HTMLDivElement>(null);
+  const scrollProducts=(direction:-1|1)=>{
+    const track=productTrackRef.current;
+    if(!track) return;
+    track.scrollBy({left:direction*Math.max(280,track.clientWidth*.72),behavior:"smooth"});
+  };
+
   return (
     <main className="exact-page">
       <SiteMotion/>
@@ -69,7 +77,7 @@ export default function Home(){
             <h2>Octobre 2026</h2>
             <p>Les derniers smartphones, tablettes, consoles et accessoires sont disponibles chez LHAWTA. Comparez les specs, les prix et profitez de la livraison partout au Maroc.</p>
             <div className="exact-hero-buttons">
-              <a href="#products">Découvrir les nouveautés <ArrowRight size={16}/></a>
+              <a href="/new-arrivals">Découvrir les nouveautés <ArrowRight size={16}/></a>
               <a href="/products">Voir tous les produits</a>
             </div>
           </div>
@@ -105,10 +113,10 @@ export default function Home(){
       <section className="exact-shell exact-products" id="products">
         <div className="exact-products-head">
           <div><h2>Nos dernières nouveautés</h2><i/></div>
-          <div className="exact-slider-controls"><a href="/products">Voir tout <ArrowRight size={14}/></a><button><ChevronLeft size={15}/></button><button><ChevronRight size={15}/></button></div>
+          <div className="exact-slider-controls"><a href="/new-arrivals">Voir tout <ArrowRight size={14}/></a><button type="button" aria-label="Produits précédents" onClick={()=>scrollProducts(-1)}><ChevronLeft size={15}/></button><button type="button" aria-label="Produits suivants" onClick={()=>scrollProducts(1)}><ChevronRight size={15}/></button></div>
         </div>
 
-        <div className="exact-product-grid">
+        <div className="exact-product-grid" ref={productTrackRef}>
           {products.map((p)=>(
             <article className="exact-card" key={p.name}>
               <span className={"exact-badge "+p.tone}>{p.badge}</span>
