@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   ChevronDown,
-  Heart,
   ShoppingCart,
   SlidersHorizontal,
   Star,
@@ -11,6 +10,7 @@ import {
 import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 import { ProductVisual } from "@/components/ProductVisual";
+import FavoriteButton from "@/components/FavoriteButton";
 
 const IMAGES={
   samsung:"/api/product-image/galaxy-s26-ultra",
@@ -203,7 +203,7 @@ export default async function CategoryPage({params}:{params:Promise<{slug:string
             return (
             <article className="category-product-card" key={product.name}>
               {product.badge&&<span className="category-badge">{product.badge}</span>}
-              <button className="category-wish"><Heart size={18}/></button>
+              <FavoriteButton className="category-wish" slug={detailSlug||("catalog:"+slug+":"+product.brand+":"+product.name)} size={18} label={"Ajouter "+product.name+" aux favoris"}/>
               <a href={detailHref} className="category-product-media"><ProductVisual src={product.image} alt={product.name}/></a>
               <div className="category-product-body">
                 <small>{product.brand}</small>
