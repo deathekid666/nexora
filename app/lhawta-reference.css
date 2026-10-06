@@ -77,14 +77,65 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 .exact-hero-buttons{display:flex;gap:10px;margin-top:17px}
 .exact-hero-buttons a{height:44px;padding:0 24px;border-radius:8px;display:inline-flex;align-items:center;gap:8px;font-size:9px;font-weight:850;border:1px solid rgba(255,255,255,.55);color:#fff!important}
 .exact-hero-buttons a:first-child{background:var(--blue);border-color:var(--blue)}
-.exact-product-lineup{position:absolute;z-index:7;left:33.2%;right:1.4%;top:0;bottom:0;pointer-events:none}
-.exact-product-lineup img{position:absolute;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 17px 16px rgba(10,28,52,.25));transform-origin:50% 100%}
-.line-s26{left:1.5%;bottom:-1.5%;width:18.5%;height:89%;z-index:5}
-.line-xiaomi{left:14.5%;bottom:-1%;width:15.5%;height:86%;z-index:6}
-.line-honor{left:25.5%;bottom:-.5%;width:14.4%;height:82%;z-index:7}
-.line-redmi{left:36.5%;bottom:-1%;width:14.8%;height:80%;z-index:8}
-.line-tab{left:50%;bottom:-1.5%;width:31%;height:71%;z-index:3}
-.line-ps5{right:-.4%;bottom:-1.5%;width:17.8%;height:95%;z-index:9}
+.exact-product-lineup{
+  position:absolute;
+  z-index:7;
+  left:33.2%;
+  right:1.4%;
+  top:0;
+  bottom:0;
+  pointer-events:none;
+  perspective:1100px;
+  transform-style:preserve-3d;
+  transform-origin:60% 58%;
+  will-change:transform;
+}
+.exact-product-lineup:before{
+  content:"";
+  position:absolute;
+  left:5%;
+  right:3%;
+  bottom:-4px;
+  height:22%;
+  z-index:0;
+  border-radius:50%;
+  background:
+    radial-gradient(ellipse at center,rgba(4,20,42,.44) 0%,rgba(5,24,48,.25) 32%,rgba(8,36,69,.08) 62%,transparent 76%);
+  filter:blur(8px);
+  transform:perspective(700px) rotateX(67deg) translateZ(-28px);
+  opacity:.9;
+}
+.exact-product-lineup:after{
+  content:"";
+  position:absolute;
+  left:9%;
+  right:6%;
+  bottom:0;
+  height:18%;
+  z-index:1;
+  border-radius:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,0));
+  filter:blur(5px);
+  transform:perspective(760px) rotateX(72deg) translateZ(-18px);
+  opacity:.72;
+}
+.exact-product-lineup img{
+  position:absolute;
+  object-fit:contain;
+  object-position:center bottom;
+  transform-origin:50% 100%;
+  backface-visibility:hidden;
+  will-change:transform,filter;
+  filter:
+    drop-shadow(0 23px 18px rgba(5,20,43,.28))
+    drop-shadow(0 7px 5px rgba(9,34,68,.18));
+}
+.line-s26{left:1.5%;bottom:-1.5%;width:18.5%;height:89%;z-index:5;transform:translateZ(14px) rotateY(5deg) rotateX(-1deg)}
+.line-xiaomi{left:14.5%;bottom:-1%;width:15.5%;height:86%;z-index:6;transform:translateZ(34px) rotateY(-5deg) rotateX(-1deg)}
+.line-honor{left:25.5%;bottom:-.5%;width:14.4%;height:82%;z-index:7;transform:translateZ(48px) rotateY(4deg) rotateX(-1deg)}
+.line-redmi{left:36.5%;bottom:-1%;width:14.8%;height:80%;z-index:8;transform:translateZ(62px) rotateY(-4deg) rotateX(-1deg)}
+.line-tab{left:50%;bottom:-1.5%;width:31%;height:71%;z-index:3;transform:translateZ(-14px) rotateY(-2deg) rotateX(-1deg);filter:drop-shadow(0 25px 20px rgba(5,20,43,.25)) drop-shadow(0 8px 6px rgba(9,34,68,.15))}
+.line-ps5{right:-.4%;bottom:-1.5%;width:17.8%;height:95%;z-index:9;transform:translateZ(72px) rotateY(-7deg) rotateX(-1deg);filter:drop-shadow(0 28px 20px rgba(5,20,43,.34)) drop-shadow(0 9px 7px rgba(9,34,68,.18))}
 .exact-hero-script{position:absolute;z-index:10;right:22.2%;top:21px;color:#112b52;font-family:"Segoe Script","Brush Script MT",cursive;font-size:20px;line-height:1.04;transform:rotate(-7deg);text-align:center}
 .exact-hero-script b{font-weight:600}
 .exact-location-badge{position:absolute;z-index:14;right:12px;bottom:10px;height:58px;padding:0 14px;border-radius:20px;background:#123e73;color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 10px 22px rgba(5,32,67,.2)}
