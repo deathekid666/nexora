@@ -35,6 +35,8 @@ export default function CartPageClient(){
     note:"",
   });
   const [error,setError]=useState("");
+  const [submitting,setSubmitting]=useState(false);
+  const [createdOrder,setCreatedOrder]=useState<string>("");
 
   useEffect(()=>setItems(readCart()),[]);
 
@@ -55,9 +57,10 @@ export default function CartPageClient(){
     update(items.filter((_,i)=>i!==index));
   };
 
-  const orderOnWhatsApp=(event:FormEvent)=>{
+  const orderOnWhatsApp=async(event:FormEvent)=>{
     event.preventDefault();
     setError("");
+    setCreatedOrder("");
 
     if(!items.length){
       setError("Votre panier est vide.");
@@ -74,31 +77,76 @@ export default function CartPageClient(){
       return;
     }
 
-    const lines=[
-      "Bonjour LHAWTA, je souhaite confirmer cette commande en paiement à la livraison :",
-      "",
-      ...items.flatMap((item,index)=>[
-        `${index+1}. ${item.brand} ${item.name}`,
-        `   Configuration : ${item.variant}`,
-        `   Couleur : ${item.color}`,
-        `   Quantité : ${item.qty}`,
-        `   Prix : ${item.price}`,
-      ]),
-      "",
-      `Total : ${formatDh(total)}`,
-      "",
-      "Informations client :",
-      `Nom : ${customer.name.trim()}`,
-      `Téléphone : ${customer.phone.trim()}`,
-      `Ville : ${customer.city.trim()}`,
-      `Adresse : ${customer.address.trim()}`,
-      customer.note.trim()?`Note : ${customer.note.trim()}`:"",
-      "",
-      "Mode de paiement : Paiement à la livraison",
-    ].filter(Boolean);
+    setSubmitting(true);
+    const whatsappWindow=window.open("about:blank","_blank");
 
-    const url=`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join("\n"))}`;
-    window.open(url,"_blank","noopener,noreferrer");
+    try{
+      const response=await fetch("/api/orders",{
+        method:"POST",
+        headers:{"content-type":"application/json"},
+        body:JSON.stringify({
+          customer,
+          items:items.map(item=>({
+            slug:item.slug,
+            variant:item.variant,
+            color:item.color,
+            qty:item.qty,
+          })),
+        }),
+      });
+
+      const payload=await response.json().catch(()=>({}));
+      if(!response.ok||!payload?.order){
+        if(whatsappWindow) whatsappWindow.close();
+        if(payload?.error==="DATABASE_NOT_CONFIGURED"){
+          setError("La base de commandes n’est pas encore connectée à ce preview.");
+        }else{
+          setError(payload?.message||"Impossible d’enregistrer la commande.");
+        }
+        return;
+      }
+
+      const order=payload.order;
+      const lines=[
+        "Bonjour LHAWTA, je souhaite confirmer cette commande en paiement à la livraison :",
+        "",
+        "Commande : "+order.orderNumber,
+        "",
+        ...items.flatMap((item,index)=>[
+          (index+1)+". "+item.brand+" "+item.name,
+          "   Configuration : "+item.variant,
+          "   Couleur : "+item.color,
+          "   Quantité : "+item.qty,
+          "   Prix : "+item.price,
+        ]),
+        "",
+        "Total : "+formatDh(order.totalMad),
+        "",
+        "Informations client :",
+        "Nom : "+customer.name.trim(),
+        "Téléphone : "+customer.phone.trim(),
+        "Ville : "+customer.city.trim(),
+        "Adresse : "+customer.address.trim(),
+        customer.note.trim()?"Note : "+customer.note.trim():"",
+        "",
+        "Mode de paiement : Paiement à la livraison",
+      ].filter(Boolean);
+
+      const url="https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(lines.join("\n"));
+      setCreatedOrder(order.orderNumber);
+      update([]);
+      if(whatsappWindow){
+        whatsappWindow.location.href=url;
+      }else{
+        window.location.href=url;
+      }
+    }catch(error){
+      if(whatsappWindow) whatsappWindow.close();
+      console.error(error);
+      setError("Impossible d’enregistrer la commande. Réessayez.");
+    }finally{
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -172,10 +220,11 @@ export default function CartPageClient(){
             <label>Adresse de livraison <span className="required-star" aria-hidden="true">*</span><textarea required value={customer.address} onChange={e=>setCustomer({...customer,address:e.target.value})} placeholder="Quartier, rue, immeuble, appartement..."/></label>
             <label>Note <small>(optionnel)</small><textarea value={customer.note} onChange={e=>setCustomer({...customer,note:e.target.value})} placeholder="Précision sur la livraison..."/></label>
 
+            {createdOrder&&<div className="cart-order-success"><CheckCircle2 size={17}/><span><b>Commande enregistrée</b><small>{createdOrder}</small></span></div>}
             {error&&<div className="cart-error">{error}</div>}
 
-            <button className="cart-whatsapp" type="submit" disabled={!items.length || !WHATSAPP_READY}>
-              Commander sur WhatsApp
+            <button className="cart-whatsapp" type="submit" disabled={!items.length || !WHATSAPP_READY || submitting}>
+              {submitting?"Enregistrement...":"Commander sur WhatsApp"}
             </button>
             {!WHATSAPP_READY && <div className="cart-error" role="status">Le WhatsApp officiel de LHAWTA n’est pas encore renseigné. Votre panier reste enregistré ; aucune commande ne sera envoyée à un numéro de démonstration.</div>}
 
