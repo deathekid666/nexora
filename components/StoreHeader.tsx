@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { CART_EVENT, cartCount, cartTotal, formatDh, readCart, type CartItem } from "@/lib/cart-client";
+import { FAVORITES_EVENT, readFavorites } from "@/lib/favorites-client";
 
 const categories=[
   {label:"Smartphones",href:"/category/smartphones",icon:Smartphone},
@@ -37,15 +38,20 @@ const categories=[
 export default function StoreHeader(){
   const [open,setOpen]=useState(false);
   const [cart,setCart]=useState<CartItem[]>([]);
+  const [favoriteCount,setFavoriteCount]=useState(0);
 
   useEffect(()=>{
-    const sync=()=>setCart(readCart());
-    sync();
-    window.addEventListener("storage",sync);
-    window.addEventListener(CART_EVENT,sync as EventListener);
+    const syncCart=()=>setCart(readCart());
+    const syncFavorites=()=>setFavoriteCount(readFavorites().length);
+    const syncAll=()=>{syncCart();syncFavorites();};
+    syncAll();
+    window.addEventListener("storage",syncAll);
+    window.addEventListener(CART_EVENT,syncCart as EventListener);
+    window.addEventListener(FAVORITES_EVENT,syncFavorites as EventListener);
     return()=>{
-      window.removeEventListener("storage",sync);
-      window.removeEventListener(CART_EVENT,sync as EventListener);
+      window.removeEventListener("storage",syncAll);
+      window.removeEventListener(CART_EVENT,syncCart as EventListener);
+      window.removeEventListener(FAVORITES_EVENT,syncFavorites as EventListener);
     };
   },[]);
 
@@ -83,7 +89,7 @@ export default function StoreHeader(){
 
           <div className="exact-actions">
             <button><User size={20}/><span><b>Mon compte</b><small>Se connecter</small></span></button>
-            <button><Heart size={21}/><span><b>Mes favoris</b></span></button>
+            <button className="exact-favorites" title="La page Favoris sera ajoutée plus tard"><Heart size={21} fill={favoriteCount?"currentColor":"none"}/>{favoriteCount>0&&<em>{favoriteCount}</em>}<span><b>Mes favoris</b><small>{favoriteCount} enregistré{favoriteCount>1?"s":""}</small></span></button>
             <a href="/cart" className="exact-cart"><ShoppingCart size={22}/><em>{count}</em><span><b>Mon panier</b><small>{formatDh(total)}</small></span></a>
             <button className="exact-mobile-toggle" onClick={()=>setOpen(v=>!v)}>{open?<X size={20}/>:<Menu size={20}/>}</button>
           </div>
