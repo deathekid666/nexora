@@ -98,41 +98,74 @@ export default function Home(){
       <SiteMotion/>
       <StoreHeader/>
 
-      <section className="sketch-hero" id="latest">
-        <img className="sketch-hero-bg" src={MOROCCO_BG} alt="Maroc"/>
-        <div className="sketch-hero-overlay"/>
-        <div className="sketch-hero-copy">
-          <span className="sketch-pill">NOUVEAUTÉS</span>
-          <h1>Nouveautés au Maroc —<br/><em>Octobre 2026</em></h1>
-          <p>Les derniers smartphones, tablettes, consoles et accessoires disponibles au Maroc. Comparez les specs, les prix et choisissez plus vite.</p>
-          <div className="sketch-hero-actions">
-            <a href="#products">Découvrir les nouveautés <ArrowRight size={16}/></a>
-            <a href="#compare">Comparer les produits</a>
+      <section className="sketch-hero premium-hero" id="latest">
+        <div className="premium-hero-copy">
+          <span className="premium-kicker"><Sparkles size={13}/> NOUVEAUTÉS MAROC · OCTOBRE 2026</span>
+          <h1>La tech qui mérite<br/><em>votre argent.</em></h1>
+          <p>Les nouveaux smartphones, tablettes et consoles — avec prix, specs, garantie et disponibilité clairement affichés avant l’achat.</p>
+
+          <div className="premium-hero-actions">
+            <a href="#products" className="premium-primary">Voir les nouveautés <ArrowRight size={16}/></a>
+            <a href="#compare" className="premium-secondary">Comparer les produits <ChevronRight size={15}/></a>
+          </div>
+
+          <div className="premium-proof">
+            <span><BadgeCheck size={15}/><b>100% neuf</b></span>
+            <span><ShieldCheck size={15}/><b>Garantie claire</b></span>
+            <span><Truck size={15}/><b>Livraison Maroc</b></span>
           </div>
         </div>
 
-        <div className="sketch-device-stage" aria-hidden="true">
-          <div className="sketch-device-card device-samsung"><img src={S26_IMG} alt=""/></div>
-          <div className="sketch-device-card device-xiaomi"><img src={XIAOMI17T_IMG} alt=""/></div>
-          <div className="sketch-device-card device-honor"><img src={HONOR600_IMG} alt=""/></div>
-          <div className="sketch-device-card device-redmi"><img src={REDMI15_IMG} alt=""/></div>
-          <div className="sketch-device-card device-tablet"><img src={TABS11_IMG} alt=""/></div>
-          <div className="sketch-device-card device-ps5"><img src={PS5_IMG} alt=""/></div>
+        <div className="premium-showcase">
+          <a href="/category/smartphones" className="hero-product-card hero-product-main">
+            <div className="hero-product-card-head">
+              <span>SAMSUNG · NOUVEAU</span>
+              <b>Galaxy AI</b>
+            </div>
+            <div className="hero-product-visual">
+              <img src={S26_IMG} alt="Samsung Galaxy S26 Ultra"/>
+            </div>
+            <div className="hero-product-card-foot">
+              <div><small>Galaxy S26 Ultra</small><strong>12 591 DH</strong></div>
+              <span>200 MP · 6,9″ · 5 000 mAh</span>
+            </div>
+          </a>
+
+          <div className="hero-side-stack">
+            <a href="/category/smartphones" className="hero-product-card hero-product-small hero-xiaomi">
+              <div className="hero-product-card-head"><span>XIAOMI</span><b>Nouveau</b></div>
+              <div className="hero-product-visual"><img src={XIAOMI17T_IMG} alt="Xiaomi 17T Pro"/></div>
+              <div className="hero-product-card-foot">
+                <div><small>Xiaomi 17T Pro</small><strong>7 990 DH</strong></div>
+                <span>Leica 5× · 144 Hz · 100 W</span>
+              </div>
+            </a>
+
+            <a href="/category/gaming" className="hero-product-card hero-product-small hero-ps5">
+              <div className="hero-product-card-head"><span>SONY</span><b>Top vente</b></div>
+              <div className="hero-product-visual"><img src={PS5_IMG} alt="PlayStation 5"/></div>
+              <div className="hero-product-card-foot">
+                <div><small>PlayStation 5 · 1 To</small><strong>8 499 DH</strong></div>
+                <span>SSD 1 To · DualSense · 4K</span>
+              </div>
+            </a>
+          </div>
         </div>
 
-        <div className="sketch-hero-loc"><span>●</span><b>LIVRAISON PARTOUT<br/>AU MAROC</b><em>🇲🇦</em></div>
+        <div className="premium-hero-orbit premium-orbit-one"/>
+        <div className="premium-hero-orbit premium-orbit-two"/>
       </section>
 
-      <section className="sketch-trust-strip">
-        <div><ShieldCheck size={25}/><span><b>Produits 100% neufs</b><small>Garantie affichée clairement</small></span></div>
-        <div><Truck size={25}/><span><b>Livraison partout au Maroc</b><small>Rapide et suivie</small></span></div>
-        <div><ShoppingCart size={25}/><span><b>Paiement flexible</b><small>Options visibles au checkout</small></span></div>
-        <div><Headphones size={25}/><span><b>Service client réactif</b><small>Aide avant et après achat</small></span></div>
+      <section className="sketch-trust-strip premium-trust-strip">
+        <div><ShieldCheck size={23}/><span><b>Produits 100% neufs</b><small>Condition affichée clairement</small></span></div>
+        <div><Truck size={23}/><span><b>Livraison partout au Maroc</b><small>Disponibilité avant paiement</small></span></div>
+        <div><ShoppingCart size={23}/><span><b>Paiement flexible</b><small>Options visibles au checkout</small></span></div>
+        <div><Headphones size={23}/><span><b>Support réactif</b><small>Aide avant et après achat</small></span></div>
       </section>
 
-      <section className="sketch-category-strip">
+      <section className="sketch-category-strip premium-category-strip">
         {categories.map(({name,icon:Icon,href})=>(
-          <a href={href} key={name}><Icon size={22}/><span>{name}</span></a>
+          <a href={href} key={name}><span className="premium-cat-icon"><Icon size={20}/></span><strong>{name}</strong><ChevronRight size={13}/></a>
         ))}
       </section>
 
