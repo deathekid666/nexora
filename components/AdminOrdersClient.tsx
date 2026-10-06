@@ -18,10 +18,7 @@ import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 import type { OrderStatus, SavedOrder } from "@/lib/order-db";
 
-const STATUS_OPTIONS:[
-  {value:"ALL";label:string},
-  ...Array<{value:OrderStatus;label:string}>
-]=[
+const STATUS_OPTIONS:Array<{value:"ALL"|OrderStatus;label:string}>=[
   {value:"ALL",label:"Tous les statuts"},
   {value:"NOUVEAU",label:"Nouveau"},
   {value:"CONFIRME",label:"Confirmé"},
