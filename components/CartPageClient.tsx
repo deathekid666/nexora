@@ -22,7 +22,8 @@ import {
   type CartItem,
 } from "@/lib/cart-client";
 
-const WHATSAPP_NUMBER=process.env.NEXT_PUBLIC_LHAWTA_WHATSAPP || "212612345678";
+const WHATSAPP_NUMBER=(process.env.NEXT_PUBLIC_LHAWTA_WHATSAPP || "").replace(/\D/g,"");
+const WHATSAPP_READY=/^\d{10,15}$/.test(WHATSAPP_NUMBER);
 
 export default function CartPageClient(){
   const [items,setItems]=useState<CartItem[]>([]);
@@ -60,6 +61,11 @@ export default function CartPageClient(){
 
     if(!items.length){
       setError("Votre panier est vide.");
+      return;
+    }
+
+    if(!WHATSAPP_READY){
+      setError("Le numéro WhatsApp de la boutique doit être configuré avant de pouvoir envoyer une commande.");
       return;
     }
 
@@ -167,9 +173,10 @@ export default function CartPageClient(){
 
             {error&&<div className="cart-error">{error}</div>}
 
-            <button className="cart-whatsapp" type="submit" disabled={!items.length}>
+            <button className="cart-whatsapp" type="submit" disabled={!items.length || !WHATSAPP_READY}>
               Commander sur WhatsApp
             </button>
+            {!WHATSAPP_READY && <div className="cart-error" role="status">Le WhatsApp officiel de LHAWTA n’est pas encore renseigné. Votre panier reste enregistré ; aucune commande ne sera envoyée à un numéro de démonstration.</div>}
 
             <div className="cart-trust">
               <p><Truck size={16}/><span><b>Livraison partout au Maroc</b><small>Délai confirmé avant expédition.</small></span></p>
