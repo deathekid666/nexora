@@ -207,7 +207,7 @@ export default async function CategoryPage({params}:{params:Promise<{slug:string
               <a href={detailHref} className="category-product-media"><ProductVisual src={product.image} alt={product.name}/></a>
               <div className="category-product-body">
                 <small>{product.brand}</small>
-                <h2>{product.name}</h2>
+                {detailSlug?<h2><a href={detailHref} className="product-name-link">{product.name}</a></h2>:<h2>{product.name}</h2>}
                 <div className="category-rating"><Star size={13} fill="currentColor"/><b>{product.rating}</b><span>avis</span></div>
                 <ul>{product.specs.map(spec=><li key={spec}>{spec}</li>)}</ul>
                 <div className="category-delivery"><Truck size={14}/> Livraison disponible</div>
