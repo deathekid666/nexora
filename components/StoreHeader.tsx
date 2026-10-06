@@ -77,7 +77,7 @@ export default function StoreHeader(){
           <span>Garantie officielle</span>
           <i/>
           <span>Paiement à la livraison disponible</span>
-          <div className="exact-help"><BadgeHelp size={15}/><span>Besoin d’aide ?</span><b>06 12 34 56 78</b></div>
+          <a href="/faq" className="exact-help"><BadgeHelp size={15}/><span>Besoin d’aide ?</span><b>FAQ</b></a>
         </div>
       </div>
 
