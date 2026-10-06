@@ -117,7 +117,7 @@ export default function Home(){
                 <strong className="exact-price">{p.price}</strong>
                 <div className="exact-card-actions">
                   <a href={`/products/${p.slug}`}><ShoppingCart size={14}/>Voir le produit</a>
-                  <button><BarChart3 size={14}/>Comparer</button>
+                  <a className="compare-card-link" href={`/compare?products=${p.slug}`}><BarChart3 size={14}/>Comparer</a>
                 </div>
               </div>
             </article>
