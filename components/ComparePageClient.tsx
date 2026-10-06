@@ -99,6 +99,7 @@ export default function ComparePageClient({initialSlugs}:{initialSlugs:string[]}
           <span>COMPARAISON TECHNIQUE</span>
           <h1>Comparer {category.toLowerCase()}</h1>
           <p>Choisissez deux produits de la même catégorie et comparez leurs caractéristiques ligne par ligne.</p>
+          <small className="compare-selection-status" aria-live="polite">{right?"2 produits sélectionnés":"1 produit sélectionné · choisissez le second"}</small>
         </div>
         {left&&right&&(
           <label className="compare-diff-toggle">
