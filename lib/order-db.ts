@@ -236,6 +236,23 @@ export async function listOrders(options?:{
   }));
 }
 
+export async function getOrderByNumberAndPhone(orderNumber:string,phone:string):Promise<SavedOrder|null>{
+  await ensureOrderSchema();
+  const sql=db();
+  const number=clean(orderNumber,80).toUpperCase();
+  const normalizedPhone=clean(phone,40).replace(/\D/g,"");
+
+  if(!number||normalizedPhone.length<8) return null;
+
+  const rows=await sql.query(
+    "SELECT id::text AS id FROM lhawta_orders WHERE upper(order_number)=$1 AND regexp_replace(phone,'[^0-9]','','g')=$2 LIMIT 1",
+    [number,normalizedPhone]
+  ) as Array<{id:string}>;
+
+  if(!rows[0]) return null;
+  return getOrderById(rows[0].id);
+}
+
 export async function updateOrderStatus(id:string,status:OrderStatus):Promise<SavedOrder|null>{
   if(!ORDER_STATUSES.includes(status)) throw new Error("INVALID_STATUS");
   await ensureOrderSchema();
