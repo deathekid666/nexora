@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Cable,
   ChevronDown,
   Gamepad2,
   Headphones,
@@ -12,13 +13,13 @@ import {
   ShoppingCart,
   Smartphone,
   Tablet,
-  Cable,
   Tv,
   User,
   Watch,
   X,
 } from "lucide-react";
 import { useState } from "react";
+import LhawtaLogo from "@/components/LhawtaLogo";
 
 const departments = [
   { label:"Smartphones", detail:"Apple · Samsung · HONOR · Xiaomi", icon:Smartphone, href:"/#latest" },
@@ -37,27 +38,30 @@ export default function StoreHeader() {
 
   return (
     <>
-      <div className="top-strip">
+      <div className="top-strip lhawta-top-strip">
         <div className="top-strip-inner">
-          <span>Brand-new products</span>
+          <span>Brand-new tech only</span>
           <span>Delivery across Morocco</span>
-          <span>Warranty shown clearly</span>
+          <span>Warranty shown before checkout</span>
           <span className="top-strip-right">Morocco · MAD</span>
         </div>
       </div>
 
-      <header className="store-header">
-        <a href="/" className="store-logo">NEXORA<span>.</span></a>
+      <header className="store-header lhawta-header">
+        <a href="/" className="store-logo lhawta-header-logo"><LhawtaLogo /></a>
 
-        <button className={shopOpen ? "category-menu-button active" : "category-menu-button"} onClick={() => setShopOpen(v => !v)}>
+        <button
+          className={shopOpen ? "category-menu-button active" : "category-menu-button"}
+          onClick={() => setShopOpen(v => !v)}
+        >
           <Menu size={18} />
           Shop
           <ChevronDown size={14} />
         </button>
 
-        <label className="store-search">
+        <label className="store-search lhawta-search">
           <Search size={19} />
-          <input placeholder="Search smartphones, tablets, wearables, audio and more" />
+          <input placeholder="Search smartphones, tablets, gaming, audio..." />
           <button type="button">Search</button>
         </label>
 
@@ -76,10 +80,10 @@ export default function StoreHeader() {
         </div>
 
         {shopOpen && (
-          <div className="mega-menu">
+          <div className="mega-menu lhawta-mega-menu">
             <div className="mega-menu-main">
               <div className="mega-menu-heading">
-                <span>SHOP ALL</span>
+                <span>SHOP LHAWTA</span>
                 <strong>Explore by department</strong>
               </div>
               <div className="mega-menu-grid">
@@ -91,11 +95,12 @@ export default function StoreHeader() {
                 ))}
               </div>
             </div>
-            <aside className="mega-menu-promo">
-              <span>THIS WEEK</span>
-              <h3>Flagship phones, better compared.</h3>
-              <p>See the models people are choosing and the trade-offs that matter.</p>
-              <a href="/#deals">Shop the edit</a>
+            <aside className="mega-menu-promo lhawta-mega-promo">
+              <LhawtaLogo compact light />
+              <span>NEW TECH. CLEAR CHOICES.</span>
+              <h3>Flagship phones, properly compared.</h3>
+              <p>See what changes the experience before you spend.</p>
+              <a href="/#compare">Compare now</a>
             </aside>
           </div>
         )}
@@ -103,11 +108,11 @@ export default function StoreHeader() {
 
       <div className="site-progress" aria-hidden="true"><span /></div>
 
-      <nav className={open ? "store-nav open" : "store-nav"}>
+      <nav className={open ? "store-nav open lhawta-nav" : "store-nav lhawta-nav"}>
         <a href="/#latest">Smartphones</a>
         <a href="/#latest">Tablets</a>
         <a href="/#latest">Computers</a>
-        <a href="/#latest">TV & Home Cinema</a>
+        <a href="/#latest">TV & Home</a>
         <a href="/#latest">Gaming</a>
         <a href="/#latest">Audio</a>
         <a href="/#latest">Wearables</a>
