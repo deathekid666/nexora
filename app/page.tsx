@@ -110,7 +110,7 @@ export default function Home(){
               <div className="exact-card-media"><ProductVisual src={p.img} alt={p.name}/></div>
               <div className="exact-card-body">
                 <small>{p.brand}</small>
-                <h3>{p.name}</h3>
+                <h3><a href={`/products/${p.slug}`} className="product-name-link">{p.name}</a></h3>
                 <ul>
                   {p.specs.map(([type,label])=><li key={label}><SpecIcon type={type}/><span>{label}</span></li>)}
                 </ul>
