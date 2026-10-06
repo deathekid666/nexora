@@ -210,6 +210,21 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
   .exact-product-grid{grid-template-columns:repeat(3,1fr)}
 }
 @media(max-width:900px){
+  .exact-product-lineup{
+    perspective:none;
+    transform-style:flat;
+    will-change:auto;
+  }
+  .exact-product-lineup:before,
+  .exact-product-lineup:after{
+    opacity:.42;
+    transform:none;
+    filter:blur(9px);
+  }
+  .exact-product-lineup img{
+    transform:none;
+    filter:drop-shadow(0 16px 13px rgba(5,20,43,.24));
+  }
   .exact-shell{width:calc(100% - 28px)}
   .exact-topbar-inner i,.exact-topbar-inner>span:nth-of-type(n+3){display:none}
   .exact-mainbar{height:auto}
