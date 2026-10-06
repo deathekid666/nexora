@@ -7,7 +7,6 @@ import {
   BadgeCheck,
   Check,
   ChevronRight,
-  Heart,
   PackageCheck,
   ShieldCheck,
   ShoppingCart,
@@ -18,6 +17,7 @@ import SiteMotion from "@/components/SiteMotion";
 import { ProductVisual } from "@/components/ProductVisual";
 import type { StoreProduct } from "@/lib/store-products";
 import { addToCart } from "@/lib/cart-client";
+import FavoriteButton from "@/components/FavoriteButton";
 
 export default function StoreProductDetail({product}:{product:StoreProduct}){
   const router=useRouter();
@@ -64,7 +64,7 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
         <div className="pdetail-gallery">
           <div className="pdetail-main-image">
             <span className="pdetail-badge">{product.badge}</span>
-            <button className="pdetail-heart" aria-label="Ajouter aux favoris"><Heart size={19}/></button>
+            <FavoriteButton className="pdetail-heart" slug={product.slug} size={19} label={"Ajouter "+product.name+" aux favoris"}/>
             <ProductVisual src={selectedImage} alt={product.name}/>
           </div>
 
