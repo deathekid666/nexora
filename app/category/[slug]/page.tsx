@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
+import { ProductVisual } from "@/components/ProductVisual";
 
 const IMAGES={
   samsung:"/api/product-image/galaxy-s26-ultra",
@@ -190,7 +191,7 @@ export default async function CategoryPage({params}:{params:Promise<{slug:string
             <article className="category-product-card" key={product.name}>
               {product.badge&&<span className="category-badge">{product.badge}</span>}
               <button className="category-wish"><Heart size={18}/></button>
-              <a href="#" className="category-product-media"><img src={product.image} alt={product.name}/></a>
+              <a href="#" className="category-product-media"><ProductVisual src={product.image} alt={product.name}/></a>
               <div className="category-product-body">
                 <small>{product.brand}</small>
                 <h2>{product.name}</h2>
