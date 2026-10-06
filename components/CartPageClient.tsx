@@ -163,12 +163,13 @@ export default function CartPageClient(){
               <span>COMMANDE WHATSAPP</span>
               <h2>Informations de livraison</h2>
               <p>Remplissez vos coordonnées, puis envoyez automatiquement le récapitulatif à LHAWTA sur WhatsApp.</p>
+              <small className="cart-required-note"><span>*</span> Champs obligatoires</small>
             </div>
 
-            <label>Nom complet<input value={customer.name} onChange={e=>setCustomer({...customer,name:e.target.value})} placeholder="Votre nom"/></label>
-            <label>Téléphone<input value={customer.phone} onChange={e=>setCustomer({...customer,phone:e.target.value})} placeholder="06 XX XX XX XX" inputMode="tel"/></label>
-            <label>Ville<input value={customer.city} onChange={e=>setCustomer({...customer,city:e.target.value})} placeholder="Casablanca, Rabat, Marrakech..."/></label>
-            <label>Adresse de livraison<textarea value={customer.address} onChange={e=>setCustomer({...customer,address:e.target.value})} placeholder="Quartier, rue, immeuble, appartement..."/></label>
+            <label>Nom complet <span className="required-star" aria-hidden="true">*</span><input required value={customer.name} onChange={e=>setCustomer({...customer,name:e.target.value})} placeholder="Votre nom"/></label>
+            <label>Téléphone <span className="required-star" aria-hidden="true">*</span><input required value={customer.phone} onChange={e=>setCustomer({...customer,phone:e.target.value})} placeholder="06 XX XX XX XX" inputMode="tel"/></label>
+            <label>Ville <span className="required-star" aria-hidden="true">*</span><input required value={customer.city} onChange={e=>setCustomer({...customer,city:e.target.value})} placeholder="Casablanca, Rabat, Marrakech..."/></label>
+            <label>Adresse de livraison <span className="required-star" aria-hidden="true">*</span><textarea required value={customer.address} onChange={e=>setCustomer({...customer,address:e.target.value})} placeholder="Quartier, rue, immeuble, appartement..."/></label>
             <label>Note <small>(optionnel)</small><textarea value={customer.note} onChange={e=>setCustomer({...customer,note:e.target.value})} placeholder="Précision sur la livraison..."/></label>
 
             {error&&<div className="cart-error">{error}</div>}
