@@ -77,17 +77,17 @@ body{margin:0;background:var(--bg);font-family:Inter,Arial,Helvetica,sans-serif;
 .exact-hero-buttons{display:flex;gap:10px;margin-top:17px}
 .exact-hero-buttons a{height:44px;padding:0 24px;border-radius:8px;display:inline-flex;align-items:center;gap:8px;font-size:9px;font-weight:850;border:1px solid rgba(255,255,255,.55);color:#fff!important}
 .exact-hero-buttons a:first-child{background:var(--blue);border-color:var(--blue)}
-.exact-product-lineup{position:absolute;z-index:7;left:35%;right:2%;top:20px;bottom:5px}
-.exact-product-lineup img{position:absolute;object-fit:contain;filter:drop-shadow(0 16px 16px rgba(10,28,52,.22))}
-.line-s26{left:0;bottom:3%;width:19%;height:78%}
-.line-xiaomi{left:12%;bottom:1%;width:17%;height:76%}
-.line-honor{left:25%;bottom:2%;width:16%;height:72%}
-.line-redmi{left:35%;bottom:0;width:16%;height:70%}
-.line-tab{left:48%;bottom:-2%;width:28%;height:72%}
-.line-ps5{right:1%;bottom:-2%;width:21%;height:92%}
-.exact-hero-script{position:absolute;z-index:9;right:21%;top:25px;color:#112b52;font-family:"Segoe Script","Brush Script MT",cursive;font-size:21px;line-height:1.05;transform:rotate(-7deg);text-align:center}
+.exact-product-lineup{position:absolute;z-index:7;left:33.2%;right:1.4%;top:0;bottom:0;pointer-events:none}
+.exact-product-lineup img{position:absolute;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 17px 16px rgba(10,28,52,.25));transform-origin:50% 100%}
+.line-s26{left:1.5%;bottom:-1.5%;width:18.5%;height:89%;z-index:5}
+.line-xiaomi{left:14.5%;bottom:-1%;width:15.5%;height:86%;z-index:6}
+.line-honor{left:25.5%;bottom:-.5%;width:14.4%;height:82%;z-index:7}
+.line-redmi{left:36.5%;bottom:-1%;width:14.8%;height:80%;z-index:8}
+.line-tab{left:50%;bottom:-1.5%;width:31%;height:71%;z-index:3}
+.line-ps5{right:-.4%;bottom:-1.5%;width:17.8%;height:95%;z-index:9}
+.exact-hero-script{position:absolute;z-index:10;right:22.2%;top:21px;color:#112b52;font-family:"Segoe Script","Brush Script MT",cursive;font-size:20px;line-height:1.04;transform:rotate(-7deg);text-align:center}
 .exact-hero-script b{font-weight:600}
-.exact-location-badge{position:absolute;z-index:14;right:10px;bottom:10px;height:58px;padding:0 13px;border-radius:20px;background:#123e73;color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 10px 22px rgba(5,32,67,.2)}
+.exact-location-badge{position:absolute;z-index:14;right:12px;bottom:10px;height:58px;padding:0 14px;border-radius:20px;background:#123e73;color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 10px 22px rgba(5,32,67,.2)}
 .exact-location-badge>span{font-size:23px}
 .exact-location-badge>div{display:flex;flex-direction:column}
 .exact-location-badge b,.exact-location-badge small{font-size:7px;line-height:1.1}
@@ -172,7 +172,7 @@ body{margin:0;background:var(--bg);font-family:Inter,Arial,Helvetica,sans-serif;
   .exact-hero{height:520px}
   .exact-hero-copy{width:100%;padding-left:20px}
   .exact-hero-copy h1{font-size:36px}.exact-hero-copy h2{font-size:39px}
-  .exact-product-lineup{left:6%;right:4%;top:210px;bottom:40px}
+  .exact-product-lineup{left:4%;right:3%;top:215px;bottom:34px}
   .exact-hero-script{display:none}
   .exact-location-badge{display:none}
   .exact-trust{height:auto;grid-template-columns:1fr 1fr}.exact-trust>div{min-height:58px}
