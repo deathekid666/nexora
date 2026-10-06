@@ -12,7 +12,9 @@ import {
   Search,
   ShoppingCart,
   Smartphone,
+  Sparkles,
   Tablet,
+  Tag,
   Tv,
   User,
   Watch,
@@ -22,14 +24,14 @@ import { useState } from "react";
 import LhawtaLogo from "@/components/LhawtaLogo";
 
 const departments = [
-  { label:"Smartphones", detail:"Apple · Samsung · HONOR · Xiaomi", icon:Smartphone, href:"/#latest" },
-  { label:"Tablets", detail:"iPad · Galaxy Tab · HONOR Pad", icon:Tablet, href:"/#latest" },
-  { label:"Computers", detail:"Laptops · Desktops · Monitors", icon:Laptop, href:"/#latest" },
-  { label:"TV & Home Cinema", detail:"OLED · QLED · Mini LED · Soundbars", icon:Tv, href:"/#latest" },
+  { label:"Smartphones", detail:"Samsung · Xiaomi · HONOR · Apple", icon:Smartphone, href:"/#latest" },
+  { label:"Tablettes", detail:"Galaxy Tab · iPad · Xiaomi Pad", icon:Tablet, href:"/#latest" },
+  { label:"TV & Home", detail:"OLED · QLED · Mini LED", icon:Tv, href:"/#latest" },
   { label:"Gaming", detail:"PlayStation · Xbox · Nintendo", icon:Gamepad2, href:"/#latest" },
-  { label:"Audio", detail:"Headphones · Speakers · Microphones", icon:Headphones, href:"/#latest" },
-  { label:"Wearables", detail:"Watches · Bands · Smart rings", icon:Watch, href:"/#latest" },
-  { label:"Accessories", detail:"Chargers · Cases · Cables · Keyboards", icon:Cable, href:"/#latest" },
+  { label:"Audio", detail:"Écouteurs · Casques · Enceintes", icon:Headphones, href:"/#latest" },
+  { label:"Wearables", detail:"Montres · Bracelets", icon:Watch, href:"/#latest" },
+  { label:"Informatique", detail:"PC portables · Moniteurs", icon:Laptop, href:"/#latest" },
+  { label:"Accessoires", detail:"Coques · Chargeurs · Câbles", icon:Cable, href:"/#latest" },
 ];
 
 export default function StoreHeader() {
@@ -38,87 +40,64 @@ export default function StoreHeader() {
 
   return (
     <>
-      <div className="top-strip lhawta-top-strip">
-        <div className="top-strip-inner">
-          <span>Brand-new tech only</span>
-          <span>Delivery across Morocco</span>
-          <span>Warranty shown before checkout</span>
-          <span className="top-strip-right">Morocco · MAD</span>
+      <div className="sketch-topbar">
+        <div className="sketch-topbar-inner">
+          <span>🇲🇦</span>
+          <b>LIVRAISON DANS TOUT LE MAROC</b>
+          <i/>
+          <span>Produits 100% neufs</span>
+          <i/>
+          <span>Garantie affichée avant achat</span>
+          <i/>
+          <span>Paiement à la livraison disponible</span>
+          <span className="sketch-topbar-help">Besoin d’aide ? <strong>06 12 34 56 78</strong></span>
         </div>
       </div>
 
-      <header className="store-header lhawta-header">
-        <a href="/" className="store-logo lhawta-header-logo"><LhawtaLogo /></a>
+      <header className="sketch-main-header">
+        <a href="/" className="sketch-logo"><LhawtaLogo /></a>
 
-        <button
-          className={shopOpen ? "category-menu-button active" : "category-menu-button"}
-          onClick={() => setShopOpen(v => !v)}
-        >
-          <Menu size={18} />
-          Shop
-          <ChevronDown size={14} />
-        </button>
-
-        <label className="store-search lhawta-search">
-          <Search size={19} />
-          <input placeholder="Search smartphones, tablets, gaming, audio..." />
-          <button type="button">Search</button>
+        <label className="sketch-search">
+          <Search size={19}/>
+          <input placeholder="Rechercher un smartphone, une tablette, une PS5, une marque..." />
+          <button type="button">Rechercher</button>
         </label>
 
-        <div className="header-delivery">
-          <MapPin size={18} />
-          <span><small>Deliver to</small><strong>Morocco</strong></span>
+        <div className="sketch-header-actions">
+          <button><User size={20}/><span><small>Mon compte</small><b>Se connecter</b></span></button>
+          <button><Heart size={21}/><span><b>Mes favoris</b></span></button>
+          <button className="sketch-cart"><ShoppingCart size={22}/><span><small>Mon panier</small><b>0 DH</b></span><em>0</em></button>
+          <button className="sketch-mobile-menu" onClick={()=>setOpen(v=>!v)}>{open?<X size={21}/>:<Menu size={21}/>}</button>
         </div>
-
-        <div className="store-actions">
-          <button className="store-action" aria-label="Wishlist"><Heart size={19} /><span>Wishlist</span></button>
-          <button className="store-action" aria-label="Account"><User size={19} /><span>Account</span></button>
-          <button className="store-action cart-action" aria-label="Cart"><ShoppingCart size={19} /><span>Cart</span><b>0</b></button>
-          <button className="store-action mobile-only" aria-label="Menu" onClick={() => setOpen(v => !v)}>
-            {open ? <X size={20} /> : <Menu size={20} />}
-          </button>
-        </div>
-
-        {shopOpen && (
-          <div className="mega-menu lhawta-mega-menu">
-            <div className="mega-menu-main">
-              <div className="mega-menu-heading">
-                <span>SHOP LHAWTA</span>
-                <strong>Explore by department</strong>
-              </div>
-              <div className="mega-menu-grid">
-                {departments.map(({label,detail,icon:Icon,href})=>(
-                  <a href={href} key={label} onClick={()=>setShopOpen(false)}>
-                    <div><Icon size={21}/></div>
-                    <span><strong>{label}</strong><small>{detail}</small></span>
-                  </a>
-                ))}
-              </div>
-            </div>
-            <aside className="mega-menu-promo lhawta-mega-promo">
-              <LhawtaLogo compact light />
-              <span>NEW TECH. CLEAR CHOICES.</span>
-              <h3>Flagship phones, properly compared.</h3>
-              <p>See what changes the experience before you spend.</p>
-              <a href="/#compare">Compare now</a>
-            </aside>
-          </div>
-        )}
       </header>
 
-      <div className="site-progress" aria-hidden="true"><span /></div>
+      <nav className={open?"sketch-nav open":"sketch-nav"}>
+        <button className={shopOpen?"sketch-all active":"sketch-all"} onClick={()=>setShopOpen(v=>!v)}>
+          <Menu size={17}/> Toutes les catégories <ChevronDown size={14}/>
+        </button>
+        <a href="/#latest"><Smartphone size={17}/> Smartphones</a>
+        <a href="/#latest"><Tablet size={17}/> Tablettes</a>
+        <a href="/#latest"><Tv size={17}/> TV & Home</a>
+        <a href="/#latest"><Gamepad2 size={17}/> Gaming</a>
+        <a href="/#latest"><Headphones size={17}/> Audio</a>
+        <a href="/#latest"><Watch size={17}/> Wearables</a>
+        <a href="/#latest"><Cable size={17}/> Accessoires</a>
+        <a href="/#promos" className="sketch-promo"><Tag size={17}/> Promotions</a>
+        <a href="/#latest" className="sketch-new"><Sparkles size={17}/> Nouveautés</a>
 
-      <nav className={open ? "store-nav open lhawta-nav" : "store-nav lhawta-nav"}>
-        <a href="/#latest">Smartphones</a>
-        <a href="/#latest">Tablets</a>
-        <a href="/#latest">Computers</a>
-        <a href="/#latest">TV & Home</a>
-        <a href="/#latest">Gaming</a>
-        <a href="/#latest">Audio</a>
-        <a href="/#latest">Wearables</a>
-        <a href="/#services">Services</a>
-        <a href="/#faq">FAQ</a>
+        {shopOpen && (
+          <div className="sketch-mega">
+            {departments.map(({label,detail,icon:Icon,href})=>(
+              <a href={href} key={label} onClick={()=>setShopOpen(false)}>
+                <span><Icon size={20}/></span>
+                <div><b>{label}</b><small>{detail}</small></div>
+              </a>
+            ))}
+          </div>
+        )}
       </nav>
+
+      <div className="site-progress" aria-hidden="true"><span /></div>
     </>
   );
 }
