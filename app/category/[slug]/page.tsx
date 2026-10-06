@@ -211,7 +211,10 @@ export default async function CategoryPage({params}:{params:Promise<{slug:string
                 <ul>{product.specs.map(spec=><li key={spec}>{spec}</li>)}</ul>
                 <div className="category-delivery"><Truck size={14}/> Livraison disponible</div>
                 <div className="category-price"><strong>{product.price}</strong>{product.old&&<del>{product.old}</del>}</div>
-                <div className="category-actions"><a href={detailHref}><ShoppingCart size={15}/> Voir le produit</a><button>Comparer</button></div>
+                <div className="category-actions">
+                  <a href={detailHref}><ShoppingCart size={15}/> Voir le produit</a>
+                  {detailSlug?<a className="category-compare-link" href={`/compare?products=${detailSlug}`}>Comparer</a>:<button disabled title="Fiche technique complète requise">Comparer</button>}
+                </div>
               </div>
             </article>
           )})}
