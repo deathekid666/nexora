@@ -1,16 +1,8 @@
 import { notFound } from "next/navigation";
-import {
-  ArrowLeft,
-  ChevronDown,
-  ShoppingCart,
-  SlidersHorizontal,
-  Star,
-  Truck,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
-import { ProductVisual } from "@/components/ProductVisual";
-import FavoriteButton from "@/components/FavoriteButton";
+import CategoryCatalogClient, { type CategoryProduct } from "@/components/CategoryCatalogClient";
 
 const IMAGES={
   samsung:"/api/product-image/galaxy-s26-ultra",
@@ -27,28 +19,7 @@ const IMAGES={
   accessory:"https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=1200&q=86",
 };
 
-type Product={
-  brand:string;
-  name:string;
-  image:string;
-  price:string;
-  old?:string;
-  rating:string;
-  specs:string[];
-  badge?:string;
-};
-
-const productDetailSlugs:Record<string,string>={
-  "Galaxy S26 Ultra":"galaxy-s26-ultra",
-  "Xiaomi 17T Pro":"xiaomi-17t-pro",
-  "HONOR 600":"honor-600",
-  "Note 15 Pro+ 5G":"redmi-note-15-pro-plus-5g",
-  "Galaxy Tab S11 Ultra":"galaxy-tab-s11-ultra",
-  "Galaxy Tab S11":"galaxy-tab-s11",
-  "PlayStation 5 · 1 To":"playstation-5",
-};
-
-const catalogs:Record<string,{title:string;eyebrow:string;copy:string;accent:string;products:Product[]}> = {
+const catalogs:Record<string,{title:string;eyebrow:string;copy:string;accent:string;products:CategoryProduct[]}> = {
   smartphones:{
     title:"Smartphones",
     eyebrow:"MOBILE / LHAWTA",
@@ -175,52 +146,7 @@ export default async function CategoryPage({params}:{params:Promise<{slug:string
         </aside>
       </section>
 
-      <section className="category-toolbar">
-        <div className="category-filter-pills">
-          <button className="active">Tous</button>
-          <button>Nouveautés</button>
-          <button>Meilleures ventes</button>
-          <button>En stock</button>
-        </div>
-        <div className="category-toolbar-right">
-          <button><SlidersHorizontal size={15}/> Filtres</button>
-          <button>Trier : Pertinence <ChevronDown size={14}/></button>
-        </div>
-      </section>
-
-      <section className="category-catalog">
-        <aside className="category-sidebar">
-          <strong>Filtrer</strong>
-          <div><span>Marque</span><label><input type="checkbox"/> Samsung</label><label><input type="checkbox"/> Xiaomi</label><label><input type="checkbox"/> HONOR</label></div>
-          <div><span>Prix</span><label><input type="checkbox"/> Moins de 2 000 DH</label><label><input type="checkbox"/> 2 000 – 5 000 DH</label><label><input type="checkbox"/> 5 000 DH et plus</label></div>
-          <div><span>Disponibilité</span><label><input type="checkbox"/> En stock</label><label><input type="checkbox"/> Nouveautés</label></div>
-        </aside>
-
-        <div className="category-grid">
-          {category.products.map(product=>{
-            const detailSlug=productDetailSlugs[product.name];
-            const detailHref=detailSlug?`/products/${detailSlug}`:"#";
-            return (
-            <article className="category-product-card" key={product.name}>
-              {product.badge&&<span className="category-badge">{product.badge}</span>}
-              <FavoriteButton className="category-wish" slug={detailSlug||("catalog:"+slug+":"+product.brand+":"+product.name)} size={18} label={"Ajouter "+product.name+" aux favoris"}/>
-              <a href={detailHref} className="category-product-media"><ProductVisual src={product.image} alt={product.name}/></a>
-              <div className="category-product-body">
-                <small>{product.brand}</small>
-                {detailSlug?<h2><a href={detailHref} className="product-name-link">{product.name}</a></h2>:<h2>{product.name}</h2>}
-                <div className="category-rating"><Star size={13} fill="currentColor"/><b>{product.rating}</b><span>avis</span></div>
-                <ul>{product.specs.map(spec=><li key={spec}>{spec}</li>)}</ul>
-                <div className="category-delivery"><Truck size={14}/> Livraison disponible</div>
-                <div className="category-price"><strong>{product.price}</strong>{product.old&&<del>{product.old}</del>}</div>
-                <div className="category-actions">
-                  <a href={detailHref}><ShoppingCart size={15}/> Voir le produit</a>
-                  {detailSlug?<a className="category-compare-link" href={`/compare?products=${detailSlug}`}>Comparer</a>:<button disabled title="Fiche technique complète requise">Comparer</button>}
-                </div>
-              </div>
-            </article>
-          )})}
-        </div>
-      </section>
+      <CategoryCatalogClient slug={slug} products={category.products}/>
     </main>
   );
 }
