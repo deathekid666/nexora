@@ -280,3 +280,26 @@
   background:linear-gradient(135deg,#1688ff 0%,#0a6dff 58%,#1949ef 100%)!important;
   box-shadow:0 16px 32px rgba(8,102,255,.28);
 }
+
+
+/* PNG HERO ASSET — keep existing GSAP animation selectors */
+.lhawta-hero-product-png{
+  background:
+    radial-gradient(circle at 68% 24%,rgba(255,255,255,.95),rgba(238,244,252,.86) 28%,rgba(218,229,244,.68) 55%,rgba(204,217,236,.88) 100%);
+}
+.lhawta-hero-product-png>img{
+  object-fit:contain;
+  object-position:center bottom;
+  padding:34px 26px 0;
+  filter:drop-shadow(0 30px 36px rgba(14,24,42,.22));
+}
+.lhawta-hero-product-png .lhawta-hero-overlay{
+  background:
+    linear-gradient(0deg,rgba(8,15,26,.26),transparent 34%),
+    linear-gradient(90deg,rgba(255,255,255,.04),transparent 55%);
+}
+@media(max-width:760px){
+  .lhawta-hero-product-png>img{
+    padding:24px 14px 0;
+  }
+}
