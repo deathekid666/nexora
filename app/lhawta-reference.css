@@ -107,7 +107,7 @@ body{margin:0;background:var(--bg);font-family:Inter,Arial,Helvetica,sans-serif;
 
 /* products */
 .exact-products{padding-top:20px;padding-bottom:20px}
-.exact-products-head{display:flex;align-items:end;justify-content:space-between;margin-bottom:10px}
+.exact-products-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:10px}
 .exact-products-head h2{margin:0;font-size:22px;letter-spacing:-.035em}
 .exact-products-head i{display:block;width:39px;height:3px;border-radius:99px;background:var(--blue);margin-top:7px}
 .exact-slider-controls{display:flex;align-items:center;gap:10px}
