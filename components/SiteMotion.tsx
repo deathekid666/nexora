@@ -20,9 +20,10 @@ export default function SiteMotion(){
         .from(".sketch-main-header",{autoAlpha:0,y:-12,duration:.34},"-=.12")
         .from(".sketch-nav",{autoAlpha:0,y:-10,duration:.3},"-=.18")
         .from(".sketch-all,.sketch-nav-categories a,.sketch-nav-special a",{autoAlpha:0,y:-8,duration:.32,stagger:.028},"-=.2")
-        .from(".sketch-hero-copy > *",{autoAlpha:0,y:26,duration:.54,stagger:.065},"-=.03")
-        .from(".sketch-device-card",{autoAlpha:0,y:34,scale:.90,duration:.62,stagger:.07},"-=.38")
-        .from(".sketch-hero-loc",{autoAlpha:0,x:18,duration:.36},"-=.18");
+        .from(".premium-hero-copy > *",{autoAlpha:0,y:24,duration:.54,stagger:.065},"-=.03")
+        .from(".hero-product-main",{autoAlpha:0,x:28,y:18,scale:.96,duration:.7},"-=.36")
+        .from(".hero-product-small",{autoAlpha:0,x:26,y:16,scale:.965,duration:.58,stagger:.08},"-=.42")
+        .from(".premium-trust-strip",{autoAlpha:0,y:14,duration:.42},"-=.16");
 
       gsap.fromTo(".sketch-hero",{
         clipPath:"inset(2.5% 2.5% 2.5% 2.5% round 26px)",
@@ -108,55 +109,49 @@ export default function SiteMotion(){
       const mm=gsap.matchMedia();
 
       mm.add("(min-width: 901px)",()=>{
-        if(document.querySelector(".sketch-hero")){
-          gsap.to(".sketch-hero-bg",{
-            yPercent:-6,
-            scale:1.085,
-            ease:"none",
-            scrollTrigger:{trigger:".sketch-hero",start:"top bottom",end:"bottom top",scrub:1.05}
-          });
-
-          gsap.to(".sketch-hero-copy",{
+        if(document.querySelector(".premium-hero")){
+          gsap.to(".premium-hero-copy",{
             y:-18,
+            autoAlpha:.78,
             ease:"none",
-            scrollTrigger:{trigger:".sketch-hero",start:"top top",end:"bottom top",scrub:1.15}
+            scrollTrigger:{trigger:".premium-hero",start:"top top",end:"bottom top",scrub:1.1}
           });
 
-          [
-            [".device-samsung",-18,-6],
-            [".device-xiaomi",16,8],
-            [".device-honor",-10,4],
-            [".device-redmi",12,-4],
-            [".device-tablet",-12,18],
-            [".device-ps5",-20,6],
-          ].forEach(([selector,y,x])=>{
-            gsap.to(selector as string,{
-              y:y as number,
-              x:x as number,
-              ease:"none",
-              scrollTrigger:{trigger:".sketch-hero",start:"top top",end:"bottom top",scrub:1.1}
-            });
+          gsap.to(".hero-product-main",{
+            y:-18,
+            scale:1.015,
+            ease:"none",
+            scrollTrigger:{trigger:".premium-hero",start:"top top",end:"bottom top",scrub:1.05}
           });
 
-          const hero=document.querySelector<HTMLElement>(".sketch-hero");
-          const stage=document.querySelector<HTMLElement>(".sketch-device-stage");
-          if(hero&&stage){
-            const rotX=gsap.quickTo(stage,"rotationX",{duration:.55,ease:"power3.out"});
-            const rotY=gsap.quickTo(stage,"rotationY",{duration:.55,ease:"power3.out"});
-            const moveX=gsap.quickTo(stage,"x",{duration:.55,ease:"power3.out"});
-            const moveY=gsap.quickTo(stage,"y",{duration:.55,ease:"power3.out"});
+          gsap.to(".hero-xiaomi",{
+            y:14,
+            ease:"none",
+            scrollTrigger:{trigger:".premium-hero",start:"top top",end:"bottom top",scrub:1.12}
+          });
+
+          gsap.to(".hero-ps5",{
+            y:-12,
+            ease:"none",
+            scrollTrigger:{trigger:".premium-hero",start:"top top",end:"bottom top",scrub:1.16}
+          });
+
+          const hero=document.querySelector<HTMLElement>(".premium-hero");
+          const showcase=document.querySelector<HTMLElement>(".premium-showcase");
+          if(hero&&showcase){
+            const moveX=gsap.quickTo(showcase,"x",{duration:.6,ease:"power3.out"});
+            const moveY=gsap.quickTo(showcase,"y",{duration:.6,ease:"power3.out"});
 
             const move=(event:MouseEvent)=>{
               const rect=hero.getBoundingClientRect();
               const px=(event.clientX-rect.left)/rect.width-.5;
               const py=(event.clientY-rect.top)/rect.height-.5;
-              rotY(px*3.2);
-              rotX(py*-2.1);
-              moveX(px*8);
-              moveY(py*5);
+              moveX(px*6);
+              moveY(py*4);
             };
             const leave=()=>{
-              rotY(0);rotX(0);moveX(0);moveY(0);
+              moveX(0);
+              moveY(0);
             };
 
             hero.addEventListener("mousemove",move);
