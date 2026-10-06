@@ -157,6 +157,31 @@ export default function SiteMotion() {
         },
       });
 
+      gsap.from(".closing-footer-top > *", {
+        autoAlpha: 0,
+        y: 24,
+        duration: 0.65,
+        stagger: 0.08,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".closing-footer",
+          start: "top 78%",
+          once: true,
+        },
+      });
+
+      gsap.from(".closing-footer-statement", {
+        autoAlpha: 0,
+        y: 30,
+        duration: 0.8,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".closing-footer-statement",
+          start: "top 90%",
+          once: true,
+        },
+      });
+
       const mm = gsap.matchMedia();
 
       mm.add("(min-width: 900px)", () => {
