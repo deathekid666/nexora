@@ -15,104 +15,129 @@ export default function SiteMotion() {
       const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
 
       intro
-        .from(".lhawta-eyebrow", { autoAlpha: 0, y: 12, duration: 0.45 })
-        .from(".lhawta-hero h1", { autoAlpha: 0, y: 34, duration: 0.78 }, "-=0.18")
-        .from(".lhawta-hero-copy > p", { autoAlpha: 0, y: 18, duration: 0.5 }, "-=0.34")
-        .from(".lhawta-hero-actions > *", { autoAlpha: 0, y: 12, duration: 0.42, stagger: 0.07 }, "-=0.24")
-        .from(".lhawta-hero-proof span", { autoAlpha: 0, y: 10, duration: 0.4, stagger: 0.055 }, "-=0.22")
+        .from(".lhawta-offer-strip", { autoAlpha: 0, y: -10, duration: 0.35 })
+        .from(".commerce-hero-copy .lhawta-eyebrow", { autoAlpha: 0, y: 12, duration: 0.4 }, "-=0.15")
+        .from(".commerce-hero-copy h1", { autoAlpha: 0, y: 30, duration: 0.72 }, "-=0.18")
+        .from(".commerce-hero-copy > p", { autoAlpha: 0, y: 16, duration: 0.48 }, "-=0.34")
+        .from(".commerce-price-block", { autoAlpha: 0, y: 14, scale: 0.985, duration: 0.48 }, "-=0.24")
+        .from(".commerce-hero-copy .lhawta-hero-actions > *", { autoAlpha: 0, y: 10, duration: 0.4, stagger: 0.06 }, "-=0.24")
+        .from(".commerce-trust-row span", { autoAlpha: 0, y: 8, duration: 0.34, stagger: 0.05 }, "-=0.2")
         .fromTo(
-          ".lhawta-hero-product",
-          { autoAlpha: 0, scale: 0.96, clipPath: "inset(5% 5% 5% 5% round 34px)" },
-          { autoAlpha: 1, scale: 1, clipPath: "inset(0% 0% 0% 0% round 28px)", duration: 0.95, ease: "power4.out" },
-          0.14
-        )
-        .from(".lhawta-hero-product-top > *,.lhawta-hero-product-bottom > *", { autoAlpha: 0, y: 10, duration: 0.4, stagger: 0.05 }, "-=0.3");
+          ".commerce-hero-media",
+          { autoAlpha: 0, scale: 0.965, clipPath: "inset(4% 4% 4% 4% round 30px)" },
+          { autoAlpha: 1, scale: 1, clipPath: "inset(0% 0% 0% 0% round 26px)", duration: 0.88, ease: "power4.out" },
+          0.12
+        );
 
-      gsap.from(".lhawta-category-dock a", {
+      gsap.from(".commerce-categories a", {
         autoAlpha: 0,
-        y: 18,
-        duration: 0.52,
-        stagger: 0.045,
+        y: 14,
+        duration: 0.48,
+        stagger: 0.04,
         ease: "power3.out",
         scrollTrigger: {
-          trigger: ".lhawta-category-dock",
-          start: "top 94%",
+          trigger: ".commerce-categories",
+          start: "top 93%",
           once: true,
         },
       });
 
-      gsap.utils.toArray<HTMLElement>(".lhawta-section-heading,.lhawta-compare-heading").forEach((el) => {
-        gsap.fromTo(
-          el,
-          { autoAlpha: 0, y: 34 },
-          {
-            autoAlpha: 1,
-            y: 0,
-            duration: 0.78,
-            ease: "power3.out",
-            scrollTrigger: { trigger: el, start: "top 90%", once: true },
-          }
-        );
+      gsap.from(".deal-card", {
+        autoAlpha: 0,
+        y: 24,
+        duration: 0.6,
+        stagger: 0.065,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".deal-grid",
+          start: "top 90%",
+          once: true,
+        },
       });
 
-      gsap.from(".lhawta-merch-main,.lhawta-mini-story", {
+      gsap.from(".retail-story", {
         autoAlpha: 0,
         y: 28,
         scale: 0.985,
-        duration: 0.78,
+        duration: 0.68,
         stagger: 0.08,
         ease: "power3.out",
         scrollTrigger: {
-          trigger: ".lhawta-merch-section",
+          trigger: ".retail-story-grid",
+          start: "top 90%",
+          once: true,
+        },
+      });
+
+      gsap.from(".lhawta-compare-heading", {
+        autoAlpha: 0,
+        y: 28,
+        duration: 0.7,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".lhawta-compare-section",
+          start: "top 82%",
+          once: true,
+        },
+      });
+
+      gsap.from(".lhawta-compare-panel", {
+        autoAlpha: 0,
+        y: 24,
+        scale: 0.985,
+        duration: 0.7,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".lhawta-compare-panel",
           start: "top 88%",
+          once: true,
+        },
+      });
+
+      gsap.from(".lhawta-compare-row", {
+        autoAlpha: 0,
+        y: 16,
+        duration: 0.5,
+        stagger: 0.06,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".lhawta-compare-panel",
+          start: "top 82%",
           once: true,
         },
       });
 
       gsap.from(".lhawta-services-grid article", {
         autoAlpha: 0,
-        y: 28,
-        duration: 0.65,
-        stagger: 0.07,
+        y: 24,
+        duration: 0.58,
+        stagger: 0.06,
         ease: "power3.out",
         scrollTrigger: {
           trigger: ".lhawta-services-grid",
-          start: "top 88%",
+          start: "top 90%",
           once: true,
         },
       });
 
       gsap.from(".lhawta-faq-list details", {
         autoAlpha: 0,
-        y: 16,
-        duration: 0.52,
-        stagger: 0.055,
+        y: 14,
+        duration: 0.46,
+        stagger: 0.05,
         ease: "power3.out",
         scrollTrigger: {
           trigger: ".lhawta-faq-list",
-          start: "top 88%",
-          once: true,
-        },
-      });
-
-      gsap.from(".lhawta-help-card", {
-        autoAlpha: 0,
-        y: 22,
-        scale: 0.985,
-        duration: 0.62,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: ".lhawta-help-card",
-          start: "top 92%",
+          start: "top 90%",
           once: true,
         },
       });
 
       gsap.from(".lhawta-newsletter", {
         autoAlpha: 0,
-        y: 32,
-        scale: 0.975,
-        duration: 0.82,
+        y: 28,
+        scale: 0.985,
+        duration: 0.7,
         ease: "power3.out",
         scrollTrigger: {
           trigger: ".lhawta-newsletter",
@@ -121,174 +146,49 @@ export default function SiteMotion() {
         },
       });
 
-      gsap.from(".lhawta-footer-brand,.lhawta-footer-links > div,.lhawta-footer-statement", {
-        autoAlpha: 0,
-        y: 24,
-        duration: 0.62,
-        stagger: 0.075,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: ".lhawta-footer",
-          start: "top 84%",
-          once: true,
-        },
-      });
-
-      gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) => {
-        gsap.fromTo(
-          el,
-          { autoAlpha: 0, y: 24 },
-          {
-            autoAlpha: 1,
-            y: 0,
-            duration: 0.72,
-            ease: "power3.out",
-            scrollTrigger: { trigger: el, start: "top 90%", once: true },
-          }
-        );
-      });
-
-      gsap.utils.toArray<HTMLElement>("[data-reveal-scale]").forEach((el) => {
-        gsap.fromTo(
-          el,
-          { autoAlpha: 0, scale: 0.975, y: 18 },
-          {
-            autoAlpha: 1,
-            scale: 1,
-            y: 0,
-            duration: 0.8,
-            ease: "power3.out",
-            scrollTrigger: { trigger: el, start: "top 90%", once: true },
-          }
-        );
-      });
-
-      const mm = gsap.matchMedia();
-
-      mm.add("(min-width: 900px)", () => {
-        const heroTl = gsap.timeline({
+      gsap.matchMedia().add("(min-width: 900px)", () => {
+        gsap.to(".commerce-hero-media img", {
+          yPercent: -5,
+          scale: 1.035,
+          ease: "none",
           scrollTrigger: {
-            trigger: ".lhawta-hero",
-            start: "top 66px",
-            end: "+=1050",
-            scrub: 1,
-            pin: true,
-            pinSpacing: true,
-            anticipatePin: 1,
-          },
-        });
-
-        heroTl
-          .to(".lhawta-hero-copy", {
-            autoAlpha: 0,
-            x: -70,
-            y: -20,
-            duration: 0.35,
-            ease: "none",
-          }, 0)
-          .to(".lhawta-category-dock", {
-            autoAlpha: 0,
-            y: 45,
-            duration: 0.26,
-            ease: "none",
-          }, 0.05)
-          .to(".lhawta-hero-product", {
-            xPercent: -37,
-            scale: 1.42,
-            borderRadius: 10,
-            duration: 1,
-            ease: "none",
-          }, 0)
-          .to(".lhawta-hero-product > img", {
-            scale: 1.07,
-            duration: 1,
-            ease: "none",
-          }, 0)
-          .to(".lhawta-hero-product-top,.lhawta-hero-product-bottom", {
-            autoAlpha: 0,
-            duration: 0.25,
-            ease: "none",
-          }, 0.12)
-          .to(".lhawta-blue-line", {
-            width: "100%",
-            duration: 0.45,
-            ease: "none",
-          }, 0.2);
-
-        const latestSection = document.querySelector<HTMLElement>(".lhawta-latest-section");
-        const latestTrack = document.querySelector<HTMLElement>(".lhawta-horizontal-track");
-
-        if (latestSection && latestTrack) {
-          const getDistance = () => Math.max(0, latestTrack.scrollWidth - window.innerWidth + window.innerWidth * 0.09);
-
-          gsap.to(latestTrack, {
-            x: () => -getDistance(),
-            ease: "none",
-            scrollTrigger: {
-              trigger: latestSection,
-              start: "top top",
-              end: () => "+=" + Math.max(1100, getDistance() * 1.08),
-              scrub: 1,
-              pin: true,
-              pinSpacing: true,
-              anticipatePin: 1,
-              invalidateOnRefresh: true,
-            },
-          });
-        }
-
-        gsap.fromTo(
-          ".lhawta-merch-main > img",
-          { scale: 1.09 },
-          {
-            scale: 1,
-            ease: "none",
-            scrollTrigger: {
-              trigger: ".lhawta-merch-main",
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 1.1,
-            },
-          }
-        );
-
-        const compareTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: ".lhawta-compare-section",
+            trigger: ".commerce-hero",
             start: "top top",
-            end: "+=900",
-            scrub: 1,
-            pin: true,
-            pinSpacing: true,
-            anticipatePin: 1,
+            end: "bottom top",
+            scrub: 1.1,
           },
         });
 
-        compareTl
-          .fromTo(".lhawta-compare-heading", { autoAlpha: 0, y: 65 }, { autoAlpha: 1, y: 0, duration: 0.28, ease: "none" }, 0)
-          .fromTo(".lhawta-compare-panel", { autoAlpha: 0, scale: 0.94, y: 42 }, { autoAlpha: 1, scale: 1, y: 0, duration: 0.26, ease: "none" }, 0.18)
-          .fromTo(".lhawta-compare-row", { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.18, stagger: 0.12, ease: "none" }, 0.36);
-
-        gsap.to(".lhawta-mini-blue", {
-          y: -24,
+        gsap.to(".commerce-hero-copy", {
+          y: -28,
+          autoAlpha: 0.7,
           ease: "none",
           scrollTrigger: {
-            trigger: ".lhawta-merch-section",
-            start: "top bottom",
+            trigger: ".commerce-hero",
+            start: "top top",
             end: "bottom top",
-            scrub: 1.2,
+            scrub: 1.1,
           },
         });
 
-        gsap.to(".lhawta-mini-black", {
-          y: 20,
-          ease: "none",
-          scrollTrigger: {
-            trigger: ".lhawta-merch-section",
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 1.2,
-          },
+        gsap.utils.toArray<HTMLElement>(".retail-story").forEach((el, index) => {
+          const image = el.querySelector("img");
+          if (!image) return;
+          gsap.fromTo(
+            image,
+            { scale: 1.06, yPercent: index % 2 ? 2 : 0 },
+            {
+              scale: 1,
+              yPercent: -4,
+              ease: "none",
+              scrollTrigger: {
+                trigger: el,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1,
+              },
+            }
+          );
         });
       });
 
@@ -300,18 +200,15 @@ export default function SiteMotion() {
         end: "max",
         onUpdate: (self) => {
           document.querySelector(".store-header")?.classList.toggle("scrolled", self.scroll() > 60);
-
           if (progressBar) {
             gsap.set(progressBar, { scaleX: self.progress, transformOrigin: "left center" });
           }
-
           floatingBuy?.classList.toggle("show", self.scroll() > 720);
         },
       });
     });
 
     ScrollTrigger.refresh();
-
     return () => ctx.revert();
   }, []);
 
