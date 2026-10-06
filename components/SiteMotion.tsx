@@ -16,7 +16,8 @@ export default function SiteMotion(){
       intro
         .from(".sketch-topbar",{autoAlpha:0,y:-8,duration:.28})
         .from(".sketch-main-header",{autoAlpha:0,y:-12,duration:.38},"-=.12")
-        .from(".sketch-nav",{autoAlpha:0,y:-8,duration:.35},"-=.18")
+        .from(".sketch-nav",{autoAlpha:0,y:-8,duration:.28},"-=.18")
+        .from(".sketch-nav-categories a,.sketch-nav-special a,.sketch-all",{autoAlpha:0,y:-8,duration:.34,stagger:.035},"-=.18")
         .from(".sketch-hero-copy > *",{autoAlpha:0,y:22,duration:.52,stagger:.07},"-=.05")
         .from(".sketch-device-card",{autoAlpha:0,y:30,scale:.92,rotation:0,duration:.62,stagger:.075},"-=.36")
         .from(".sketch-hero-loc",{autoAlpha:0,x:18,duration:.4},"-=.2");
@@ -64,6 +65,20 @@ export default function SiteMotion(){
       gsap.from(".sketch-faq-list details",{
         autoAlpha:0,y:14,duration:.45,stagger:.05,ease:"power3.out",
         scrollTrigger:{trigger:".sketch-faq-list",start:"top 90%",once:true}
+      });
+
+      gsap.from(".category-hero > *",{
+        autoAlpha:0,y:22,duration:.58,stagger:.08,ease:"power3.out"
+      });
+
+      gsap.from(".category-toolbar > *",{
+        autoAlpha:0,y:10,duration:.42,stagger:.06,ease:"power3.out",
+        scrollTrigger:{trigger:".category-toolbar",start:"top 96%",once:true}
+      });
+
+      gsap.from(".category-product-card",{
+        autoAlpha:0,y:24,duration:.58,stagger:.06,ease:"power3.out",
+        scrollTrigger:{trigger:".category-grid",start:"top 91%",once:true}
       });
 
       const mm=gsap.matchMedia();
