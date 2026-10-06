@@ -45,7 +45,7 @@ export default function ProductPage() {
       </div>
 
       <div className="breadcrumbs">
-        <a href="/">Home</a><ChevronRight size={13}/><a href="/#phones">Smartphones</a><ChevronRight size={13}/><span>iPhone 17 Pro Max</span>
+        <a href="/">Home</a><ChevronRight size={13}/><a href="/#latest">Smartphones</a><ChevronRight size={13}/><span>iPhone 17 Pro Max</span>
       </div>
 
       <section className="product-commerce" id="overview" data-reveal>
