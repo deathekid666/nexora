@@ -9,17 +9,17 @@ function colorDistance(r:number,g:number,b:number,br:number,bg:number,bb:number)
   return Math.sqrt((r-br)**2+(g-bg)**2+(b-bb)**2);
 }
 
-function removeConnectedLightBackground(ctx:CanvasRenderingContext2D,w:number,h:number){
+function removeConnectedBackdrop(ctx:CanvasRenderingContext2D,w:number,h:number){
   const image=ctx.getImageData(0,0,w,h);
   const d=image.data;
-
   const samples:number[][]=[];
+
   const pick=(x:number,y:number)=>{
     const i=(y*w+x)*4;
-    samples.push([d[i],d[i+1],d[i+2],d[i+3]]);
+    if(d[i+3]>18) samples.push([d[i],d[i+1],d[i+2]]);
   };
 
-  const span=Math.max(2,Math.floor(Math.min(w,h)*0.025));
+  const span=Math.max(3,Math.floor(Math.min(w,h)*0.035));
   for(let y=0;y<span;y++){
     for(let x=0;x<span;x++){
       pick(x,y);
@@ -29,29 +29,38 @@ function removeConnectedLightBackground(ctx:CanvasRenderingContext2D,w:number,h:
     }
   }
 
-  const opaque=samples.filter(s=>s[3]>20);
-  if(!opaque.length) return image;
+  if(!samples.length) return image;
 
-  const bg=opaque.reduce((a,s)=>[a[0]+s[0],a[1]+s[1],a[2]+s[2]], [0,0,0]).map(v=>v/opaque.length);
-  const [br,bgC,bb]=bg;
-  const brightness=(br+bgC+bb)/3;
+  const mean=samples.reduce((a,s)=>[a[0]+s[0],a[1]+s[1],a[2]+s[2]],[0,0,0]).map(v=>v/samples.length);
+  const avgSpread=samples.reduce((sum,s)=>sum+colorDistance(s[0],s[1],s[2],mean[0],mean[1],mean[2]),0)/samples.length;
 
-  // Only strip a genuinely light, near-neutral connected backdrop.
-  if(brightness<188 || Math.max(br,bgC,bb)-Math.min(br,bgC,bb)>42) return image;
+  // Only treat the edge as a removable backdrop when the corners are reasonably coherent.
+  if(avgSpread>58) return image;
+
+  const anchors=[
+    samples[0],
+    samples[Math.floor(samples.length*.25)]||samples[0],
+    samples[Math.floor(samples.length*.5)]||samples[0],
+    samples[Math.floor(samples.length*.75)]||samples[0],
+    samples[samples.length-1]||samples[0],
+    mean,
+  ];
 
   const seen=new Uint8Array(w*h);
   const q=new Int32Array(w*h);
   let head=0,tail=0;
 
-  const matches=(idx:number)=>{
+  const isBackdrop=(idx:number)=>{
     const p=idx*4;
     if(d[p+3]<8) return true;
-    const lum=(d[p]+d[p+1]+d[p+2])/3;
-    return lum>158 && colorDistance(d[p],d[p+1],d[p+2],br,bgC,bb)<72;
+    const r=d[p],g=d[p+1],b=d[p+2];
+    let min=Infinity;
+    for(const a of anchors) min=Math.min(min,colorDistance(r,g,b,a[0],a[1],a[2]));
+    return min<86;
   };
 
   const push=(idx:number)=>{
-    if(idx<0||idx>=w*h||seen[idx]||!matches(idx)) return;
+    if(idx<0||idx>=w*h||seen[idx]||!isBackdrop(idx)) return;
     seen[idx]=1;
     q[tail++]=idx;
   };
@@ -73,20 +82,17 @@ function removeConnectedLightBackground(ctx:CanvasRenderingContext2D,w:number,h:
     if(seen[idx]) d[idx*4+3]=0;
   }
 
-  // Feather only the newly-transparent edge to avoid hard halos.
   const alpha=new Uint8ClampedArray(w*h);
   for(let idx=0;idx<w*h;idx++) alpha[idx]=d[idx*4+3];
+
   for(let y=1;y<h-1;y++){
     for(let x=1;x<w-1;x++){
       const idx=y*w+x;
       if(alpha[idx]===0) continue;
-      const nearTransparent=
+      const edge=
         alpha[idx-1]===0||alpha[idx+1]===0||
         alpha[idx-w]===0||alpha[idx+w]===0;
-      if(!nearTransparent) continue;
-      const p=idx*4;
-      const lum=(d[p]+d[p+1]+d[p+2])/3;
-      if(lum>185) d[p+3]=Math.min(d[p+3],150);
+      if(edge) d[idx*4+3]=Math.min(d[idx*4+3],175);
     }
   }
 
@@ -120,7 +126,7 @@ export function HeroProductVisual({
 
     image.onload=()=>{
       try{
-        const maxSide=920;
+        const maxSide=960;
         const scale=Math.min(1,maxSide/Math.max(image.naturalWidth,image.naturalHeight));
         const w=Math.max(1,Math.round(image.naturalWidth*scale));
         const h=Math.max(1,Math.round(image.naturalHeight*scale));
@@ -130,7 +136,7 @@ export function HeroProductVisual({
         const ctx=canvas.getContext("2d",{willReadFrequently:true});
         if(!ctx) throw new Error("Canvas unavailable");
         ctx.drawImage(image,0,0,w,h);
-        const cleaned=removeConnectedLightBackground(ctx,w,h);
+        const cleaned=removeConnectedBackdrop(ctx,w,h);
         ctx.putImageData(cleaned,0,0);
 
         canvas.toBlob(blob=>{
@@ -141,7 +147,7 @@ export function HeroProductVisual({
           const url=URL.createObjectURL(blob);
           cutoutCache.set(src,url);
           if(mounted.current) setResolved(url);
-        },"image/webp",0.94);
+        },"image/webp",0.95);
       }catch{
         if(mounted.current) setResolved(src);
       }
