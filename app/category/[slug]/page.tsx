@@ -12,12 +12,12 @@ import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 
 const IMAGES={
-  samsung:"https://images.samsung.com/n_africa/smartphones/galaxy-s26-ultra/buy/kv_animated_PC_noText.jpg?imbypass=true",
-  xiaomi:"https://i02.appmifile.com/mi-com-product/fly-birds/xiaomi-17t-pro/pc/screen01-bg.png",
-  honor:"https://www-file.honor.com/content/dam/honor/common/products/honor-600/product/imgs/section-cmf/honor600series-cmf-icon-orange.png",
-  redmi:"https://i02.appmifile.com/mi-com-product/fly-birds/redmi-note-15-pro-plus-5g/pc/1e62d6973df9124095c38d8ed31b142a.jpg",
-  tablet:"https://images.samsung.com/is/image/samsung/p6pim/n_africa/feature/166494293/n_africa-feature--nbsp-548796580?imbypass=true",
-  ps5:"https://gmedia.playstation.com/is/image/SIEPDC/ps5-slim-edition-left-image-block-01-en-24jun24",
+  samsung:"/api/product-image/galaxy-s26-ultra",
+  xiaomi:"/api/product-image/xiaomi-17t-pro",
+  honor:"/api/product-image/honor-600",
+  redmi:"/api/product-image/redmi-note-15-pro-plus-5g",
+  tablet:"/api/product-image/galaxy-tab-s11-ultra",
+  ps5:"/api/product-image/playstation-5",
   tv:"https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=1200&q=86",
   gaming:"https://images.unsplash.com/photo-1763258986479-0962883e1747?auto=format&fit=crop&w=1200&q=86",
   audio:"https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&q=86",
