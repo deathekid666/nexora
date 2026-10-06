@@ -46,6 +46,15 @@ export default function SiteMotion() {
         },
       });
 
+      gsap.from(".source-hero-float", {
+        autoAlpha: 0,
+        x: 18,
+        duration: 0.55,
+        stagger: 0.08,
+        delay: 0.78,
+        ease: "power3.out",
+      });
+
       gsap.utils.toArray<HTMLElement>(".source-heading h2").forEach((el) => {
         gsap.fromTo(
           el,
@@ -105,6 +114,45 @@ export default function SiteMotion() {
         scrollTrigger: {
           trigger: ".source-services",
           start: "top 90%",
+          once: true,
+        },
+      });
+
+      gsap.from(".retail-services-grid article", {
+        autoAlpha: 0,
+        y: 30,
+        duration: 0.68,
+        stagger: 0.07,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".retail-services-grid",
+          start: "top 88%",
+          once: true,
+        },
+      });
+
+      gsap.from(".retail-faq-list details", {
+        autoAlpha: 0,
+        y: 18,
+        duration: 0.55,
+        stagger: 0.055,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".retail-faq-list",
+          start: "top 88%",
+          once: true,
+        },
+      });
+
+      gsap.from(".retail-faq-support-card", {
+        autoAlpha: 0,
+        y: 20,
+        scale: 0.98,
+        duration: 0.65,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".retail-faq-support-card",
+          start: "top 92%",
           once: true,
         },
       });
