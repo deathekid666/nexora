@@ -21,6 +21,7 @@ import {
   writeCart,
   type CartItem,
 } from "@/lib/cart-client";
+import { readCustomerProfile, writeCustomerProfile } from "@/lib/customer-profile";
 
 const WHATSAPP_NUMBER=(process.env.NEXT_PUBLIC_LHAWTA_WHATSAPP || "").replace(/\D/g,"");
 const WHATSAPP_READY=/^\d{10,15}$/.test(WHATSAPP_NUMBER);
@@ -38,7 +39,19 @@ export default function CartPageClient(){
   const [submitting,setSubmitting]=useState(false);
   const [createdOrder,setCreatedOrder]=useState<string>("");
 
-  useEffect(()=>setItems(readCart()),[]);
+  useEffect(()=>{
+    setItems(readCart());
+    const profile=readCustomerProfile();
+    if(profile.name||profile.phone||profile.city||profile.address){
+      setCustomer(current=>({
+        ...current,
+        name:profile.name,
+        phone:profile.phone,
+        city:profile.city,
+        address:profile.address,
+      }));
+    }
+  },[]);
 
   const total=useMemo(()=>cartTotal(items),[items]);
   const count=useMemo(()=>items.reduce((sum,item)=>sum+item.qty,0),[items]);
@@ -107,6 +120,12 @@ export default function CartPageClient(){
       }
 
       const order=payload.order;
+      writeCustomerProfile({
+        name:customer.name,
+        phone:customer.phone,
+        city:customer.city,
+        address:customer.address,
+      });
       const lines=[
         "Bonjour LHAWTA, je souhaite confirmer cette commande en paiement à la livraison :",
         "",
