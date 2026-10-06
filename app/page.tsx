@@ -3,196 +3,148 @@
 import {
   ArrowRight,
   BadgeCheck,
-  BatteryCharging,
-  Camera,
+  Box,
   ChevronDown,
-  ChevronRight,
-  Gamepad2,
+  Clock3,
   Headphones,
   Heart,
   Laptop,
-  Monitor,
+  LockKeyhole,
+  PackageCheck,
   RotateCcw,
   ShieldCheck,
   ShoppingCart,
   Smartphone,
-  Sparkles,
   Star,
   Tablet,
   Truck,
   Tv,
   Watch,
-  Zap,
 } from "lucide-react";
 import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
-import LhawtaLogo from "@/components/LhawtaLogo";
 
+const HERO_PRODUCT="https://www.apple.com/newsroom/images/2025/09/apple-unveils-iphone-17-pro-and-iphone-17-pro-max/article/Apple-iPhone-17-Pro-color-lineup-250909_inline.jpg.large_2x.jpg";
 const S26_IMG="https://images.samsung.com/n_africa/smartphones/galaxy-s26-ultra/buy/kv_animated_PC_noText.jpg?imbypass=true";
 const XIAOMI17T_IMG="https://i02.appmifile.com/mi-com-product/fly-birds/xiaomi-17t-pro/pc/screen01-bg.png";
-const HONOR600_IMG="https://www-file.honor.com/content/dam/honor/common/products/honor-600/product/imgs/section-cmf/honor600series-cmf-icon-orange.png";
 const REDMI15_IMG="https://i02.appmifile.com/mi-com-product/fly-birds/redmi-note-15-pro-plus-5g/pc/1e62d6973df9124095c38d8ed31b142a.jpg";
 const TABS11_IMG="https://images.samsung.com/is/image/samsung/p6pim/n_africa/feature/166494293/n_africa-feature--nbsp-548796580?imbypass=true";
 const PS5_IMG="https://gmedia.playstation.com/is/image/SIEPDC/ps5-slim-edition-left-image-block-01-en-24jun24";
-const MOROCCO_BG="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=1900&q=88";
+const AUDIO_IMG="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=86";
+const LAPTOP_IMG="https://images.unsplash.com/photo-1782012505157-aca188bd6921?auto=format&fit=crop&w=1000&q=88";
+const TV_IMG="https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=1000&q=86";
+const WATCH_IMG="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=86";
+const ROCKS_BG="https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?auto=format&fit=crop&w=2200&q=90";
 
 const categories=[
-  {name:"Smartphones",icon:Smartphone,href:"/category/smartphones"},
-  {name:"Tablettes",icon:Tablet,href:"/category/tablettes"},
-  {name:"TV & Home",icon:Tv,href:"/category/tv-home"},
-  {name:"Gaming",icon:Gamepad2,href:"/category/gaming"},
-  {name:"Audio",icon:Headphones,href:"/category/audio"},
-  {name:"Wearables",icon:Watch,href:"/category/wearables"},
-  {name:"Informatique",icon:Laptop,href:"/category/informatique"},
-  {name:"Accessoires",icon:BatteryCharging,href:"/category/accessoires"},
+  {label:"Smartphones",href:"/category/smartphones",icon:Smartphone,img:S26_IMG},
+  {label:"Tablettes",href:"/category/tablettes",icon:Tablet,img:TABS11_IMG},
+  {label:"Informatique",href:"/category/informatique",icon:Laptop,img:LAPTOP_IMG},
+  {label:"TV & Home",href:"/category/tv-home",icon:Tv,img:TV_IMG},
+  {label:"Gaming",href:"/category/gaming",icon:ShoppingCart,img:PS5_IMG},
+  {label:"Audio",href:"/category/audio",icon:Headphones,img:AUDIO_IMG},
+  {label:"Wearables",href:"/category/wearables",icon:Watch,img:WATCH_IMG},
+  {label:"Accessoires",href:"/category/accessoires",icon:PackageCheck,img:AUDIO_IMG},
 ];
 
 const products=[
-  {
-    badge:"Nouveau", badgeTone:"blue", brand:"SAMSUNG", name:"Galaxy S26 Ultra",
-    image:S26_IMG, price:"12 591 DH", oldPrice:"13 990 DH",
-    specs:["Écran 6,9″","200 MP grand-angle","5 000 mAh"], stock:"Disponible",
-    tag:"Galaxy AI", href:"#"
-  },
-  {
-    badge:"Nouveau", badgeTone:"orange", brand:"XIAOMI", name:"Xiaomi 17T Pro",
-    image:XIAOMI17T_IMG, price:"7 990 DH", oldPrice:"",
-    specs:["6,83″ AMOLED 144 Hz","Dimensity 9500","7 000 mAh · 100 W"], stock:"Disponible",
-    tag:"Leica 5×", href:"#"
-  },
-  {
-    badge:"Nouveau", badgeTone:"green", brand:"HONOR", name:"HONOR 600",
-    image:HONOR600_IMG, price:"4 899 DH", oldPrice:"4 999 DH",
-    specs:["Caméra 200 MP","Écran 6,57″ AMOLED","Snapdragon 7 Gen 4"], stock:"Disponible",
-    tag:"MagicOS 10", href:"#"
-  },
-  {
-    badge:"Top vente", badgeTone:"red", brand:"REDMI", name:"Note 15 Pro+ 5G",
-    image:REDMI15_IMG, price:"4 199 DH", oldPrice:"4 640 DH",
-    specs:["200 MP OIS","Snapdragon 7s Gen 4","6 500 mAh · 100 W"], stock:"Stock limité",
-    tag:"IP69", href:"#"
-  },
-  {
-    badge:"Nouveau", badgeTone:"blue", brand:"SAMSUNG", name:"Galaxy Tab S11 Ultra",
-    image:TABS11_IMG, price:"13 990 DH", oldPrice:"",
-    specs:["14,6″ Dynamic AMOLED 2X","12 Go + 256 Go","S Pen inclus"], stock:"Disponible",
-    tag:"5G", href:"#"
-  },
-  {
-    badge:"Top vente", badgeTone:"red", brand:"SONY", name:"PlayStation 5 · 1 To",
-    image:PS5_IMG, price:"8 499 DH", oldPrice:"9 499 DH",
-    specs:["SSD 1 To","DualSense","4K gaming"], stock:"Voir disponibilité",
-    tag:"PS5", href:"#"
-  },
+  {brand:"Samsung",name:"Galaxy S26 Ultra",img:S26_IMG,badge:"Nouveau",rating:"4.9",reviews:"639",price:"12 591 MAD",old:"13 990 MAD",colors:["#d8d5ce","#6e7378","#20242a"]},
+  {brand:"Xiaomi",name:"Xiaomi 17T Pro",img:XIAOMI17T_IMG,badge:"Nouveau",rating:"4.8",reviews:"408",price:"7 990 MAD",old:"",colors:["#17191e","#d9d9d5","#704b36"]},
+  {brand:"Samsung",name:"Galaxy Tab S11 Ultra",img:TABS11_IMG,badge:"Nouveau",rating:"4.8",reviews:"624",price:"13 990 MAD",old:"",colors:["#2e3237","#b8b7b2"]},
+  {brand:"REDMI",name:"Note 15 Pro+ 5G",img:REDMI15_IMG,badge:"-10%",rating:"4.8",reviews:"541",price:"4 199 MAD",old:"4 640 MAD",colors:["#482f58","#1c1f23","#d5d2cb"]},
+  {brand:"Sony",name:"PlayStation 5 · 1 To",img:PS5_IMG,badge:"Nouveau",rating:"4.9",reviews:"296",price:"8 499 MAD",old:"9 499 MAD",colors:["#f0f0ed","#101115"]},
+  {brand:"Sony",name:"WH-1000XM5",img:AUDIO_IMG,badge:"-15%",rating:"4.8",reviews:"813",price:"4 249 MAD",old:"4 999 MAD",colors:["#b8b0a3","#202124"]},
 ];
 
-const compareRows=[
-  {name:"Galaxy S26 Ultra",camera:"200 MP",screen:"6,9″",battery:"5 000 mAh",best:"Photo + AI",price:"12 591 DH"},
-  {name:"Xiaomi 17T Pro",camera:"50+50+12 MP",screen:"6,83″ 144 Hz",battery:"7 000 mAh",best:"Zoom + charge",price:"7 990 DH"},
-  {name:"HONOR 600",camera:"200 MP",screen:"6,57″ AMOLED",battery:"7 000 mAh",best:"Autonomie",price:"4 899 DH"},
+const deals=[
+  {badge:"-20%",name:"Galaxy flagship",img:S26_IMG,old:"11 999 MAD",price:"9 599 MAD"},
+  {badge:"-15%",name:"Smartwatch premium",img:WATCH_IMG,old:"3 499 MAD",price:"2 974 MAD"},
+  {badge:"-25%",name:"Audio Pro",img:AUDIO_IMG,old:"3 999 MAD",price:"2 999 MAD"},
+  {badge:"-10%",name:"Tablet 10th Gen",img:TABS11_IMG,old:"4 999 MAD",price:"4 499 MAD"},
+];
+
+const faqs=[
+  "Les produits sont-ils neufs et originaux ?",
+  "Quelle garantie proposez-vous ?",
+  "Livrez-vous partout au Maroc ?",
+  "Puis-je retourner ou échanger un produit ?",
+  "Quels moyens de paiement acceptez-vous ?",
+  "Combien de temps prend la livraison ?",
 ];
 
 export default function Home(){
   return (
-    <main className="lhawta-sketch-site">
+    <main className="ref-page">
       <SiteMotion/>
       <StoreHeader/>
 
-      <section className="sketch-hero premium-hero" id="latest">
-        <div className="premium-hero-copy">
-          <span className="premium-kicker"><Sparkles size={13}/> NOUVEAUTÉS MAROC · OCTOBRE 2026</span>
-          <h1>La tech qui mérite<br/><em>votre argent.</em></h1>
-          <p>Les nouveaux smartphones, tablettes et consoles — avec prix, specs, garantie et disponibilité clairement affichés avant l’achat.</p>
+      <section className="ref-hero">
+        <img className="ref-hero-bg" src={ROCKS_BG} alt=""/>
+        <div className="ref-hero-wash"/>
 
-          <div className="premium-hero-actions">
-            <a href="#products" className="premium-primary">Voir les nouveautés <ArrowRight size={16}/></a>
-            <a href="#compare" className="premium-secondary">Comparer les produits <ChevronRight size={15}/></a>
-          </div>
-
-          <div className="premium-proof">
-            <span><BadgeCheck size={15}/><b>100% neuf</b></span>
-            <span><ShieldCheck size={15}/><b>Garantie claire</b></span>
-            <span><Truck size={15}/><b>Livraison Maroc</b></span>
+        <div className="ref-hero-copy">
+          <span className="ref-pill">Nouveauté</span>
+          <h1>Galaxy S26 Ultra</h1>
+          <h2>Le nouveau flagship, bien choisi.</h2>
+          <p>Produit neuf · Garantie affichée · Livraison partout au Maroc</p>
+          <div className="ref-hero-actions">
+            <a href="/category/smartphones" className="ref-btn-dark">Acheter <ArrowRight size={14}/></a>
+            <a href="#compare" className="ref-btn-light">Comparer <span>▥</span></a>
           </div>
         </div>
 
-        <div className="premium-showcase">
-          <a href="/category/smartphones" className="hero-product-card hero-product-main">
-            <div className="hero-product-card-head">
-              <span>SAMSUNG · NOUVEAU</span>
-              <b>Galaxy AI</b>
-            </div>
-            <div className="hero-product-visual">
-              <img src={S26_IMG} alt="Samsung Galaxy S26 Ultra"/>
-            </div>
-            <div className="hero-product-card-foot">
-              <div><small>Galaxy S26 Ultra</small><strong>12 591 DH</strong></div>
-              <span>200 MP · 6,9″ · 5 000 mAh</span>
-            </div>
+        <div className="ref-hero-product">
+          <img src={S26_IMG} alt="Samsung Galaxy S26 Ultra"/>
+        </div>
+
+        <a href="/category/smartphones" className="ref-hero-buycard">
+          <strong>Galaxy S26 Ultra</strong>
+          <div className="ref-stars"><span>★★★★★</span><small>(4.9)</small></div>
+          <p>À partir de <b>12 591 MAD</b></p>
+          <div className="ref-colors"><i/><i/><i/><i/></div>
+          <em>Disponible maintenant</em>
+          <small>Livraison en 1–3 jours</small>
+          <b className="ref-buy-arrow">→</b>
+        </a>
+
+        <div className="ref-hero-benefits">
+          <div><ShieldCheck size={20}/><span><b>Garantie officielle</b><small>100% neuf</small></span></div>
+          <div><Truck size={20}/><span><b>Livraison rapide</b><small>Partout au Maroc</small></span></div>
+          <div><LockKeyhole size={20}/><span><b>Paiement sécurisé</b><small>Plusieurs options</small></span></div>
+          <div><RotateCcw size={20}/><span><b>Retours faciles</b><small>14 jours</small></span></div>
+        </div>
+      </section>
+
+      <section className="ref-category-strip">
+        {categories.map(({label,href,img})=>(
+          <a href={href} key={label}>
+            <div><img src={img} alt=""/></div>
+            <span>{label}</span>
           </a>
-
-          <div className="hero-side-stack">
-            <a href="/category/smartphones" className="hero-product-card hero-product-small hero-xiaomi">
-              <div className="hero-product-card-head"><span>XIAOMI</span><b>Nouveau</b></div>
-              <div className="hero-product-visual"><img src={XIAOMI17T_IMG} alt="Xiaomi 17T Pro"/></div>
-              <div className="hero-product-card-foot">
-                <div><small>Xiaomi 17T Pro</small><strong>7 990 DH</strong></div>
-                <span>Leica 5× · 144 Hz · 100 W</span>
-              </div>
-            </a>
-
-            <a href="/category/gaming" className="hero-product-card hero-product-small hero-ps5">
-              <div className="hero-product-card-head"><span>SONY</span><b>Top vente</b></div>
-              <div className="hero-product-visual"><img src={PS5_IMG} alt="PlayStation 5"/></div>
-              <div className="hero-product-card-foot">
-                <div><small>PlayStation 5 · 1 To</small><strong>8 499 DH</strong></div>
-                <span>SSD 1 To · DualSense · 4K</span>
-              </div>
-            </a>
-          </div>
-        </div>
-
-        <div className="premium-hero-orbit premium-orbit-one"/>
-        <div className="premium-hero-orbit premium-orbit-two"/>
-      </section>
-
-      <section className="sketch-trust-strip premium-trust-strip">
-        <div><ShieldCheck size={23}/><span><b>Produits 100% neufs</b><small>Condition affichée clairement</small></span></div>
-        <div><Truck size={23}/><span><b>Livraison partout au Maroc</b><small>Disponibilité avant paiement</small></span></div>
-        <div><ShoppingCart size={23}/><span><b>Paiement flexible</b><small>Options visibles au checkout</small></span></div>
-        <div><Headphones size={23}/><span><b>Support réactif</b><small>Aide avant et après achat</small></span></div>
-      </section>
-
-      <section className="sketch-category-strip premium-category-strip">
-        {categories.map(({name,icon:Icon,href})=>(
-          <a href={href} key={name}><span className="premium-cat-icon"><Icon size={20}/></span><strong>{name}</strong><ChevronRight size={13}/></a>
         ))}
+        <a href="#deals" className="ref-deal-cat"><div><b>%</b></div><span>Promos</span></a>
       </section>
 
-      <section className="sketch-products-section" id="products">
-        <div className="sketch-section-head">
-          <div><span>NOUVEAUTÉS & BEST-SELLERS</span><h2>Nos dernières nouveautés</h2></div>
-          <a href="#">Voir tout <ArrowRight size={14}/></a>
+      <section className="ref-products">
+        <div className="ref-section-title">
+          <div><h2>Nouveautés de la semaine</h2><p>Les derniers smartphones, tablettes et produits tech.</p></div>
+          <a href="/category/smartphones">Voir tous les produits <ArrowRight size={13}/></a>
         </div>
 
-        <div className="sketch-product-grid">
-          {products.map((p)=>(
-            <article className="sketch-product-card" key={p.name}>
-              <div className={"sketch-product-badge "+p.badgeTone}>{p.badge}</div>
-              <button className="sketch-wish"><Heart size={18}/></button>
-              <a href={p.href} className="sketch-product-media">
-                <img src={p.image} alt={p.name}/>
-                <span>{p.tag}</span>
-              </a>
-              <div className="sketch-product-body">
+        <div className="ref-product-grid">
+          {products.map(p=>(
+            <article className="ref-product-card" key={p.name}>
+              <div className={"ref-product-badge "+(p.badge.startsWith("-")?"sale":"")}>{p.badge}</div>
+              <button className="ref-heart" aria-label="Ajouter aux favoris"><Heart size={15}/></button>
+              <a href="#" className="ref-product-img"><img src={p.img} alt={p.name}/></a>
+              <div className="ref-product-body">
                 <small>{p.brand}</small>
                 <h3>{p.name}</h3>
-                <ul>{p.specs.map(s=><li key={s}>{s}</li>)}</ul>
-                <div className="sketch-stock"><span/> {p.stock}</div>
-                <div className="sketch-product-price"><strong>{p.price}</strong>{p.oldPrice&&<del>{p.oldPrice}</del>}</div>
-                <div className="sketch-product-actions">
-                  <button><ShoppingCart size={15}/> Voir détails</button>
-                  <button className="outline">Comparer</button>
+                <div className="ref-product-rating"><span>★★★★★</span><small>{p.rating} ({p.reviews})</small></div>
+                <div className="ref-product-price">{p.old&&<del>{p.old}</del>}<strong>{p.price}</strong></div>
+                <div className="ref-card-bottom">
+                  <div className="ref-swatch">{p.colors.map((c,i)=><i key={i} style={{background:c}}/>)}</div>
+                  <button><ShoppingCart size={15}/></button>
                 </div>
               </div>
             </article>
@@ -200,67 +152,113 @@ export default function Home(){
         </div>
       </section>
 
-      <section className="sketch-promos" id="promos">
-        <article className="sketch-promo-card promo-phone">
-          <img src={S26_IMG} alt="Galaxy S26 Ultra"/>
-          <div><span>SMARTPHONES</span><h3>Le flagship du moment.</h3><p>Galaxy S26 Ultra : 200 MP, écran 6,9″ et Galaxy AI.</p><a href="#products">Voir les smartphones <ArrowRight size={14}/></a></div>
-        </article>
-        <article className="sketch-promo-card promo-xiaomi">
-          <img src={XIAOMI17T_IMG} alt="Xiaomi 17T Pro"/>
-          <div><span>CHARGE & ZOOM</span><h3>Xiaomi 17T Pro.</h3><p>Leica 5×, Dimensity 9500, 7 000 mAh et charge 100 W.</p><a href="#products">Découvrir <ArrowRight size={14}/></a></div>
-        </article>
-        <article className="sketch-promo-card promo-gaming">
-          <img src={PS5_IMG} alt="PlayStation 5"/>
-          <div><span>GAMING</span><h3>PS5 1 To.</h3><p>SSD ultra rapide, DualSense et jeu 4K.</p><a href="#products">Voir le gaming <ArrowRight size={14}/></a></div>
-        </article>
-      </section>
-
-      <section className="sketch-compare" id="compare">
-        <div className="sketch-compare-copy">
-          <span>COMPARATEUR LHAWTA</span>
-          <h2>Comparez ce qui change vraiment.</h2>
-          <p>Caméra, écran, batterie, performance et prix — dans le même format, sans chercher entre plusieurs fiches.</p>
+      <section className="ref-deals" id="deals">
+        <div className="ref-deals-copy">
+          <span>OFFRE LIMITÉE</span>
+          <h2>Les deals tech du jour</h2>
+          <p>De bons produits. De meilleurs prix.</p>
+          <a href="#">Voir toutes les offres</a>
+          <div className="ref-countdown">
+            <small>Se termine dans</small>
+            <div><b>02</b><span>Jours</span></div>
+            <div><b>14</b><span>Heures</span></div>
+            <div><b>36</b><span>Min</span></div>
+            <div><b>20</b><span>Sec</span></div>
+          </div>
         </div>
-        <div className="sketch-compare-table">
-          <div className="sketch-compare-labels"><span>Produit</span><span>Caméra</span><span>Écran</span><span>Batterie</span><span>Idéal pour</span><span>Prix</span></div>
-          {compareRows.map(r=>(
-            <div className="sketch-compare-row" key={r.name}>
-              <strong>{r.name}</strong><span>{r.camera}</span><span>{r.screen}</span><span>{r.battery}</span><b>{r.best}</b><em>{r.price}</em>
-            </div>
+
+        <div className="ref-deal-cards">
+          {deals.map(d=>(
+            <article key={d.name}>
+              <span>{d.badge}</span>
+              <img src={d.img} alt={d.name}/>
+              <h3>{d.name}</h3>
+              <del>{d.old}</del>
+              <strong>{d.price}</strong>
+            </article>
           ))}
         </div>
       </section>
 
-      <section className="sketch-services" id="services">
-        <div className="sketch-section-head">
-          <div><span>SERVICES</span><h2>Achetez sans mauvaise surprise.</h2></div>
-          <p>Condition, garantie, disponibilité et livraison sont visibles avant le paiement.</p>
+      <section className="ref-compare" id="compare">
+        <div className="ref-compare-copy">
+          <span>COMPARER</span>
+          <h2>Trouvez le bon téléphone pour vous.</h2>
+          <p>Comparez specs, performances, caméra, batterie et plus, côte à côte.</p>
+          <a href="/category/smartphones">Commencer la comparaison</a>
         </div>
-        <div className="sketch-services-grid">
-          <article><BadgeCheck size={24}/><h3>Produits neufs</h3><p>Chaque fiche indique clairement l’état du produit et sa variante.</p></article>
-          <article><ShieldCheck size={24}/><h3>Garantie claire</h3><p>Type et durée de garantie affichés avant l’achat.</p></article>
-          <article><Truck size={24}/><h3>Livraison Maroc</h3><p>Disponibilité et estimation avant de finaliser la commande.</p></article>
-          <article><RotateCcw size={24}/><h3>Retours & échanges</h3><p>Conditions simples, lisibles et accessibles.</p></article>
-          <article><Camera size={24}/><h3>Comparaison utile</h3><p>Les différences techniques expliquées par usage réel.</p></article>
-          <article><Zap size={24}/><h3>Nouveautés suivies</h3><p>Les lancements Samsung, Xiaomi, HONOR, Sony et plus.</p></article>
+
+        <div className="ref-compare-phones">
+          <div><img src={S26_IMG} alt="Galaxy S26 Ultra"/><b>Galaxy S26 Ultra</b></div>
+          <span>VS</span>
+          <div><img src={XIAOMI17T_IMG} alt="Xiaomi 17T Pro"/><b>Xiaomi 17T Pro</b></div>
+          <span>VS</span>
+          <div><img src={REDMI15_IMG} alt="REDMI Note 15 Pro+"/><b>REDMI Note 15 Pro+</b></div>
+        </div>
+
+        <div className="ref-compare-points">
+          <div><i>▱</i><span><b>Voir les vraies différences</b><small>Pas seulement les chiffres</small></span></div>
+          <div><i>◇</i><span><b>Mettre l’essentiel en avant</b><small>Caméra, batterie, écran…</small></span></div>
+          <div><i>▰</i><span><b>Choisir avec confiance</b><small>Simple et clair</small></span></div>
         </div>
       </section>
 
-      <section className="sketch-faq" id="faq">
-        <div className="sketch-faq-intro"><span>FAQ</span><h2>Avant de commander.</h2><p>Les réponses essentielles sur les produits, la garantie et la livraison.</p></div>
-        <div className="sketch-faq-list">
-          <details open><summary><span>Les produits LHAWTA sont-ils neufs ?</span><ChevronDown size={18}/></summary><p>Oui. LHAWTA se concentre sur des smartphones, tablettes et produits électroniques neufs. L’état est affiché sur chaque fiche.</p></details>
-          <details><summary><span>Livrez-vous partout au Maroc ?</span><ChevronDown size={18}/></summary><p>Oui. Les options et délais disponibles s’affichent avant la validation de la commande.</p></details>
-          <details><summary><span>Comment fonctionne la garantie ?</span><ChevronDown size={18}/></summary><p>Le type de garantie et sa durée sont indiqués sur la fiche du produit afin d’éviter toute ambiguïté.</p></details>
-          <details><summary><span>Comment choisir entre deux smartphones ?</span><ChevronDown size={18}/></summary><p>Utilisez le comparateur LHAWTA pour confronter appareil photo, écran, batterie, puce, stockage et prix.</p></details>
+      <section className="ref-why">
+        <h2>Pourquoi acheter chez LHAWTA ?</h2>
+        <p>Une meilleure façon d’acheter votre prochain appareil.</p>
+        <div className="ref-why-grid">
+          <article><Box size={22}/><span><b>100% produits neufs</b><small>Sources officielles</small></span></article>
+          <article><ShieldCheck size={22}/><span><b>Garantie incluse</b><small>Tranquillité d’esprit</small></span></article>
+          <article><Truck size={22}/><span><b>Livraison rapide</b><small>Partout au Maroc</small></span></article>
+          <article><RotateCcw size={22}/><span><b>Retours faciles</b><small>14 jours</small></span></article>
+          <article><LockKeyhole size={22}/><span><b>Paiement sécurisé</b><small>Plusieurs options</small></span></article>
         </div>
       </section>
 
-      <footer className="sketch-footer">
-        <div><LhawtaLogo light/><p>La tech, plus simple à choisir.</p></div>
-        <nav><a href="#products">Nouveautés</a><a href="#compare">Comparer</a><a href="#services">Services</a><a href="#faq">FAQ</a></nav>
-        <span>© 2026 LHAWTA · Maroc · MAD</span>
+      <section className="ref-brand-help" id="brands">
+        <div className="ref-brands">
+          <h2>Marques populaires</h2>
+          <p>Achetez vos marques préférées.</p>
+          <div>
+            {["Apple","Samsung","mi","Google","SONY","Lenovo","hp"].map(b=><a href="#" key={b}>{b}</a>)}
+            <a href="#">Voir tout →</a>
+          </div>
+        </div>
+        <aside className="ref-help-card">
+          <div><h3>Besoin d’aide pour choisir ?</h3><p>Nos experts sont là pour vous aider à trouver le bon smartphone, tablette ou accessoire.</p><a href="#faq">Obtenir de l’aide</a></div>
+          <img src={S26_IMG} alt="Produits tech"/>
+        </aside>
+      </section>
+
+      <section className="ref-faq" id="faq">
+        <div><h2>Questions fréquentes</h2><p>Réponses rapides aux questions courantes.</p></div>
+        <div className="ref-faq-grid">
+          {faqs.map((q,i)=>(
+            <details key={q}>
+              <summary><span>{q}</span><b>+</b></summary>
+              <p>{i===0?"Oui. LHAWTA se concentre sur des produits neufs et la condition est affichée clairement avant l’achat.":i===1?"La garantie applicable est indiquée sur chaque fiche produit avant le checkout.":i===2?"Oui, les options de livraison au Maroc sont présentées avant validation de la commande.":"Les conditions et options applicables sont indiquées clairement dans le parcours d’achat."}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <section className="ref-newsletter">
+        <div><h2>Restez informé</h2><p>Soyez le premier au courant des nouveautés, offres exclusives et bons plans.</p></div>
+        <form><input placeholder="Votre adresse e-mail"/><button type="button">S’abonner</button></form>
+        <div className="ref-news-points">
+          <span>◔ <b>Nouveautés</b><small>Dernières sorties</small></span>
+          <span>◇ <b>Offres exclusives</b><small>Réservées aux membres</small></span>
+          <span>▥ <b>Guides d’achat</b><small>Conseils & comparatifs</small></span>
+        </div>
+      </section>
+
+      <footer className="ref-footer" id="footer">
+        <div className="ref-footer-brand"><strong>LHAWTA</strong><p>Nouvelle tech. Choix clairs.</p><small>Smartphones, tablettes et électronique pour un quotidien plus intelligent.</small><div>◉ &nbsp; f &nbsp; ▶ &nbsp; ♪</div></div>
+        <div><b>Boutique</b><a href="/category/smartphones">Smartphones</a><a href="/category/tablettes">Tablettes</a><a href="/category/informatique">Ordinateurs</a><a href="/category/tv-home">TV & Home</a><a href="/category/gaming">Gaming</a><a href="/category/audio">Audio</a></div>
+        <div><b>Découvrir</b><a href="#products">Nouveautés</a><a href="#products">Meilleures ventes</a><a href="#deals">Promos</a><a href="#brands">Marques</a><a href="#compare">Comparateur</a><a href="#">Guides</a></div>
+        <div><b>Service client</b><a href="#faq">Centre d’aide</a><a href="#">Suivre commande</a><a href="#">Retours & échanges</a><a href="#">Garantie</a><a href="#faq">FAQ</a><a href="#">Contact</a></div>
+        <div className="ref-footer-country"><b>🇲🇦 Maroc (MAD)⌄</b><p>Paiement sécurisé</p><span>VISA &nbsp; ●● &nbsp; 💳</span><small>Conditions · Confidentialité · Cookies</small><em>© 2026 LHAWTA. Tous droits réservés.</em></div>
       </footer>
     </main>
-  )
+  );
 }
