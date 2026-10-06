@@ -151,6 +151,28 @@ export async function GET(
     });
   }
 
+  if (request.nextUrl.searchParams.get("debug") === "deep") {
+    try {
+      const pageResponse = await fetch(product.page, {
+        headers: {
+          "user-agent": "Mozilla/5.0 (compatible; LHAWTA/1.0)",
+          accept: "text/html,application/xhtml+xml",
+          "accept-language": "fr-MA,fr;q=0.9,en;q=0.8",
+        },
+        redirect: "follow",
+        cache: "no-store",
+      });
+      const html = await pageResponse.text();
+      const urls = Array.from(
+        html.matchAll(/https?:\\?\/\\?\/[^"'\\s<>]+/gi),
+        (m) => m[0].replaceAll("\\/", "/").replaceAll("&amp;", "&")
+      ).filter((u) => /(?:images\.samsung|appmifile|honor\.com\/content|gmedia\.playstation)/i.test(u));
+      return NextResponse.json({ slug, urls: [...new Set(urls)].slice(0, 250) });
+    } catch (error) {
+      return NextResponse.json({ slug, error: String(error) }, { status: 500 });
+    }
+  }
+
   for (const candidate of candidates) {
     try {
       const image = await fetchImage(candidate);
