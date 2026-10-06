@@ -64,7 +64,7 @@ export default function Home(){
             <p>Les derniers smartphones, tablettes, consoles et accessoires sont disponibles chez LHAWTA. Comparez les specs, les prix et profitez de la livraison partout au Maroc.</p>
             <div className="exact-hero-buttons">
               <a href="#products">Découvrir les nouveautés <ArrowRight size={16}/></a>
-              <a href="/category/smartphones">Voir tous les produits</a>
+              <a href="/products">Voir tous les produits</a>
             </div>
           </div>
 
@@ -99,7 +99,7 @@ export default function Home(){
       <section className="exact-shell exact-products" id="products">
         <div className="exact-products-head">
           <div><h2>Nos dernières nouveautés</h2><i/></div>
-          <div className="exact-slider-controls"><a href="#">Voir tout <ArrowRight size={14}/></a><button><ChevronLeft size={15}/></button><button><ChevronRight size={15}/></button></div>
+          <div className="exact-slider-controls"><a href="/products">Voir tout <ArrowRight size={14}/></a><button><ChevronLeft size={15}/></button><button><ChevronRight size={15}/></button></div>
         </div>
 
         <div className="exact-product-grid">
