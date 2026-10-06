@@ -28,6 +28,7 @@ import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 import LhawtaLogo from "@/components/LhawtaLogo";
 
+const HERO_PNG="/images/lhawta-iphone-trio.png";
 const APPLE_IMG="https://www.apple.com/newsroom/images/2025/09/apple-unveils-iphone-17-pro-and-iphone-17-pro-max/article/Apple-iPhone-17-Pro-color-lineup-250909_inline.jpg.large_2x.jpg";
 const LAPTOP_IMG="https://images.unsplash.com/photo-1782012505157-aca188bd6921?auto=format&fit=crop&w=1800&q=88";
 const GAMING_IMG="https://images.unsplash.com/photo-1763258986479-0962883e1747?auto=format&fit=crop&w=1800&q=88";
@@ -128,8 +129,8 @@ export default function Home() {
             </div>
           </div>
 
-          <a href="/products/iphone-17-pro-max" className="lhawta-hero-product">
-            <img src={APPLE_IMG} alt="iPhone 17 Pro Max lineup" />
+          <a href="/products/iphone-17-pro-max" className="lhawta-hero-product lhawta-hero-product-png">
+            <img src={HERO_PNG} alt="iPhone 17 Pro Max lineup" />
             <div className="lhawta-hero-overlay"/>
             <div className="lhawta-hero-product-top">
               <span>NEW / FLAGSHIP</span>
