@@ -21,20 +21,22 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import LhawtaLogo from "@/components/LhawtaLogo";
 
 const departments = [
-  { label:"Smartphones", detail:"Samsung · Xiaomi · HONOR · Apple", icon:Smartphone, href:"/#latest" },
-  { label:"Tablettes", detail:"Galaxy Tab · iPad · Xiaomi Pad", icon:Tablet, href:"/#latest" },
-  { label:"TV & Home", detail:"OLED · QLED · Mini LED", icon:Tv, href:"/#latest" },
-  { label:"Gaming", detail:"PlayStation · Xbox · Nintendo", icon:Gamepad2, href:"/#latest" },
-  { label:"Audio", detail:"Écouteurs · Casques · Enceintes", icon:Headphones, href:"/#latest" },
-  { label:"Wearables", detail:"Montres · Bracelets", icon:Watch, href:"/#latest" },
-  { label:"Informatique", detail:"PC portables · Moniteurs", icon:Laptop, href:"/#latest" },
-  { label:"Accessoires", detail:"Coques · Chargeurs · Câbles", icon:Cable, href:"/#latest" },
+  { label:"Smartphones", detail:"Samsung · Xiaomi · HONOR · Apple", icon:Smartphone, href:"/category/smartphones", slug:"smartphones" },
+  { label:"Tablettes", detail:"Galaxy Tab · iPad · Xiaomi Pad", icon:Tablet, href:"/category/tablettes", slug:"tablettes" },
+  { label:"TV & Home", detail:"OLED · QLED · Mini LED", icon:Tv, href:"/category/tv-home", slug:"tv-home" },
+  { label:"Gaming", detail:"PlayStation · Xbox · Nintendo", icon:Gamepad2, href:"/category/gaming", slug:"gaming" },
+  { label:"Audio", detail:"Écouteurs · Casques · Enceintes", icon:Headphones, href:"/category/audio", slug:"audio" },
+  { label:"Wearables", detail:"Montres · Bracelets", icon:Watch, href:"/category/wearables", slug:"wearables" },
+  { label:"Informatique", detail:"PC portables · Moniteurs", icon:Laptop, href:"/category/informatique", slug:"informatique" },
+  { label:"Accessoires", detail:"Coques · Chargeurs · Câbles", icon:Cable, href:"/category/accessoires", slug:"accessoires" },
 ];
 
 export default function StoreHeader() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
 
@@ -73,17 +75,25 @@ export default function StoreHeader() {
 
       <nav className={open?"sketch-nav open":"sketch-nav"}>
         <button className={shopOpen?"sketch-all active":"sketch-all"} onClick={()=>setShopOpen(v=>!v)}>
-          <Menu size={17}/> Toutes les catégories <ChevronDown size={14}/>
+          <Menu size={17}/> <span>Toutes les catégories</span> <ChevronDown size={14}/>
         </button>
-        <a href="/#latest"><Smartphone size={17}/> Smartphones</a>
-        <a href="/#latest"><Tablet size={17}/> Tablettes</a>
-        <a href="/#latest"><Tv size={17}/> TV & Home</a>
-        <a href="/#latest"><Gamepad2 size={17}/> Gaming</a>
-        <a href="/#latest"><Headphones size={17}/> Audio</a>
-        <a href="/#latest"><Watch size={17}/> Wearables</a>
-        <a href="/#latest"><Cable size={17}/> Accessoires</a>
-        <a href="/#promos" className="sketch-promo"><Tag size={17}/> Promotions</a>
-        <a href="/#latest" className="sketch-new"><Sparkles size={17}/> Nouveautés</a>
+        <div className="sketch-nav-categories">
+          {departments.slice(0,7).map(({label,icon:Icon,href,slug})=>(
+            <a
+              href={href}
+              key={slug}
+              className={pathname===href?"active":""}
+              onClick={()=>setOpen(false)}
+            >
+              <span className="sketch-nav-icon"><Icon size={17}/></span>
+              <span>{label}</span>
+            </a>
+          ))}
+        </div>
+        <div className="sketch-nav-special">
+          <a href="/#promos" className="sketch-promo"><Tag size={17}/> Promotions</a>
+          <a href="/#products" className="sketch-new"><Sparkles size={17}/> Nouveautés</a>
+        </div>
 
         {shopOpen && (
           <div className="sketch-mega">
