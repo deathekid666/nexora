@@ -11,28 +11,7 @@ import {
 import { useMemo, useState } from "react";
 import FavoriteButton from "@/components/FavoriteButton";
 import { ProductVisual } from "@/components/ProductVisual";
-
-export type CategoryProduct={
-  brand:string;
-  name:string;
-  image:string;
-  price:string;
-  old?:string;
-  rating:string;
-  specs:string[];
-  badge?:string;
-  stock?:boolean;
-};
-
-const productDetailSlugs:Record<string,string>={
-  "Galaxy S26 Ultra":"galaxy-s26-ultra",
-  "Xiaomi 17T Pro":"xiaomi-17t-pro",
-  "HONOR 600":"honor-600",
-  "Note 15 Pro+ 5G":"redmi-note-15-pro-plus-5g",
-  "Galaxy Tab S11 Ultra":"galaxy-tab-s11-ultra",
-  "Galaxy Tab S11":"galaxy-tab-s11",
-  "PlayStation 5 · 1 To":"playstation-5",
-};
+import { productDetailSlugs, type CategoryProduct } from "@/lib/category-catalogs";
 
 type QuickFilter="all"|"new"|"best"|"stock";
 type PriceFilter="under2000"|"2000to5000"|"over5000";
