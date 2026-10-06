@@ -44,6 +44,7 @@ const productDetailSlugs:Record<string,string>={
   "HONOR 600":"honor-600",
   "Note 15 Pro+ 5G":"redmi-note-15-pro-plus-5g",
   "Galaxy Tab S11 Ultra":"galaxy-tab-s11-ultra",
+  "Galaxy Tab S11":"galaxy-tab-s11",
   "PlayStation 5 · 1 To":"playstation-5",
 };
 
