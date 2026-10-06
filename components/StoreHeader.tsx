@@ -138,7 +138,7 @@ export default function StoreHeader(){
           </form>
 
           <div className="exact-actions">
-            <button><User size={20}/><span><b>Mon compte</b><small>Se connecter</small></span></button>
+            <a href="/account" className="exact-account"><User size={20}/><span><b>Mon espace</b><small>Profil & commandes</small></span></a>
             <a href="/favorites" className="exact-favorites" title="Voir mes favoris"><Heart size={21} fill={favoriteCount?"currentColor":"none"}/>{favoriteCount>0&&<em>{favoriteCount}</em>}<span><b>Mes favoris</b><small>{favoriteCount} enregistré{favoriteCount>1?"s":""}</small></span></a>
             <a href="/cart" className="exact-cart"><ShoppingCart size={22}/><em>{count}</em><span><b>Mon panier</b><small>{formatDh(total)}</small></span></a>
             <button className="exact-mobile-toggle" onClick={()=>setOpen(v=>!v)}>{open?<X size={20}/>:<Menu size={20}/>}</button>
