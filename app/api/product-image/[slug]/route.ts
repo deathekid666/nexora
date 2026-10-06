@@ -154,7 +154,7 @@ async function fetchImage(url: string) {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug }=await params;
@@ -190,22 +190,45 @@ export async function GET(
       .sort((a,b)=>scoreCandidate(b,product.keywords)-scoreCandidate(a,product.keywords)),
   ];
 
+  const requestedView=Math.max(0,Math.min(5,Number.parseInt(request.nextUrl.searchParams.get("view") || "0",10) || 0));
+  let validIndex=0;
+  let firstValid:{bytes:ArrayBuffer;contentType:string;source:string}|null=null;
+
   for (const candidate of ranked) {
     try {
       const image=await fetchImage(candidate);
       if (!image) continue;
 
-      return new NextResponse(image.bytes, {
-        status: 200,
-        headers: {
-          "Content-Type": image.contentType,
-          "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
-          "X-Lhawta-Image-Source": new URL(candidate).hostname,
-        },
-      });
+      if (!firstValid) firstValid={...image,source:candidate};
+
+      if (validIndex===requestedView) {
+        return new NextResponse(image.bytes, {
+          status: 200,
+          headers: {
+            "Content-Type": image.contentType,
+            "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
+            "X-Lhawta-Image-Source": new URL(candidate).hostname,
+            "X-Lhawta-Image-View": String(requestedView),
+          },
+        });
+      }
+
+      validIndex++;
     } catch {
       // Try the next verified candidate.
     }
+  }
+
+  if (firstValid) {
+    return new NextResponse(firstValid.bytes, {
+      status: 200,
+      headers: {
+        "Content-Type": firstValid.contentType,
+        "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
+        "X-Lhawta-Image-Source": new URL(firstValid.source).hostname,
+        "X-Lhawta-Image-View": "fallback-0",
+      },
+    });
   }
 
   return new NextResponse("Product image unavailable", { status: 502 });
