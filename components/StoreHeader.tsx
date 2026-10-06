@@ -24,6 +24,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { CART_EVENT, cartCount, cartTotal, formatDh, readCart, type CartItem } from "@/lib/cart-client";
 import { FAVORITES_EVENT, readFavorites } from "@/lib/favorites-client";
+import { searchStoreProducts } from "@/lib/product-search";
 
 const categories=[
   {label:"Smartphones",href:"/category/smartphones",icon:Smartphone},
@@ -39,12 +40,16 @@ export default function StoreHeader(){
   const [open,setOpen]=useState(false);
   const [cart,setCart]=useState<CartItem[]>([]);
   const [favoriteCount,setFavoriteCount]=useState(0);
+  const [query,setQuery]=useState("");
+  const [searchOpen,setSearchOpen]=useState(false);
 
   useEffect(()=>{
     const syncCart=()=>setCart(readCart());
     const syncFavorites=()=>setFavoriteCount(readFavorites().length);
     const syncAll=()=>{syncCart();syncFavorites();};
     syncAll();
+    const initialQuery=new URLSearchParams(window.location.search).get("q");
+    if(initialQuery) setQuery(initialQuery);
     window.addEventListener("storage",syncAll);
     window.addEventListener(CART_EVENT,syncCart as EventListener);
     window.addEventListener(FAVORITES_EVENT,syncFavorites as EventListener);
@@ -57,6 +62,7 @@ export default function StoreHeader(){
 
   const count=useMemo(()=>cartCount(cart),[cart]);
   const total=useMemo(()=>cartTotal(cart),[cart]);
+  const suggestions=useMemo(()=>query.trim()?searchStoreProducts(query).slice(0,5):[],[query]);
 
   return (
     <header className="exact-header">
@@ -81,11 +87,55 @@ export default function StoreHeader(){
             <span><strong>LHAWTA</strong><small>TECH FOR A BETTER TOMORROW</small></span>
           </a>
 
-          <label className="exact-search">
-            <Search size={17}/>
-            <input placeholder="Rechercher un smartphone, une tablette, une PS5, une marque..." />
-            <button type="button"><Search size={16}/>Rechercher</button>
-          </label>
+          <form
+            className="exact-search-wrap"
+            action="/search"
+            method="get"
+            onSubmit={event=>{if(!query.trim()) event.preventDefault();}}
+            onFocus={()=>setSearchOpen(true)}
+            onBlur={()=>window.setTimeout(()=>setSearchOpen(false),120)}
+          >
+            <div className="exact-search">
+              <Search size={17}/>
+              <input
+                name="q"
+                value={query}
+                onChange={event=>{setQuery(event.target.value);setSearchOpen(true);}}
+                onKeyDown={event=>{if(event.key==="Escape") setSearchOpen(false);}}
+                placeholder="Rechercher un smartphone, une tablette, une PS5, une marque..."
+                autoComplete="off"
+                aria-label="Rechercher un produit"
+              />
+              <button type="submit"><Search size={16}/>Rechercher</button>
+            </div>
+
+            {searchOpen&&query.trim()&&(
+              <div className="exact-search-suggestions">
+                {suggestions.length>0?(
+                  <>
+                    {suggestions.map(product=>(
+                      <a href={`/products/${product.slug}`} className="exact-search-suggestion" key={product.slug}>
+                        <span className="exact-search-suggestion-media"><img src={product.gallery[0]} alt=""/></span>
+                        <span className="exact-search-suggestion-copy">
+                          <small>{product.brand} · {product.category}</small>
+                          <b>{product.name}</b>
+                          <em>{product.price}</em>
+                        </span>
+                      </a>
+                    ))}
+                    <a className="exact-search-all" href={`/search?q=${encodeURIComponent(query.trim())}`}>
+                      Voir tous les résultats pour « {query.trim()} »
+                    </a>
+                  </>
+                ):(
+                  <div className="exact-search-noresult">
+                    <Search size={17}/>
+                    <span>Aucun produit trouvé pour « {query.trim()} »</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </form>
 
           <div className="exact-actions">
             <button><User size={20}/><span><b>Mon compte</b><small>Se connecter</small></span></button>
