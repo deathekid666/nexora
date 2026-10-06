@@ -19,7 +19,7 @@ const PRODUCTS: Record<string, { page: string; fallbacks: string[] }> = {
   "honor-600": {
     page: "https://www.honor.com/ma/phones/honor-600/",
     fallbacks: [
-      "https://www-file.honor.com/content/dam/honor/common/product-list/honor-600-series/honor-600/green.png"
+      "https://www.honor.com/ma/phones/honor-600/"
     ],
   },
   "redmi-note-15-pro-plus-5g": {
@@ -68,29 +68,21 @@ function addCandidate(list: string[], value: string | undefined, page: string) {
 function extractCandidates(html: string, page: string) {
   const out: string[] = [];
 
-  const metaPatterns = [
+  const patterns = [
     /<meta[^>]+property=["']og:image(?::url)?["'][^>]+content=["']([^"']+)["'][^>]*>/gi,
     /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image(?::url)?["'][^>]*>/gi,
     /<meta[^>]+name=["']twitter:image(?::src)?["'][^>]+content=["']([^"']+)["'][^>]*>/gi,
     /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image(?::src)?["'][^>]*>/gi,
+    /"image"\s*:\s*\[\s*"([^"]+)"/gi,
+    /"image"\s*:\s*"([^"]+)"/gi,
   ];
 
-  for (const pattern of metaPatterns) {
+  for (const pattern of patterns) {
     let match: RegExpExecArray | null;
-    while ((match = pattern.exec(html))) addCandidate(out, match[1], page);
+    while ((match = pattern.exec(html))) {
+      addCandidate(out, match[1]?.replaceAll("\\/", "/"), page);
+    }
   }
-
-  const jsonImageArray = /"image"s*:s*[s*"([^"]+)"/gi;
-  let arr: RegExpExecArray | null;
-  while ((arr = jsonImageArray.exec(html))) addCandidate(out, arr[1].replaceAll("\\/", "/"), page);
-
-  const jsonImage = /"image"s*:s*"([^"]+)"/gi;
-  let single: RegExpExecArray | null;
-  while ((single = jsonImage.exec(html))) addCandidate(out, single[1].replaceAll("\\/", "/"), page);
-
-  const preload = /<link[^>]+rel=["'](?:preload|image_src)["'][^>]+href=["']([^"']+)["'][^>]*>/gi;
-  let pre: RegExpExecArray | null;
-  while ((pre = preload.exec(html))) addCandidate(out, pre[1], page);
 
   return out;
 }
@@ -98,7 +90,7 @@ function extractCandidates(html: string, page: string) {
 async function fetchImage(url: string) {
   const response = await fetch(url, {
     headers: {
-      "user-agent": "Mozilla/5.0 (compatible; LHAWTA/1.0; +https://nexora-mocha-xi.vercel.app)",
+      "user-agent": "Mozilla/5.0 (compatible; LHAWTA/1.0)",
       accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
       referer: new URL(url).origin + "/",
     },
@@ -133,7 +125,7 @@ export async function GET(
   try {
     const pageResponse = await fetch(product.page, {
       headers: {
-        "user-agent": "Mozilla/5.0 (compatible; LHAWTA/1.0; +https://nexora-mocha-xi.vercel.app)",
+        "user-agent": "Mozilla/5.0 (compatible; LHAWTA/1.0)",
         accept: "text/html,application/xhtml+xml",
         "accept-language": "fr-MA,fr;q=0.9,en;q=0.8",
       },
@@ -146,7 +138,7 @@ export async function GET(
       candidates.push(...extractCandidates(html, product.page));
     }
   } catch {
-    // Fallback candidates below keep the storefront usable.
+    // Keep going with fallbacks.
   }
 
   candidates.push(...product.fallbacks);
@@ -165,7 +157,7 @@ export async function GET(
         },
       });
     } catch {
-      // Try the next candidate.
+      // Try next candidate.
     }
   }
 
