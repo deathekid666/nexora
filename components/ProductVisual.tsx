@@ -9,6 +9,46 @@ function colorDistance(r:number,g:number,b:number,br:number,bg:number,bb:number)
   return Math.sqrt((r-br)**2+(g-bg)**2+(b-bb)**2);
 }
 
+function trimTransparentCanvas(source:HTMLCanvasElement){
+  const ctx=source.getContext("2d",{willReadFrequently:true});
+  if(!ctx) return source;
+
+  const {width:w,height:h}=source;
+  const data=ctx.getImageData(0,0,w,h).data;
+  let minX=w,minY=h,maxX=-1,maxY=-1;
+
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      if(data[(y*w+x)*4+3]>14){
+        if(x<minX) minX=x;
+        if(x>maxX) maxX=x;
+        if(y<minY) minY=y;
+        if(y>maxY) maxY=y;
+      }
+    }
+  }
+
+  if(maxX<minX||maxY<minY) return source;
+
+  const boxW=maxX-minX+1;
+  const boxH=maxY-minY+1;
+  const pad=Math.max(2,Math.round(Math.max(boxW,boxH)*.018));
+  const sx=Math.max(0,minX-pad);
+  const sy=Math.max(0,minY-pad);
+  const sw=Math.min(w-sx,boxW+pad*2);
+  const sh=Math.min(h-sy,boxH+pad*2);
+
+  if(sw>w*.96&&sh>h*.96) return source;
+
+  const out=document.createElement("canvas");
+  out.width=sw;
+  out.height=sh;
+  const outCtx=out.getContext("2d");
+  if(!outCtx) return source;
+  outCtx.drawImage(source,sx,sy,sw,sh,0,0,sw,sh);
+  return out;
+}
+
 function removeConnectedBackdrop(ctx:CanvasRenderingContext2D,w:number,h:number){
   const image=ctx.getImageData(0,0,w,h);
   const d=image.data;
@@ -138,8 +178,9 @@ export function HeroProductVisual({
         ctx.drawImage(image,0,0,w,h);
         const cleaned=removeConnectedBackdrop(ctx,w,h);
         ctx.putImageData(cleaned,0,0);
+        const output=trimTransparentCanvas(canvas);
 
-        canvas.toBlob(blob=>{
+        output.toBlob(blob=>{
           if(!blob){
             if(mounted.current) setResolved(src);
             return;
