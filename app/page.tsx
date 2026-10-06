@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
+import { HeroProductVisual, ProductVisual } from "@/components/ProductVisual";
 
 const MOROCCO_BG="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=2400&q=92";
 const S26_IMG="/api/product-image/galaxy-s26-ultra";
@@ -68,12 +69,12 @@ export default function Home(){
           </div>
 
           <div className="exact-product-lineup" aria-hidden="true">
-            <img className="line-s26" src={S26_IMG} alt=""/>
-            <img className="line-xiaomi" src={XIAOMI17T_IMG} alt=""/>
-            <img className="line-honor" src={HONOR_IMG} alt=""/>
-            <img className="line-redmi" src={REDMI_IMG} alt=""/>
-            <img className="line-tab" src={TAB_IMG} alt=""/>
-            <img className="line-ps5" src={PS5_IMG} alt=""/>
+            <HeroProductVisual className="line-s26" src={S26_IMG} alt="Samsung Galaxy S26 Ultra"/>
+            <HeroProductVisual className="line-xiaomi" src={XIAOMI17T_IMG} alt="Xiaomi 17T Pro"/>
+            <HeroProductVisual className="line-honor" src={HONOR_IMG} alt="HONOR 600"/>
+            <HeroProductVisual className="line-redmi" src={REDMI_IMG} alt="REDMI Note 15 Pro+ 5G"/>
+            <HeroProductVisual className="line-tab" src={TAB_IMG} alt="Samsung Galaxy Tab S11 Ultra"/>
+            <HeroProductVisual className="line-ps5" src={PS5_IMG} alt="Sony PlayStation 5"/>
           </div>
 
           <div className="exact-hero-script">
@@ -106,7 +107,7 @@ export default function Home(){
             <article className="exact-card" key={p.name}>
               <span className={"exact-badge "+p.tone}>{p.badge}</span>
               <button className="exact-heart"><Heart size={16}/></button>
-              <div className="exact-card-media"><img src={p.img} alt={p.name}/></div>
+              <div className="exact-card-media"><ProductVisual src={p.img} alt={p.name}/></div>
               <div className="exact-card-body">
                 <small>{p.brand}</small>
                 <h3>{p.name}</h3>
