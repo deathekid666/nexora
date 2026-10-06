@@ -37,14 +37,14 @@ const PS5_IMG="https://gmedia.playstation.com/is/image/SIEPDC/ps5-slim-edition-l
 const MOROCCO_BG="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=1900&q=88";
 
 const categories=[
-  {name:"Smartphones",icon:Smartphone},
-  {name:"Tablettes",icon:Tablet},
-  {name:"TV & Home",icon:Tv},
-  {name:"Gaming",icon:Gamepad2},
-  {name:"Audio",icon:Headphones},
-  {name:"Wearables",icon:Watch},
-  {name:"Informatique",icon:Laptop},
-  {name:"Accessoires",icon:BatteryCharging},
+  {name:"Smartphones",icon:Smartphone,href:"/category/smartphones"},
+  {name:"Tablettes",icon:Tablet,href:"/category/tablettes"},
+  {name:"TV & Home",icon:Tv,href:"/category/tv-home"},
+  {name:"Gaming",icon:Gamepad2,href:"/category/gaming"},
+  {name:"Audio",icon:Headphones,href:"/category/audio"},
+  {name:"Wearables",icon:Watch,href:"/category/wearables"},
+  {name:"Informatique",icon:Laptop,href:"/category/informatique"},
+  {name:"Accessoires",icon:BatteryCharging,href:"/category/accessoires"},
 ];
 
 const products=[
@@ -131,8 +131,8 @@ export default function Home(){
       </section>
 
       <section className="sketch-category-strip">
-        {categories.map(({name,icon:Icon})=>(
-          <a href="#products" key={name}><Icon size={22}/><span>{name}</span></a>
+        {categories.map(({name,icon:Icon,href})=>(
+          <a href={href} key={name}><Icon size={22}/><span>{name}</span></a>
         ))}
       </section>
 
