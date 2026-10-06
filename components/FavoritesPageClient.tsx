@@ -138,7 +138,7 @@ export default function FavoritesPageClient(){
                     </a>
                     <div className="favorite-product-body">
                       <small>{product.brand}</small>
-                      <h2>{product.name}</h2>
+                      <h2><a href={`/products/${product.slug}`} className="product-name-link">{product.name}</a></h2>
                       <p>{product.shortDescription}</p>
                       <ul>
                         {product.highlights.slice(0,3).map(row=>(
@@ -172,7 +172,7 @@ export default function FavoritesPageClient(){
                     </a>
                     <div className="favorite-product-body">
                       <small>{product.brand}</small>
-                      <h2>{product.name}</h2>
+                      <h2><a href={`/category/${product.categorySlug}`} className="product-name-link">{product.name}</a></h2>
                       <p>Produit enregistré depuis la catégorie {categoryLabels[product.categorySlug]||product.categorySlug}.</p>
                       <div className="favorite-catalog-note">
                         <PackageSearch size={15}/>
