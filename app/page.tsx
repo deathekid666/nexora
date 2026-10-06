@@ -290,26 +290,81 @@ export default function Home() {
       </section>
 
 
-      <section className="source-services">
-        <article data-reveal><Box size={21}/><strong>New products</strong><p>Product condition shown clearly across the catalog.</p></article>
-        <article data-reveal><ShieldCheck size={21}/><strong>Warranty</strong><p>Coverage visible before you make the decision.</p></article>
-        <article data-reveal><BadgePercent size={21}/><strong>Clear pricing</strong><p>Original price, discount and total value shown together.</p></article>
-        <article data-reveal><Zap size={21}/><strong>Easy comparison</strong><p>Equivalent hardware, normalized across brands.</p></article>
-      </section>
+      <section className="closing-stage">
+        <div className="closing-glow closing-glow-a"/>
+        <div className="closing-glow closing-glow-b"/>
 
-      <section className="source-newsletter">
-        <div><span>NEXORA / PRIVATE LIST</span><h2>Launches and deals worth opening.</h2></div>
-        <form><input placeholder="Email address"/><button type="button">Join <ArrowRight size={14}/></button></form>
-      </section>
+        <section className="source-services closing-services">
+          <article data-reveal><Box size={21}/><strong>Brand-new products</strong><p>Smartphones, tablets and electronics with product condition shown clearly.</p></article>
+          <article data-reveal><ShieldCheck size={21}/><strong>Warranty clarity</strong><p>Coverage and warranty type visible before you order.</p></article>
+          <article data-reveal><BadgePercent size={21}/><strong>Clear pricing</strong><p>Original price, discount and total cost shown together.</p></article>
+          <article data-reveal><Zap size={21}/><strong>Easy comparison</strong><p>Equivalent hardware and features normalized across brands.</p></article>
+        </section>
 
-      <footer className="source-footer">
-        <div>
-          <a href="/" className="source-footer-logo">NEXORA<span>.</span></a>
-          <p>Technology shopping made clearer.</p>
-        </div>
-        <nav><a href="#latest">Latest</a><a href="#compare">Compare</a><a href="#services">Services</a><a href="#faq">FAQ</a><a href="#">Buying guides</a></nav>
-        <div className="source-footer-bottom"><span>© 2026 NEXORA</span><span>Morocco · MAD</span></div>
-      </footer>
+        <section className="source-newsletter closing-newsletter" data-reveal-scale>
+          <div className="closing-newsletter-copy">
+            <span>NEXORA / PRIVATE LIST</span>
+            <h2>Launches, restocks and deals worth opening.</h2>
+            <p>No noise. Just new smartphones, tablets and electronics worth knowing about.</p>
+          </div>
+          <form>
+            <label>
+              <span>Email address</span>
+              <input placeholder="you@example.com"/>
+            </label>
+            <button type="button">Join the list <ArrowRight size={14}/></button>
+          </form>
+          <div className="newsletter-orbit orbit-one"/>
+          <div className="newsletter-orbit orbit-two"/>
+        </section>
+
+        <footer className="source-footer closing-footer">
+          <div className="closing-footer-top">
+            <div className="closing-footer-brand">
+              <a href="/" className="source-footer-logo">NEXORA<span>.</span></a>
+              <p>Technology shopping made clearer.</p>
+              <div className="closing-footer-market">
+                <span>Morocco</span>
+                <b>MAD</b>
+              </div>
+            </div>
+
+            <div className="closing-footer-column">
+              <strong>Shop</strong>
+              <a href="#latest">Smartphones</a>
+              <a href="#latest">Tablets</a>
+              <a href="#latest">Computers</a>
+              <a href="#latest">TV & Home</a>
+            </div>
+
+            <div className="closing-footer-column">
+              <strong>Discover</strong>
+              <a href="#compare">Compare</a>
+              <a href="#services">Services</a>
+              <a href="#">Buying guides</a>
+              <a href="#faq">FAQ</a>
+            </div>
+
+            <div className="closing-footer-column">
+              <strong>Customer care</strong>
+              <a href="#services">Delivery</a>
+              <a href="#services">Warranty</a>
+              <a href="#services">Returns</a>
+              <a href="#">Contact</a>
+            </div>
+          </div>
+
+          <div className="closing-footer-statement">
+            <span>NEW TECH / CLEAR CHOICES</span>
+            <strong>Smartphones. Tablets. Electronics.</strong>
+          </div>
+
+          <div className="source-footer-bottom">
+            <span>© 2026 NEXORA</span>
+            <div><a href="#">Privacy</a><a href="#">Terms</a><span>Morocco · MAD</span></div>
+          </div>
+        </footer>
+      </section>
     </main>
   );
 }
