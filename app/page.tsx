@@ -9,7 +9,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Headphones,
-  Heart,
   Monitor,
   PackageCheck,
   ShieldCheck,
@@ -20,6 +19,7 @@ import {
 import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 import { HeroProductVisual, ProductVisual } from "@/components/ProductVisual";
+import FavoriteButton from "@/components/FavoriteButton";
 
 const MOROCCO_BG="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=2400&q=92";
 const S26_IMG="/api/product-image/galaxy-s26-ultra";
@@ -106,7 +106,7 @@ export default function Home(){
           {products.map((p)=>(
             <article className="exact-card" key={p.name}>
               <span className={"exact-badge "+p.tone}>{p.badge}</span>
-              <button className="exact-heart"><Heart size={16}/></button>
+              <FavoriteButton className="exact-heart" slug={p.slug} size={16} label={"Ajouter "+p.name+" aux favoris"}/>
               <div className="exact-card-media"><ProductVisual src={p.img} alt={p.name}/></div>
               <div className="exact-card-body">
                 <small>{p.brand}</small>
