@@ -43,6 +43,11 @@ const PRODUCTS: Record<string, ProductSource> = {
     ],
     keywords: ["redmi-note-15","note-15-pro","15-pro-plus"],
   },
+  "galaxy-tab-s11": {
+    page: "https://www.samsung.com/uk/tablets/galaxy-tab-s/galaxy-tab-s11-grey-128gb-wi-fi-sm-x730nzareub/",
+    preferred: [],
+    keywords: ["x730","tab-s11","galaxy-tab-s11"],
+  },
   "galaxy-tab-s11-ultra": {
     page: "https://www.samsung.com/africa_fr/tablets/galaxy-tab-s/galaxy-tab-s11-ultra-gray-512gb-sm-x936bzaeafa/",
     preferred: [
