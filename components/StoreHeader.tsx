@@ -148,7 +148,7 @@ export default function StoreHeader(){
 
       <nav className={open?"exact-nav open":"exact-nav"}>
         <div className="exact-shell exact-nav-inner">
-          <a href="/#categories" className="exact-all"><Menu size={17}/>Toutes les catégories</a>
+          <a href="/products" className="exact-all"><Menu size={17}/>Toutes les catégories</a>
           <div className="exact-nav-cats">
             {categories.map(({label,href,icon:Icon})=>(
               <a href={href} key={label}><Icon size={17}/>{label}</a>
