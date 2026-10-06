@@ -38,6 +38,15 @@ type Product={
   badge?:string;
 };
 
+const productDetailSlugs:Record<string,string>={
+  "Galaxy S26 Ultra":"galaxy-s26-ultra",
+  "Xiaomi 17T Pro":"xiaomi-17t-pro",
+  "HONOR 600":"honor-600",
+  "Note 15 Pro+ 5G":"redmi-note-15-pro-plus-5g",
+  "Galaxy Tab S11 Ultra":"galaxy-tab-s11-ultra",
+  "PlayStation 5 · 1 To":"playstation-5",
+};
+
 const catalogs:Record<string,{title:string;eyebrow:string;copy:string;accent:string;products:Product[]}> = {
   smartphones:{
     title:"Smartphones",
@@ -187,11 +196,14 @@ export default async function CategoryPage({params}:{params:Promise<{slug:string
         </aside>
 
         <div className="category-grid">
-          {category.products.map(product=>(
+          {category.products.map(product=>{
+            const detailSlug=productDetailSlugs[product.name];
+            const detailHref=detailSlug?`/products/${detailSlug}`:"#";
+            return (
             <article className="category-product-card" key={product.name}>
               {product.badge&&<span className="category-badge">{product.badge}</span>}
               <button className="category-wish"><Heart size={18}/></button>
-              <a href="#" className="category-product-media"><ProductVisual src={product.image} alt={product.name}/></a>
+              <a href={detailHref} className="category-product-media"><ProductVisual src={product.image} alt={product.name}/></a>
               <div className="category-product-body">
                 <small>{product.brand}</small>
                 <h2>{product.name}</h2>
@@ -199,10 +211,10 @@ export default async function CategoryPage({params}:{params:Promise<{slug:string
                 <ul>{product.specs.map(spec=><li key={spec}>{spec}</li>)}</ul>
                 <div className="category-delivery"><Truck size={14}/> Livraison disponible</div>
                 <div className="category-price"><strong>{product.price}</strong>{product.old&&<del>{product.old}</del>}</div>
-                <div className="category-actions"><button><ShoppingCart size={15}/> Voir le produit</button><button>Comparer</button></div>
+                <div className="category-actions"><a href={detailHref}><ShoppingCart size={15}/> Voir le produit</a><button>Comparer</button></div>
               </div>
             </article>
-          ))}
+          )})}
         </div>
       </section>
     </main>
