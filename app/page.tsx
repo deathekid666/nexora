@@ -14,12 +14,14 @@ import {
   ShieldCheck,
   ShoppingCart,
   Tablet,
+  Tag,
   Truck,
 } from "lucide-react";
 import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 import { HeroProductVisual, ProductVisual } from "@/components/ProductVisual";
 import FavoriteButton from "@/components/FavoriteButton";
+import { allCatalogProducts } from "@/lib/category-catalogs";
 
 const MOROCCO_BG="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=2400&q=92";
 const S26_IMG="/api/product-image/galaxy-s26-ultra";
@@ -28,6 +30,10 @@ const HONOR_IMG="/api/product-image/honor-600";
 const REDMI_IMG="/api/product-image/redmi-note-15-pro-plus-5g";
 const TAB_IMG="/api/product-image/galaxy-tab-s11-ultra";
 const PS5_IMG="/api/product-image/playstation-5";
+
+const promotionProducts=allCatalogProducts
+  .filter(product=>product.old)
+  .slice(0,4);
 
 const products=[
   {slug:"galaxy-s26-ultra",badge:"Nouveau",tone:"blue",brand:"SAMSUNG",name:"Galaxy S26 Ultra",img:S26_IMG,specs:[["display","6.9″ Display"],["camera","200 MP main camera"],["battery","5000 mAh battery"]],price:"13 999 DH"},
@@ -118,6 +124,49 @@ export default function Home(){
                 <div className="exact-card-actions">
                   <a href={`/products/${p.slug}`}><ShoppingCart size={14}/>Voir le produit</a>
                   <a className="compare-card-link" href={`/compare?products=${p.slug}`}><BarChart3 size={14}/>Comparer</a>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="exact-shell home-deals" id="deals">
+        <div className="home-deals-head">
+          <div>
+            <span><Tag size={15}/> BONS PLANS</span>
+            <h2>Promotions du moment</h2>
+            <p>Uniquement les produits qui ont actuellement un prix barré dans le catalogue.</p>
+          </div>
+          <a href="/promotions">Voir toutes les promotions <ArrowRight size={14}/></a>
+        </div>
+
+        <div className="home-deals-grid">
+          {promotionProducts.map(product=>(
+            <article className="home-deal-card" key={product.categorySlug+"-"+product.name}>
+              <span className="home-deal-badge">PROMO</span>
+              <FavoriteButton
+                className="home-deal-heart"
+                slug={product.detailSlug||("catalog:"+product.categorySlug+":"+product.brand+":"+product.name)}
+                size={17}
+                label={"Ajouter "+product.name+" aux favoris"}
+              />
+              <a href={product.detailSlug?"/products/"+product.detailSlug:"/category/"+product.categorySlug} className="home-deal-media">
+                <ProductVisual src={product.image} alt={product.name}/>
+              </a>
+              <div className="home-deal-copy">
+                <small>{product.brand} · {product.categoryTitle}</small>
+                <h3>
+                  <a
+                    href={product.detailSlug?"/products/"+product.detailSlug:"/category/"+product.categorySlug}
+                    className="product-name-link"
+                  >
+                    {product.name}
+                  </a>
+                </h3>
+                <div className="home-deal-price">
+                  <strong>{product.price}</strong>
+                  <del>{product.old}</del>
                 </div>
               </div>
             </article>
