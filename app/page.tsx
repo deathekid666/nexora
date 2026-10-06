@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Headphones,
+  HelpCircle,
   Monitor,
   PackageCheck,
   ShieldCheck,
@@ -180,6 +181,15 @@ export default function Home(){
             </article>
           ))}
         </div>
+      </section>
+
+      <section className="exact-shell home-faq-cta">
+        <div>
+          <span><HelpCircle size={17}/> BESOIN D’AIDE ?</span>
+          <h2>Une question avant de commander ?</h2>
+          <p>Livraison, paiement, garantie, retours, suivi de commande et fonctionnement du site.</p>
+        </div>
+        <a href="/faq">Consulter la FAQ <ArrowRight size={14}/></a>
       </section>
 
       <section className="exact-shell exact-afterfold">
