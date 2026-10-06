@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./source-redesign.css";
+import "./lhawta.css";
 
 export const metadata: Metadata = {
-  title: "NEXORA — Technology, clearly compared",
-  description: "A modern electronics marketplace for smartphones, TVs, computers, gaming, audio, wearables and accessories.",
+  title: "LHAWTA — New tech. Clear choices.",
+  description: "Brand-new smartphones, tablets and consumer electronics in Morocco, with clear prices, warranty, delivery and comparison.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
