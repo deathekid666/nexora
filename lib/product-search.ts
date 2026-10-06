@@ -9,8 +9,14 @@ function normalize(value:string){
     .trim();
 }
 
+const aliases:Record<string,string[]>={
+  "playstation-5":["PS5","Play Station 5","Sony PS5","console Sony"],
+};
+
 function searchableText(product:StoreProduct){
   return normalize([
+    product.slug,
+    ...(aliases[product.slug]||[]),
     product.brand,
     product.name,
     product.category,
@@ -38,11 +44,12 @@ export function searchStoreProducts(query:string){
   return Object.values(storeProducts)
     .map(product=>{
       const haystack=searchableText(product);
+      const compactHaystack=haystack.replace(/\s+/g,"");
       const name=normalize(product.name);
       const brand=normalize(product.brand);
       const category=normalize(product.category);
 
-      if(!terms.every(term=>haystack.includes(term))) return null;
+      if(!terms.every(term=>haystack.includes(term)||compactHaystack.includes(term.replace(/\s+/g,"")))) return null;
 
       let score=0;
       for(const term of terms){
