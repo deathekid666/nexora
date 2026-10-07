@@ -5202,23 +5202,26 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
   grid-template-columns:1fr auto;
   gap:8px;
 }
-.catalog-detail-actions a{
+.catalog-detail-actions a,
+.catalog-detail-actions button{
   min-height:48px;
   padding:0 18px;
   border-radius:10px;
   display:flex;
   align-items:center;
   justify-content:center;
+  gap:8px;
   text-align:center;
   font-size:10px;
   font-weight:850;
+  cursor:pointer;
 }
-.catalog-detail-actions a.primary{
+.catalog-detail-actions .primary{
   border:1px solid #086cff;
   background:#086cff;
   color:#fff!important;
 }
-.catalog-detail-actions a.secondary{
+.catalog-detail-actions .secondary{
   border:1px solid #dce5ef;
   background:#fff;
   color:#203d62!important;
