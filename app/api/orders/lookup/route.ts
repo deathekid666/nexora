@@ -8,6 +8,15 @@ import {
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 
+function publicOrder<T extends {events?:Array<{actorLabel?:string|null}>}>(order:T){
+  return {
+    ...order,
+    events:Array.isArray(order.events)
+      ?order.events.map(event=>({...event,actorLabel:null}))
+      :[],
+  };
+}
+
 export async function POST(request:NextRequest){
   if(!isOrderDatabaseConfigured()){
     return NextResponse.json(
@@ -37,7 +46,11 @@ export async function POST(request:NextRequest){
     }
 
     const orders=await listCustomerOrdersByVerifiedOrder(orderNumber,phone);
-    return NextResponse.json({ok:true,order,orders});
+    return NextResponse.json({
+      ok:true,
+      order:publicOrder(order),
+      orders:orders.map(publicOrder),
+    });
   }catch(error){
     console.error("[LHAWTA customer order lookup]",error);
     return NextResponse.json(
