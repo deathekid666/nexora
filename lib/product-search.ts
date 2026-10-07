@@ -1,4 +1,20 @@
-import { storeProducts, type StoreProduct } from "@/lib/store-products";
+import { allCatalogProducts, type AllCatalogProduct } from "@/lib/category-catalogs";
+import { storeProducts } from "@/lib/store-products";
+
+export type SearchProduct={
+  slug:string;
+  brand:string;
+  name:string;
+  category:string;
+  badge:string;
+  shortDescription:string;
+  price:string;
+  oldPrice?:string;
+  image:string;
+  highlights:{label:string;value:string}[];
+  compareSlug?:string;
+  searchText:string;
+};
 
 function normalize(value:string){
   return value
@@ -13,8 +29,11 @@ const aliases:Record<string,string[]>={
   "playstation-5":["PS5","Play Station 5","Sony PS5","console Sony"],
 };
 
-function searchableText(product:StoreProduct){
-  return normalize([
+function detailedSearchText(slug:string){
+  const product=storeProducts[slug];
+  if(!product) return "";
+
+  return [
     product.slug,
     ...(aliases[product.slug]||[]),
     product.brand,
@@ -32,8 +51,60 @@ function searchableText(product:StoreProduct){
       section.title,
       ...section.rows.flatMap(row=>[row.label,row.value]),
     ]),
-  ].join(" "));
+  ].join(" ");
 }
+
+function catalogToSearchProduct(product:AllCatalogProduct):SearchProduct{
+  const detailed=product.detailSlug?storeProducts[product.detailSlug]:undefined;
+
+  if(detailed){
+    return {
+      slug:product.productSlug,
+      brand:detailed.brand,
+      name:detailed.name,
+      category:detailed.category,
+      badge:detailed.badge,
+      shortDescription:detailed.shortDescription,
+      price:detailed.price,
+      oldPrice:detailed.oldPrice,
+      image:detailed.gallery[0],
+      highlights:detailed.highlights.slice(0,3),
+      compareSlug:detailed.slug,
+      searchText:[
+        detailedSearchText(detailed.slug),
+        product.name,
+        product.categoryTitle,
+        ...product.specs,
+      ].join(" "),
+    };
+  }
+
+  return {
+    slug:product.productSlug,
+    brand:product.brand,
+    name:product.name,
+    category:product.categoryTitle,
+    badge:product.badge||"Catalogue",
+    shortDescription:product.specs.join(" · "),
+    price:product.price,
+    oldPrice:product.old,
+    image:product.image,
+    highlights:product.specs.slice(0,3).map((value,index)=>({
+      label:"Caractéristique "+(index+1),
+      value,
+    })),
+    searchText:[
+      product.productSlug,
+      product.brand,
+      product.name,
+      product.categoryTitle,
+      product.badge||"",
+      ...product.specs,
+    ].join(" "),
+  };
+}
+
+export const searchableProducts:SearchProduct[]=allCatalogProducts.map(catalogToSearchProduct);
 
 export function searchStoreProducts(query:string){
   const normalized=normalize(query);
@@ -41,9 +112,9 @@ export function searchStoreProducts(query:string){
 
   const terms=normalized.split(/\s+/).filter(Boolean);
 
-  return Object.values(storeProducts)
+  return searchableProducts
     .map(product=>{
-      const haystack=searchableText(product);
+      const haystack=normalize(product.searchText);
       const compactHaystack=haystack.replace(/\s+/g,"");
       const name=normalize(product.name);
       const brand=normalize(product.brand);
@@ -63,7 +134,7 @@ export function searchStoreProducts(query:string){
 
       return {product,score};
     })
-    .filter((item):item is {product:StoreProduct;score:number}=>item!==null)
+    .filter((item):item is {product:SearchProduct;score:number}=>item!==null)
     .sort((a,b)=>b.score-a.score||a.product.name.localeCompare(b.product.name))
     .map(item=>item.product);
 }
