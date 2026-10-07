@@ -35,6 +35,17 @@ const STATUS_LABEL:Record<OrderStatus,string>={
   ANNULE:"Annulé",
 };
 
+function allowedStatusOptions(current:OrderStatus){
+  const next:Record<OrderStatus,OrderStatus[]>={
+    NOUVEAU:["NOUVEAU","CONFIRME","ANNULE"],
+    CONFIRME:["CONFIRME","EXPEDIE","ANNULE"],
+    EXPEDIE:["EXPEDIE","LIVRE","ANNULE"],
+    LIVRE:["LIVRE"],
+    ANNULE:["ANNULE"],
+  };
+  return next[current];
+}
+
 function formatDh(value:number){
   return new Intl.NumberFormat("fr-MA").format(value)+" DH";
 }
@@ -268,8 +279,8 @@ export default function AdminOrdersClient(){
 
                 <label className={"admin-status status-"+order.status.toLowerCase()}>
                   <select value={order.status} onChange={e=>void updateStatus(order,e.target.value as OrderStatus)}>
-                    {STATUS_OPTIONS.filter(option=>option.value!=="ALL").map(option=>(
-                      <option value={option.value} key={option.value}>{option.label}</option>
+                    {allowedStatusOptions(order.status).map(value=>(
+                      <option value={value} key={value}>{STATUS_LABEL[value]}</option>
                     ))}
                   </select>
                   <ChevronDown size={14}/>
