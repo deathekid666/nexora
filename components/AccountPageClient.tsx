@@ -324,7 +324,7 @@ export default function AccountPageClient(){
                         <article key={item.id}>
                           <div>
                             <small>{new Date(item.createdAt).toLocaleDateString("fr-MA",{day:"2-digit",month:"short",year:"numeric"})}</small>
-                            <a href={"/account?order="+encodeURIComponent(item.orderNumber)}>{item.orderNumber}</a>
+                            <button type="button" onClick={()=>setOrder(item)}>{item.orderNumber}</button>
                             <span>{item.items.reduce((sum,line)=>sum+line.quantity,0)} article(s) · {item.city}</span>
                           </div>
                           <div>
@@ -354,7 +354,7 @@ export default function AccountPageClient(){
                         <article key={item.id}>
                           <div>
                             <small>{new Date(item.updatedAt).toLocaleDateString("fr-MA",{day:"2-digit",month:"short",year:"numeric"})}</small>
-                            <a href={"/account?order="+encodeURIComponent(item.orderNumber)}>{item.orderNumber}</a>
+                            <button type="button" onClick={()=>setOrder(item)}>{item.orderNumber}</button>
                             <span>{item.items.reduce((sum,line)=>sum+line.quantity,0)} article(s) · {item.city}</span>
                           </div>
                           <div>
