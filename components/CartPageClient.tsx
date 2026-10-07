@@ -153,12 +153,18 @@ export default function CartPageClient(){
 
       const url="https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(lines.join("\n"));
       setCreatedOrder(order.orderNumber);
+
+      try{
+        window.sessionStorage.setItem("lhawta-last-order-v1",JSON.stringify({
+          order,
+          phone:customer.phone.trim(),
+          whatsappUrl:url,
+        }));
+      }catch{}
+
       update([]);
-      if(whatsappWindow){
-        whatsappWindow.location.href=url;
-      }else{
-        window.location.href=url;
-      }
+      if(whatsappWindow) whatsappWindow.location.href=url;
+      window.location.assign("/order-confirmation?order="+encodeURIComponent(order.orderNumber));
     }catch(error){
       if(whatsappWindow) whatsappWindow.close();
       console.error(error);
