@@ -116,7 +116,7 @@ export default function StoreHeader(){
                   <>
                     {suggestions.map(product=>(
                       <a href={`/products/${product.slug}`} className="exact-search-suggestion" key={product.slug}>
-                        <span className="exact-search-suggestion-media"><img src={product.gallery[0]} alt=""/></span>
+                        <span className="exact-search-suggestion-media"><img src={product.image} alt=""/></span>
                         <span className="exact-search-suggestion-copy">
                           <small>{product.brand} · {product.category}</small>
                           <b>{product.name}</b>
