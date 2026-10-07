@@ -146,13 +146,34 @@ export type AllCatalogProduct=CategoryProduct&{
   categorySlug:string;
   categoryTitle:string;
   detailSlug?:string;
+  productSlug:string;
 };
 
+function slugifyCatalogValue(value:string){
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-+|-+$/g,"");
+}
+
+export function catalogProductSlug(
+  product:Pick<AllCatalogProduct,"name"|"categorySlug"|"detailSlug">|{name:string;categorySlug:string;detailSlug?:string}
+){
+  return product.detailSlug||slugifyCatalogValue(product.categorySlug+"-"+product.name);
+}
+
 export const allCatalogProducts:AllCatalogProduct[]=Object.entries(catalogs).flatMap(
-  ([categorySlug,catalog])=>catalog.products.map(product=>({
-    ...product,
-    categorySlug,
-    categoryTitle:catalog.title,
-    detailSlug:productDetailSlugs[product.name],
-  }))
+  ([categorySlug,catalog])=>catalog.products.map(product=>{
+    const detailSlug=productDetailSlugs[product.name];
+    const base={...product,categorySlug,categoryTitle:catalog.title,detailSlug};
+    return {...base,productSlug:catalogProductSlug(base)};
+  })
 );
+
+export const allCatalogProductSlugs=[...new Set(allCatalogProducts.map(product=>product.productSlug))];
+
+export function getCatalogProductBySlug(slug:string){
+  return allCatalogProducts.find(product=>product.productSlug===slug);
+}
