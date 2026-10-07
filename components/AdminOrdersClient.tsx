@@ -68,6 +68,26 @@ function whatsappPhone(phone:string){
   return digits;
 }
 
+function statusWhatsappMessage(order:SavedOrder,status:OrderStatus){
+  const intro="Bonjour "+order.customerName+", votre commande LHAWTA "+order.orderNumber;
+  switch(status){
+    case "CONFIRME":
+      return intro+" est confirmée ✅\n\nMontant : "+formatDh(order.totalMad)+"\nPaiement : à la livraison\n\nNous vous informerons dès son expédition.";
+    case "EXPEDIE":
+      return intro+" a été expédiée 🚚\n\nDestination : "+order.city+"\nMontant à régler à la livraison : "+formatDh(order.totalMad)+"\n\nMerci de garder votre téléphone disponible pour la livraison.";
+    case "LIVRE":
+      return intro+" est maintenant marquée comme livrée ✅\n\nMerci pour votre achat chez LHAWTA. Nous espérons que tout s’est bien passé.";
+    case "ANNULE":
+      return intro+" a été annulée.\n\nSi vous avez une question ou souhaitez repasser commande, répondez simplement à ce message.";
+    default:
+      return "Bonjour "+order.customerName+", concernant votre commande LHAWTA "+order.orderNumber+" :";
+  }
+}
+
+function statusWhatsappUrl(order:SavedOrder,status:OrderStatus){
+  return "https://wa.me/"+whatsappPhone(order.phone)+"?text="+encodeURIComponent(statusWhatsappMessage(order,status));
+}
+
 export default function AdminOrdersClient(){
   const [authenticated,setAuthenticated]=useState(false);
   const [sessionChecking,setSessionChecking]=useState(true);
@@ -81,6 +101,11 @@ export default function AdminOrdersClient(){
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState("");
   const [expanded,setExpanded]=useState<string>("");
+  const [statusNotice,setStatusNotice]=useState<{
+    orderNumber:string;
+    status:OrderStatus;
+    url:string;
+  }|null>(null);
 
   useEffect(()=>{
     const checkSession=async()=>{
@@ -179,7 +204,9 @@ export default function AdminOrdersClient(){
   };
 
   const updateStatus=async(order:SavedOrder,nextStatus:OrderStatus)=>{
+    if(nextStatus===order.status) return;
     setError("");
+    setStatusNotice(null);
     try{
       const response=await fetch("/api/orders/"+order.id,{
         method:"PATCH",
@@ -191,7 +218,13 @@ export default function AdminOrdersClient(){
         setError("Impossible de modifier le statut de "+order.orderNumber+".");
         return;
       }
-      setOrders(current=>current.map(item=>item.id===order.id?payload.order:item));
+      const updated=payload.order as SavedOrder;
+      setOrders(current=>current.map(item=>item.id===order.id?updated:item));
+      setStatusNotice({
+        orderNumber:updated.orderNumber,
+        status:updated.status,
+        url:statusWhatsappUrl(updated,updated.status),
+      });
     }catch{
       setError("Impossible de modifier cette commande.");
     }
@@ -308,13 +341,26 @@ export default function AdminOrdersClient(){
 
       {error&&<div className="admin-error exact-shell">{error}</div>}
 
+      {statusNotice&&(
+        <div className="admin-status-notice exact-shell" aria-live="polite">
+          <CheckCircle2 size={19}/>
+          <div>
+            <b>{statusNotice.orderNumber} · {STATUS_LABEL[statusNotice.status]}</b>
+            <span>Statut enregistré. Le message client est prêt à être envoyé.</span>
+          </div>
+          <a href={statusNotice.url} target="_blank" rel="noreferrer">
+            <MessageCircle size={15}/>Envoyer sur WhatsApp
+          </a>
+          <button type="button" onClick={()=>setStatusNotice(null)}>Fermer</button>
+        </div>
+      )}
+
       <section className="admin-orders-list exact-shell">
         {loading&&!orders.length ? (
           <div className="admin-empty">Chargement des commandes...</div>
         ) : orders.length ? orders.map(order=>{
           const isOpen=expanded===order.id;
-          const phone=whatsappPhone(order.phone);
-          const message=encodeURIComponent("Bonjour "+order.customerName+", concernant votre commande LHAWTA "+order.orderNumber+" :");
+          const contactUrl=statusWhatsappUrl(order,order.status);
           return (
             <article className="admin-order-card" key={order.id}>
               <div className="admin-order-main">
@@ -342,7 +388,7 @@ export default function AdminOrdersClient(){
                   <ChevronDown size={14}/>
                 </label>
 
-                <a className="admin-whatsapp" href={"https://wa.me/"+phone+"?text="+message} target="_blank" rel="noreferrer">
+                <a className="admin-whatsapp" href={contactUrl} target="_blank" rel="noreferrer">
                   <MessageCircle size={16}/>WhatsApp
                 </a>
               </div>
