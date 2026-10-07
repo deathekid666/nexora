@@ -396,6 +396,7 @@ export default function AdminOrdersClient(){
           <small className="admin-session-email">Connecté : {adminEmail}</small>
         </div>
         <div className="admin-head-actions">
+          <a href="/admin/inventory"><PackageCheck size={15}/>Stock</a>
           <button onClick={()=>void fetchOrders(activeSearch,status)} disabled={loading}><RefreshCw size={15}/>{loading?"Actualisation...":"Actualiser"}</button>
           <button onClick={logout}><LogOut size={15}/>Quitter</button>
         </div>
