@@ -2398,13 +2398,24 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 
 
 .product-name-link{
+  position:relative;
+  display:inline;
   color:inherit;
   text-decoration:none;
-  transition:color .16s ease;
+  text-underline-offset:3px;
+  cursor:pointer;
+  transition:color .16s ease,text-decoration-color .16s ease;
 }
-.product-name-link:hover,
+.product-name-link:hover{
+  color:#086cff;
+  text-decoration:underline;
+  text-decoration-thickness:1.5px;
+}
 .product-name-link:focus-visible{
   color:#086cff;
+  outline:2px solid rgba(8,108,255,.28);
+  outline-offset:3px;
+  border-radius:3px;
 }
 
 
@@ -5181,4 +5192,39 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
   .faq-category-chips button{white-space:nowrap}
   .faq-side{grid-template-columns:1fr}
   .home-faq-cta{align-items:flex-start;flex-direction:column}
+}
+
+
+/* dedicated catalog product pages */
+.catalog-detail-actions{
+  margin-top:15px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+}
+.catalog-detail-actions a{
+  min-height:48px;
+  padding:0 18px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:10px;
+  font-weight:850;
+}
+.catalog-detail-actions a.primary{
+  border:1px solid #086cff;
+  background:#086cff;
+  color:#fff!important;
+}
+.catalog-detail-actions a.secondary{
+  border:1px solid #dce5ef;
+  background:#fff;
+  color:#203d62!important;
+}
+.catalog-detail-specs{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:720px){
+  .catalog-detail-actions{grid-template-columns:1fr}
+  .catalog-detail-specs{grid-template-columns:1fr}
 }
