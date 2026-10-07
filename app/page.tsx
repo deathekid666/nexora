@@ -33,6 +33,13 @@ const REDMI_IMG="/api/product-image/redmi-note-15-pro-plus-5g";
 const TAB_IMG="/api/product-image/galaxy-tab-s11-ultra";
 const PS5_IMG="/api/product-image/playstation-5";
 
+const HERO_S26="/api/hero-image/galaxy-s26-ultra";
+const HERO_XIAOMI="/api/hero-image/xiaomi-17t-pro";
+const HERO_HONOR="/api/hero-image/honor-600";
+const HERO_REDMI="/api/hero-image/redmi-note-15-pro-plus-5g";
+const HERO_TAB="/api/hero-image/galaxy-tab-s11-ultra";
+const HERO_PS5="/api/hero-image/playstation-5";
+
 const promotionProducts=allCatalogProducts
   .filter(product=>product.old)
   .slice(0,4);
@@ -84,12 +91,12 @@ export default function Home(){
           </div>
 
           <div className="exact-product-lineup" aria-hidden="true">
-            <HeroProductVisual className="line-s26 hero-clean-s26" src={S26_IMG} alt="Samsung Galaxy S26 Ultra"/>
-            <HeroProductVisual className="line-xiaomi" src={XIAOMI17T_IMG} alt="Xiaomi 17T Pro"/>
-            <HeroProductVisual className="line-honor" src={HONOR_IMG} alt="HONOR 600"/>
-            <HeroProductVisual className="line-redmi hero-clean-redmi" src={REDMI_IMG} alt="REDMI Note 15 Pro+ 5G"/>
-            <HeroProductVisual className="line-tab" src={TAB_IMG} alt="Samsung Galaxy Tab S11 Ultra"/>
-            <HeroProductVisual className="line-ps5" src={PS5_IMG} alt="Sony PlayStation 5"/>
+            <HeroProductVisual className="line-s26" src={HERO_S26} alt="Samsung Galaxy S26 Ultra"/>
+            <HeroProductVisual className="line-xiaomi" src={HERO_XIAOMI} alt="Xiaomi 17T Pro"/>
+            <HeroProductVisual className="line-honor" src={HERO_HONOR} alt="HONOR 600"/>
+            <HeroProductVisual className="line-redmi" src={HERO_REDMI} alt="REDMI Note 15 Pro+ 5G"/>
+            <HeroProductVisual className="line-tab" src={HERO_TAB} alt="Samsung Galaxy Tab S11 Ultra"/>
+            <HeroProductVisual className="line-ps5" src={HERO_PS5} alt="Sony PlayStation 5"/>
           </div>
 
           <div className="exact-hero-script">
