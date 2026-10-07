@@ -16,7 +16,7 @@ import {
 import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 
-type OrderStatus="NOUVEAU"|"CONFIRME"|"EXPEDIE"|"LIVRE"|"ANNULE";
+type OrderStatus="NOUVEAU"|"CONFIRME"|"EXPEDIE"|"EN_LIVRAISON"|"LIVRE"|"ANNULE";
 
 type OrderItem={
   id:string;
@@ -59,6 +59,7 @@ const statusCopy:Record<OrderStatus,{label:string;detail:string}>={
   NOUVEAU:{label:"Commande reçue",detail:"Votre commande a bien été enregistrée et attend la confirmation de LHAWTA."},
   CONFIRME:{label:"Commande confirmée",detail:"Votre commande est confirmée et sera préparée pour l’expédition."},
   EXPEDIE:{label:"Commande expédiée",detail:"Votre commande a quitté la préparation et est en cours d’acheminement."},
+  EN_LIVRAISON:{label:"Commande en livraison",detail:"Votre colis est dans la dernière étape avant remise."},
   LIVRE:{label:"Commande livrée",detail:"La commande est indiquée comme livrée."},
   ANNULE:{label:"Commande annulée",detail:"Cette commande a été annulée."},
 };
@@ -149,7 +150,7 @@ export default function OrderConfirmationClient(){
                 <div className="order-confirmation-total">
                   <p><span>Sous-total</span><b>{money(order.subtotalMad)}</b></p>
                   <p><span>Livraison</span><b>{order.shippingMad?money(order.shippingMad):"À confirmer"}</b></p>
-                  <div><span>Total produits</span><strong>{money(order.totalMad)}</strong></div>
+                  <div><span>Total commande</span><strong>{money(order.totalMad)}</strong></div>
                 </div>
               </section>
 
