@@ -36,10 +36,19 @@ export async function POST(request:NextRequest){
       "INVALID_COLOR",
       "INVALID_PRODUCT_PRICE",
     ]);
-    const status=clientErrors.has(code)?400:500;
+    const outOfStock=code.startsWith("OUT_OF_STOCK:");
+    const status=outOfStock?409:clientErrors.has(code)?400:500;
     console.error("[LHAWTA order create]",error);
     return NextResponse.json(
-      {ok:false,error:code,message:status===400?"Les informations de commande sont invalides.":"Impossible d’enregistrer la commande pour le moment."},
+      {
+        ok:false,
+        error:outOfStock?"OUT_OF_STOCK":code,
+        message:outOfStock
+          ?"Un ou plusieurs articles ne sont plus disponibles dans la quantité demandée. Actualisez votre panier puis réessayez."
+          :status===400
+            ?"Les informations de commande sont invalides."
+            :"Impossible d’enregistrer la commande pour le moment.",
+      },
       {status}
     );
   }

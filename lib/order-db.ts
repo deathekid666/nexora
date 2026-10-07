@@ -1,9 +1,23 @@
 import { neon } from "@neondatabase/serverless";
 import { storeProducts } from "@/lib/store-products";
 import { getCatalogProductBySlug } from "@/lib/category-catalogs";
+import { ensureInventorySchema } from "@/lib/inventory-db";
 
-export const ORDER_STATUSES=["NOUVEAU","CONFIRME","EXPEDIE","LIVRE","ANNULE"] as const;
+export const ORDER_STATUSES=["NOUVEAU","CONFIRME","EXPEDIE","EN_LIVRAISON","LIVRE","ANNULE"] as const;
 export type OrderStatus=typeof ORDER_STATUSES[number];
+
+const ORDER_TRANSITIONS:Record<OrderStatus,readonly OrderStatus[]>={
+  NOUVEAU:["CONFIRME","ANNULE"],
+  CONFIRME:["EXPEDIE","ANNULE"],
+  EXPEDIE:["EN_LIVRAISON","ANNULE"],
+  EN_LIVRAISON:["LIVRE","ANNULE"],
+  LIVRE:[],
+  ANNULE:[],
+};
+
+export function canTransitionOrderStatus(current:OrderStatus,next:OrderStatus){
+  return current===next||ORDER_TRANSITIONS[current].includes(next);
+}
 
 export type OrderItemInput={
   slug:string;
@@ -35,6 +49,15 @@ export type SavedOrderItem={
   lineTotalMad:number;
 };
 
+export type OrderEvent={
+  id:string;
+  status:OrderStatus;
+  previousStatus:OrderStatus|null;
+  actorType:"SYSTEM"|"ADMIN";
+  actorLabel:string|null;
+  createdAt:string;
+};
+
 export type SavedOrder={
   id:string;
   orderNumber:string;
@@ -47,11 +70,18 @@ export type SavedOrder={
   subtotalMad:number;
   shippingMad:number;
   totalMad:number;
+  courierName:string|null;
+  trackingNumber:string|null;
+  trackingUrl:string|null;
+  shippedAt:string|null;
+  estimatedDeliveryDate:string|null;
+  deliveryNote:string|null;
   paymentMethod:string;
   source:string;
   createdAt:string;
   updatedAt:string;
   items:SavedOrderItem[];
+  events:OrderEvent[];
 };
 
 function moneyToMad(value:string){
@@ -62,6 +92,43 @@ function moneyToMad(value:string){
 function clean(value:unknown,max=500){
   return typeof value==="string"?value.trim().slice(0,max):"";
 }
+
+function cleanOptionalUrl(value:unknown){
+  const raw=clean(value,700);
+  if(!raw) return null;
+  try{
+    const parsed=new URL(raw);
+    if(parsed.protocol!=="http:"&&parsed.protocol!=="https:") throw new Error("INVALID_TRACKING_URL");
+    return parsed.toString();
+  }catch{
+    throw new Error("INVALID_TRACKING_URL");
+  }
+}
+
+function cleanOptionalDate(value:unknown){
+  const raw=clean(value,40);
+  if(!raw) return null;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(raw)) throw new Error("INVALID_DELIVERY_DATE");
+  return raw;
+}
+
+function cleanOptionalDateTime(value:unknown){
+  const raw=clean(value,80);
+  if(!raw) return null;
+  const parsed=new Date(raw);
+  if(Number.isNaN(parsed.getTime())) throw new Error("INVALID_SHIPPED_AT");
+  return parsed.toISOString();
+}
+
+export type OrderShippingInput={
+  courierName?:string;
+  trackingNumber?:string;
+  trackingUrl?:string;
+  shippedAt?:string;
+  estimatedDeliveryDate?:string;
+  shippingMad?:number;
+  deliveryNote?:string;
+};
 
 let sqlClient:ReturnType<typeof neon>|null=null;
 let schemaPromise:Promise<void>|null=null;
@@ -83,11 +150,15 @@ export async function ensureOrderSchema(){
   schemaPromise=(async()=>{
     const sql=db();
     await sql.query("CREATE SEQUENCE IF NOT EXISTS lhawta_order_seq START WITH 1001");
-    await sql.query("CREATE TABLE IF NOT EXISTS lhawta_orders (id uuid PRIMARY KEY, order_number text NOT NULL UNIQUE, status text NOT NULL DEFAULT 'NOUVEAU' CHECK (status IN ('NOUVEAU','CONFIRME','EXPEDIE','LIVRE','ANNULE')), customer_name text NOT NULL, phone text NOT NULL, city text NOT NULL, address text NOT NULL, note text, subtotal_mad integer NOT NULL CHECK (subtotal_mad >= 0), shipping_mad integer NOT NULL DEFAULT 0 CHECK (shipping_mad >= 0), total_mad integer NOT NULL CHECK (total_mad >= 0), payment_method text NOT NULL DEFAULT 'COD', source text NOT NULL DEFAULT 'WHATSAPP', created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now())");
+    await sql.query("CREATE TABLE IF NOT EXISTS lhawta_orders (id uuid PRIMARY KEY, order_number text NOT NULL UNIQUE, status text NOT NULL DEFAULT 'NOUVEAU' CHECK (status IN ('NOUVEAU','CONFIRME','EXPEDIE','EN_LIVRAISON','LIVRE','ANNULE')), customer_name text NOT NULL, phone text NOT NULL, city text NOT NULL, address text NOT NULL, note text, subtotal_mad integer NOT NULL CHECK (subtotal_mad >= 0), shipping_mad integer NOT NULL DEFAULT 0 CHECK (shipping_mad >= 0), total_mad integer NOT NULL CHECK (total_mad >= 0), courier_name text, tracking_number text, tracking_url text, shipped_at timestamptz, estimated_delivery_date date, delivery_note text, payment_method text NOT NULL DEFAULT 'COD', source text NOT NULL DEFAULT 'WHATSAPP', created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now())");
     await sql.query("CREATE TABLE IF NOT EXISTS lhawta_order_items (id uuid PRIMARY KEY, order_id uuid NOT NULL REFERENCES lhawta_orders(id) ON DELETE CASCADE, slug text NOT NULL, brand text NOT NULL, product_name text NOT NULL, variant text NOT NULL, color text NOT NULL, quantity integer NOT NULL CHECK (quantity > 0), unit_price_mad integer NOT NULL CHECK (unit_price_mad >= 0), line_total_mad integer NOT NULL CHECK (line_total_mad >= 0), created_at timestamptz NOT NULL DEFAULT now())");
+    await sql.query("CREATE TABLE IF NOT EXISTS lhawta_order_events (id uuid PRIMARY KEY, order_id uuid NOT NULL REFERENCES lhawta_orders(id) ON DELETE CASCADE, status text NOT NULL CHECK (status IN ('NOUVEAU','CONFIRME','EXPEDIE','EN_LIVRAISON','LIVRE','ANNULE')), previous_status text CHECK (previous_status IS NULL OR previous_status IN ('NOUVEAU','CONFIRME','EXPEDIE','EN_LIVRAISON','LIVRE','ANNULE')), actor_type text NOT NULL DEFAULT 'SYSTEM' CHECK (actor_type IN ('SYSTEM','ADMIN')), actor_label text, created_at timestamptz NOT NULL DEFAULT now())");
+    await ensureInventorySchema();
     await sql.query("CREATE INDEX IF NOT EXISTS lhawta_orders_created_at_idx ON lhawta_orders (created_at DESC)");
     await sql.query("CREATE INDEX IF NOT EXISTS lhawta_orders_phone_idx ON lhawta_orders (phone)");
     await sql.query("CREATE INDEX IF NOT EXISTS lhawta_order_items_order_id_idx ON lhawta_order_items (order_id)");
+    await sql.query("CREATE INDEX IF NOT EXISTS lhawta_order_events_order_id_created_at_idx ON lhawta_order_events (order_id, created_at ASC)");
+    await sql.query("INSERT INTO lhawta_order_events (id,order_id,status,previous_status,actor_type,actor_label,created_at) SELECT gen_random_uuid(),o.id,o.status,NULL,'SYSTEM','Historique initial',o.created_at FROM lhawta_orders o WHERE NOT EXISTS (SELECT 1 FROM lhawta_order_events e WHERE e.order_id=o.id)");
   })();
 
   try{
@@ -182,6 +253,7 @@ export async function createOrder(input:CreateOrderInput):Promise<SavedOrder>{
   const totalMad=subtotalMad+shippingMad;
 
   const itemJson=JSON.stringify(validated.items);
+  const eventId=crypto.randomUUID();
   const result=await sql.query(
     "WITH new_order AS ("+
     " INSERT INTO lhawta_orders (id, order_number, status, customer_name, phone, city, address, note, subtotal_mad, shipping_mad, total_mad, payment_method, source)"+
@@ -189,11 +261,16 @@ export async function createOrder(input:CreateOrderInput):Promise<SavedOrder>{
     " RETURNING id::text AS id, order_number AS \"orderNumber\""+
     "), item_data AS ("+
     " SELECT * FROM jsonb_to_recordset($10::jsonb) AS x(id uuid, slug text, brand text, name text, variant text, color text, quantity integer, \"unitPriceMad\" integer, \"lineTotalMad\" integer)"+
+    "), inventory_reservation AS ("+
+    " SELECT lhawta_reserve_inventory(n.id::uuid,$10::jsonb) AS ok FROM new_order n"+
     "), inserted_items AS ("+
     " INSERT INTO lhawta_order_items (id, order_id, slug, brand, product_name, variant, color, quantity, unit_price_mad, line_total_mad)"+
-    " SELECT x.id, n.id::uuid, x.slug, x.brand, x.name, x.variant, x.color, x.quantity, x.\"unitPriceMad\", x.\"lineTotalMad\" FROM item_data x CROSS JOIN new_order n"+
+    " SELECT x.id, n.id::uuid, x.slug, x.brand, x.name, x.variant, x.color, x.quantity, x.\"unitPriceMad\", x.\"lineTotalMad\" FROM item_data x CROSS JOIN new_order n CROSS JOIN inventory_reservation r"+
     " RETURNING id"+
-    ") SELECT n.id, n.\"orderNumber\", (SELECT count(*)::int FROM inserted_items) AS \"itemCount\" FROM new_order n",
+    "), inserted_event AS ("+
+    " INSERT INTO lhawta_order_events (id,order_id,status,previous_status,actor_type,actor_label)"+
+    " SELECT $11::uuid,n.id::uuid,'NOUVEAU',NULL,'SYSTEM','Commande créée' FROM new_order n RETURNING id"+
+    ") SELECT n.id, n.\"orderNumber\", (SELECT count(*)::int FROM inserted_items) AS \"itemCount\" FROM new_order n CROSS JOIN inserted_event",
     [
       orderId,
       validated.customer.name,
@@ -205,6 +282,7 @@ export async function createOrder(input:CreateOrderInput):Promise<SavedOrder>{
       shippingMad,
       totalMad,
       itemJson,
+      eventId,
     ]
   ) as Array<{id:string;orderNumber:string;itemCount:number}>;
 
@@ -222,9 +300,9 @@ export async function getOrderById(id:string):Promise<SavedOrder|null>{
   const sql=db();
 
   const orders=await sql.query(
-    "SELECT id::text AS id, order_number AS \"orderNumber\", status, customer_name AS \"customerName\", phone, city, address, note, subtotal_mad AS \"subtotalMad\", shipping_mad AS \"shippingMad\", total_mad AS \"totalMad\", payment_method AS \"paymentMethod\", source, created_at::text AS \"createdAt\", updated_at::text AS \"updatedAt\" FROM lhawta_orders WHERE id=$1::uuid LIMIT 1",
+    "SELECT id::text AS id, order_number AS \"orderNumber\", status, customer_name AS \"customerName\", phone, city, address, note, subtotal_mad AS \"subtotalMad\", shipping_mad AS \"shippingMad\", total_mad AS \"totalMad\", courier_name AS \"courierName\", tracking_number AS \"trackingNumber\", tracking_url AS \"trackingUrl\", shipped_at::text AS \"shippedAt\", estimated_delivery_date::text AS \"estimatedDeliveryDate\", delivery_note AS \"deliveryNote\", payment_method AS \"paymentMethod\", source, created_at::text AS \"createdAt\", updated_at::text AS \"updatedAt\" FROM lhawta_orders WHERE id=$1::uuid LIMIT 1",
     [id]
-  ) as Array<Omit<SavedOrder,"items">>;
+  ) as Array<Omit<SavedOrder,"items"|"events">>;
 
   if(!orders[0]) return null;
 
@@ -233,7 +311,12 @@ export async function getOrderById(id:string):Promise<SavedOrder|null>{
     [id]
   ) as SavedOrderItem[];
 
-  return {...orders[0],items};
+  const events=await sql.query(
+    "SELECT id::text AS id, status, previous_status AS \"previousStatus\", actor_type AS \"actorType\", actor_label AS \"actorLabel\", created_at::text AS \"createdAt\" FROM lhawta_order_events WHERE order_id=$1::uuid ORDER BY created_at ASC, id ASC",
+    [id]
+  ) as OrderEvent[];
+
+  return {...orders[0],items,events};
 }
 
 export async function listOrders(options?:{
@@ -248,9 +331,9 @@ export async function listOrders(options?:{
   const limit=Math.max(1,Math.min(200,options?.limit||100));
 
   const rows=await sql.query(
-    "SELECT id::text AS id, order_number AS \"orderNumber\", status, customer_name AS \"customerName\", phone, city, address, note, subtotal_mad AS \"subtotalMad\", shipping_mad AS \"shippingMad\", total_mad AS \"totalMad\", payment_method AS \"paymentMethod\", source, created_at::text AS \"createdAt\", updated_at::text AS \"updatedAt\" FROM lhawta_orders WHERE ($1='' OR order_number ILIKE $2 OR customer_name ILIKE $2 OR phone ILIKE $2 OR city ILIKE $2) AND ($3::text IS NULL OR status=$3) ORDER BY created_at DESC LIMIT $4",
+    "SELECT id::text AS id, order_number AS \"orderNumber\", status, customer_name AS \"customerName\", phone, city, address, note, subtotal_mad AS \"subtotalMad\", shipping_mad AS \"shippingMad\", total_mad AS \"totalMad\", courier_name AS \"courierName\", tracking_number AS \"trackingNumber\", tracking_url AS \"trackingUrl\", shipped_at::text AS \"shippedAt\", estimated_delivery_date::text AS \"estimatedDeliveryDate\", delivery_note AS \"deliveryNote\", payment_method AS \"paymentMethod\", source, created_at::text AS \"createdAt\", updated_at::text AS \"updatedAt\" FROM lhawta_orders WHERE ($1='' OR order_number ILIKE $2 OR customer_name ILIKE $2 OR phone ILIKE $2 OR city ILIKE $2) AND ($3::text IS NULL OR status=$3) ORDER BY created_at DESC LIMIT $4",
     [search,"%"+search+"%",status,limit]
-  ) as Array<Omit<SavedOrder,"items">>;
+  ) as Array<Omit<SavedOrder,"items"|"events">>;
 
   if(!rows.length) return [];
 
@@ -259,7 +342,11 @@ export async function listOrders(options?:{
       "SELECT id::text AS id, slug, brand, product_name AS name, variant, color, quantity, unit_price_mad AS \"unitPriceMad\", line_total_mad AS \"lineTotalMad\" FROM lhawta_order_items WHERE order_id=$1::uuid ORDER BY created_at ASC",
       [row.id]
     ) as SavedOrderItem[];
-    return {...row,items};
+    const events=await sql.query(
+      "SELECT id::text AS id, status, previous_status AS \"previousStatus\", actor_type AS \"actorType\", actor_label AS \"actorLabel\", created_at::text AS \"createdAt\" FROM lhawta_order_events WHERE order_id=$1::uuid ORDER BY created_at ASC, id ASC",
+      [row.id]
+    ) as OrderEvent[];
+    return {...row,items,events};
   }));
 }
 
@@ -280,14 +367,80 @@ export async function getOrderByNumberAndPhone(orderNumber:string,phone:string):
   return getOrderById(rows[0].id);
 }
 
-export async function updateOrderStatus(id:string,status:OrderStatus):Promise<SavedOrder|null>{
+export async function listCustomerOrdersByVerifiedOrder(orderNumber:string,phone:string):Promise<SavedOrder[]>{
+  const verified=await getOrderByNumberAndPhone(orderNumber,phone);
+  if(!verified) return [];
+
+  await ensureOrderSchema();
+  const sql=db();
+  const normalizedPhone=clean(phone,40).replace(/\D/g,"");
+
+  const rows=await sql.query(
+    "SELECT id::text AS id FROM lhawta_orders WHERE regexp_replace(phone,'[^0-9]','','g')=$1 ORDER BY created_at DESC LIMIT 100",
+    [normalizedPhone]
+  ) as Array<{id:string}>;
+
+  const orders=await Promise.all(rows.map(row=>getOrderById(row.id)));
+  return orders.filter((order):order is SavedOrder=>Boolean(order));
+}
+
+export async function updateOrderStatus(
+  id:string,
+  status:OrderStatus,
+  actorLabel:string|null
+):Promise<SavedOrder|null>{
   if(!ORDER_STATUSES.includes(status)) throw new Error("INVALID_STATUS");
   await ensureOrderSchema();
   const sql=db();
 
+  const current=await getOrderById(id);
+  if(!current) return null;
+  if(!canTransitionOrderStatus(current.status,status)) throw new Error("INVALID_STATUS_TRANSITION");
+  if(current.status===status) return current;
+
+  const eventId=crypto.randomUUID();
+  const actor=clean(actorLabel,180)||"Admin LHAWTA";
   const changed=await sql.query(
-    "UPDATE lhawta_orders SET status=$1, updated_at=now() WHERE id=$2::uuid RETURNING id::text AS id",
-    [status,id]
+    "WITH current AS ("+
+    " SELECT status FROM lhawta_orders WHERE id=$2::uuid FOR UPDATE"+
+    "), updated AS ("+
+    " UPDATE lhawta_orders SET status=$1, shipped_at=CASE WHEN $1='EXPEDIE' AND shipped_at IS NULL THEN now() ELSE shipped_at END, updated_at=now() WHERE id=$2::uuid AND EXISTS (SELECT 1 FROM current) RETURNING id"+
+    "), inventory_change AS ("+
+    " SELECT lhawta_apply_inventory_status($2::uuid,current.status,$1,$4) AS ok FROM current CROSS JOIN updated"+
+    "), event AS ("+
+    " INSERT INTO lhawta_order_events (id,order_id,status,previous_status,actor_type,actor_label)"+
+    " SELECT $3::uuid,$2::uuid,$1,current.status,'ADMIN',$4 FROM current CROSS JOIN updated CROSS JOIN inventory_change RETURNING id"+
+    ") SELECT updated.id::text AS id FROM updated CROSS JOIN event",
+    [status,id,eventId,actor]
+  ) as Array<{id:string}>;
+
+  if(!changed[0]) return null;
+  return getOrderById(id);
+}
+
+
+export async function updateOrderShipping(
+  id:string,
+  input:OrderShippingInput
+):Promise<SavedOrder|null>{
+  await ensureOrderSchema();
+  const sql=db();
+
+  const current=await getOrderById(id);
+  if(!current) return null;
+  if(current.status==="LIVRE"||current.status==="ANNULE") throw new Error("SHIPPING_LOCKED");
+
+  const courierName=clean(input?.courierName,160)||null;
+  const trackingNumber=clean(input?.trackingNumber,180)||null;
+  const trackingUrl=cleanOptionalUrl(input?.trackingUrl);
+  const shippedAt=cleanOptionalDateTime(input?.shippedAt);
+  const estimatedDeliveryDate=cleanOptionalDate(input?.estimatedDeliveryDate);
+  const deliveryNote=clean(input?.deliveryNote,700)||null;
+  const shippingMad=Math.max(0,Math.min(100000,Math.floor(Number(input?.shippingMad)||0)));
+
+  const changed=await sql.query(
+    "UPDATE lhawta_orders SET courier_name=$1, tracking_number=$2, tracking_url=$3, shipped_at=COALESCE($4::timestamptz,shipped_at), estimated_delivery_date=$5::date, delivery_note=$6, shipping_mad=$7, total_mad=subtotal_mad+$7, updated_at=now() WHERE id=$8::uuid RETURNING id::text AS id",
+    [courierName,trackingNumber,trackingUrl,shippedAt,estimatedDeliveryDate,deliveryNote,shippingMad,id]
   ) as Array<{id:string}>;
 
   if(!changed[0]) return null;

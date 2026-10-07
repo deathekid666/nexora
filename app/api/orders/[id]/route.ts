@@ -4,9 +4,10 @@ import {
   isOrderDatabaseConfigured,
   ORDER_STATUSES,
   type OrderStatus,
+  updateOrderShipping,
   updateOrderStatus,
 } from "@/lib/order-db";
-import { adminTokenConfigured, isAdminRequest } from "@/lib/admin-auth";
+import { adminTokenConfigured, isAdminRequest, readAdminSession } from "@/lib/admin-auth";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -51,16 +52,61 @@ export async function PATCH(
 
   try{
     const {id}=await params;
-    const body=await request.json() as {status?:string};
+    const body=await request.json() as {
+      status?:string;
+      shipping?:{
+        courierName?:string;
+        trackingNumber?:string;
+        trackingUrl?:string;
+        shippedAt?:string;
+        estimatedDeliveryDate?:string;
+        shippingMad?:number;
+        deliveryNote?:string;
+      };
+    };
+
+    if(body.shipping&&typeof body.shipping==="object"){
+      const order=await updateOrderShipping(id,body.shipping);
+      if(!order) return NextResponse.json({ok:false,error:"ORDER_NOT_FOUND"},{status:404});
+      return NextResponse.json({ok:true,order});
+    }
+
     const status=body.status as OrderStatus;
     if(!ORDER_STATUSES.includes(status)){
       return NextResponse.json({ok:false,error:"INVALID_STATUS"},{status:400});
     }
 
-    const order=await updateOrderStatus(id,status);
+    const session=readAdminSession(request);
+    const actorLabel=session?.email||"Admin LHAWTA";
+    const order=await updateOrderStatus(id,status,actorLabel);
     if(!order) return NextResponse.json({ok:false,error:"ORDER_NOT_FOUND"},{status:404});
     return NextResponse.json({ok:true,order});
   }catch(error){
+    const code=error instanceof Error?error.message:"ORDER_UPDATE_FAILED";
+    if(code==="INVALID_STATUS_TRANSITION"){
+      return NextResponse.json(
+        {ok:false,error:code,message:"Transition de statut non autorisée."},
+        {status:409}
+      );
+    }
+    if(code==="SHIPPING_LOCKED"){
+      return NextResponse.json(
+        {ok:false,error:code,message:"La livraison ne peut plus être modifiée pour cette commande."},
+        {status:409}
+      );
+    }
+    if(code==="INVALID_TRACKING_URL"||code==="INVALID_DELIVERY_DATE"||code==="INVALID_SHIPPED_AT"){
+      return NextResponse.json(
+        {ok:false,error:code,message:"Les informations de livraison contiennent une valeur invalide."},
+        {status:400}
+      );
+    }
+    if(code.startsWith("INVENTORY_")){
+      return NextResponse.json(
+        {ok:false,error:"INVENTORY_TRANSITION_FAILED",message:"Le mouvement de stock associé à cette transition a échoué. Vérifiez l’inventaire avant de réessayer."},
+        {status:409}
+      );
+    }
     console.error("[LHAWTA order update]",error);
     return NextResponse.json({ok:false,error:"ORDER_UPDATE_FAILED"},{status:500});
   }

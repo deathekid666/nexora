@@ -22,6 +22,7 @@ import {
   type CartItem,
 } from "@/lib/cart-client";
 import { readCustomerProfile, writeCustomerProfile } from "@/lib/customer-profile";
+import { inventoryKey, loadInventoryRows } from "@/lib/inventory-client";
 
 const WHATSAPP_NUMBER=(process.env.NEXT_PUBLIC_LHAWTA_WHATSAPP || "").replace(/\D/g,"");
 const WHATSAPP_READY=/^\d{10,15}$/.test(WHATSAPP_NUMBER);
@@ -38,6 +39,8 @@ export default function CartPageClient(){
   const [error,setError]=useState("");
   const [submitting,setSubmitting]=useState(false);
   const [createdOrder,setCreatedOrder]=useState<string>("");
+  const [stockByKey,setStockByKey]=useState<Record<string,number>>({});
+  const [stockChecking,setStockChecking]=useState(false);
 
   useEffect(()=>{
     setItems(readCart());
@@ -55,6 +58,34 @@ export default function CartPageClient(){
 
   const total=useMemo(()=>cartTotal(items),[items]);
   const count=useMemo(()=>items.reduce((sum,item)=>sum+item.qty,0),[items]);
+  const stockSignature=useMemo(
+    ()=>[...new Set(items.map(item=>[item.slug,item.variant,item.color].join("|")))].sort().join("~"),
+    [items]
+  );
+
+  useEffect(()=>{
+    let active=true;
+    const slugs=[...new Set(items.map(item=>item.slug))];
+    if(!slugs.length){
+      setStockByKey({});
+      setStockChecking(false);
+      return;
+    }
+    setStockChecking(true);
+    void Promise.all(slugs.map(async slug=>({slug,rows:await loadInventoryRows(slug)}))).then(results=>{
+      if(!active) return;
+      const next:Record<string,number>={};
+      for(const result of results){
+        for(const row of result.rows){
+          next[inventoryKey(result.slug,row.variant,row.color)]=row.availableQty;
+        }
+      }
+      setStockByKey(next);
+      setStockChecking(false);
+    });
+    return ()=>{active=false;};
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[stockSignature]);
 
   const update=(next:CartItem[])=>{
     setItems(next);
@@ -62,7 +93,15 @@ export default function CartPageClient(){
   };
 
   const quantity=(index:number,delta:number)=>{
-    const next=items.map((item,i)=>i===index?{...item,qty:Math.max(1,item.qty+delta)}:item);
+    const item=items[index];
+    if(!item) return;
+    const available=stockByKey[inventoryKey(item.slug,item.variant,item.color)];
+    if(delta>0&&available!==undefined&&item.qty>=available){
+      setError("Quantité maximale disponible atteinte pour "+item.name+".");
+      return;
+    }
+    setError("");
+    const next=items.map((current,i)=>i===index?{...current,qty:Math.max(1,current.qty+delta)}:current);
     update(next);
   };
 
@@ -77,6 +116,15 @@ export default function CartPageClient(){
 
     if(!items.length){
       setError("Votre panier est vide.");
+      return;
+    }
+
+    const shortage=items.find(item=>{
+      const available=stockByKey[inventoryKey(item.slug,item.variant,item.color)];
+      return available!==undefined&&item.qty>available;
+    });
+    if(shortage){
+      setError("Stock insuffisant pour "+shortage.name+". Ajustez la quantité puis réessayez.");
       return;
     }
 
@@ -113,6 +161,8 @@ export default function CartPageClient(){
         if(whatsappWindow) whatsappWindow.close();
         if(payload?.error==="DATABASE_NOT_CONFIGURED"){
           setError("La base de commandes n’est pas encore connectée à ce preview.");
+        }else if(payload?.error==="OUT_OF_STOCK"){
+          setError(payload?.message||"Un article n’est plus disponible dans la quantité demandée.");
         }else{
           setError(payload?.message||"Impossible d’enregistrer la commande.");
         }
@@ -153,12 +203,18 @@ export default function CartPageClient(){
 
       const url="https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(lines.join("\n"));
       setCreatedOrder(order.orderNumber);
+
+      try{
+        window.sessionStorage.setItem("lhawta-last-order-v1",JSON.stringify({
+          order,
+          phone:customer.phone.trim(),
+          whatsappUrl:url,
+        }));
+      }catch{}
+
       update([]);
-      if(whatsappWindow){
-        whatsappWindow.location.href=url;
-      }else{
-        window.location.href=url;
-      }
+      if(whatsappWindow) whatsappWindow.location.href=url;
+      window.location.assign("/order-confirmation?order="+encodeURIComponent(order.orderNumber));
     }catch(error){
       if(whatsappWindow) whatsappWindow.close();
       console.error(error);
@@ -191,6 +247,14 @@ export default function CartPageClient(){
                 <span>{item.brand}</span>
                 <a href={"/products/"+item.slug}><h2>{item.name}</h2></a>
                 <p>{item.variant} · {item.color}</p>
+                {(()=>{
+                  const available=stockByKey[inventoryKey(item.slug,item.variant,item.color)];
+                  return available===undefined
+                    ?<small className="cart-stock-line checking">Stock en vérification...</small>
+                    :available<=0
+                      ?<small className="cart-stock-line out">Rupture de stock</small>
+                      :<small className={"cart-stock-line "+(available<=2?"low":"ok")}>{available} disponible(s){available<=2?" · stock faible":""}</small>;
+                })()}
                 <b>{item.price}</b>
               </div>
               <div className="cart-qty">
@@ -198,7 +262,14 @@ export default function CartPageClient(){
                 <div>
                   <button onClick={()=>quantity(index,-1)} aria-label="Réduire"><Minus size={14}/></button>
                   <strong>{item.qty}</strong>
-                  <button onClick={()=>quantity(index,1)} aria-label="Augmenter"><Plus size={14}/></button>
+                  <button
+                    onClick={()=>quantity(index,1)}
+                    aria-label="Augmenter"
+                    disabled={(()=>{
+                      const available=stockByKey[inventoryKey(item.slug,item.variant,item.color)];
+                      return available!==undefined&&item.qty>=available;
+                    })()}
+                  ><Plus size={14}/></button>
                 </div>
               </div>
               <button className="cart-remove" onClick={()=>remove(index)} aria-label="Supprimer">
@@ -242,7 +313,7 @@ export default function CartPageClient(){
             {createdOrder&&<div className="cart-order-success"><CheckCircle2 size={17}/><span><b>Commande enregistrée</b><small>{createdOrder}</small></span></div>}
             {error&&<div className="cart-error">{error}</div>}
 
-            <button className="cart-whatsapp" type="submit" disabled={!items.length || !WHATSAPP_READY || submitting}>
+            <button className="cart-whatsapp" type="submit" disabled={!items.length || !WHATSAPP_READY || submitting || stockChecking}>
               {submitting?"Enregistrement...":"Commander sur WhatsApp"}
             </button>
             {!WHATSAPP_READY && <div className="cart-error" role="status">Le WhatsApp officiel de LHAWTA n’est pas encore renseigné. Votre panier reste enregistré ; aucune commande ne sera envoyée à un numéro de démonstration.</div>}

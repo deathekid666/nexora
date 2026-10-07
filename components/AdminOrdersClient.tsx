@@ -10,6 +10,7 @@ import {
   MessageCircle,
   PackageCheck,
   RefreshCw,
+  Save,
   Search,
   ShieldCheck,
   Truck,
@@ -23,6 +24,7 @@ const STATUS_OPTIONS:Array<{value:"ALL"|OrderStatus;label:string}>=[
   {value:"NOUVEAU",label:"Nouveau"},
   {value:"CONFIRME",label:"Confirmé"},
   {value:"EXPEDIE",label:"Expédié"},
+  {value:"EN_LIVRAISON",label:"En livraison"},
   {value:"LIVRE",label:"Livré"},
   {value:"ANNULE",label:"Annulé"},
 ];
@@ -31,9 +33,22 @@ const STATUS_LABEL:Record<OrderStatus,string>={
   NOUVEAU:"Nouveau",
   CONFIRME:"Confirmé",
   EXPEDIE:"Expédié",
+  EN_LIVRAISON:"En livraison",
   LIVRE:"Livré",
   ANNULE:"Annulé",
 };
+
+function allowedStatusOptions(current:OrderStatus){
+  const next:Record<OrderStatus,OrderStatus[]>={
+    NOUVEAU:["NOUVEAU","CONFIRME","ANNULE"],
+    CONFIRME:["CONFIRME","EXPEDIE","ANNULE"],
+    EXPEDIE:["EXPEDIE","EN_LIVRAISON","ANNULE"],
+    EN_LIVRAISON:["EN_LIVRAISON","LIVRE","ANNULE"],
+    LIVRE:["LIVRE"],
+    ANNULE:["ANNULE"],
+  };
+  return next[current];
+}
 
 function formatDh(value:number){
   return new Intl.NumberFormat("fr-MA").format(value)+" DH";
@@ -57,9 +72,68 @@ function whatsappPhone(phone:string){
   return digits;
 }
 
+function statusWhatsappMessage(order:SavedOrder,status:OrderStatus){
+  const intro="Bonjour "+order.customerName+", votre commande LHAWTA "+order.orderNumber;
+  switch(status){
+    case "CONFIRME":
+      return intro+" est confirmée ✅\n\nMontant : "+formatDh(order.totalMad)+"\nPaiement : à la livraison\n\nNous vous informerons dès son expédition.";
+    case "EXPEDIE":{
+      const tracking=order.trackingNumber?"\nSuivi : "+order.trackingNumber:"";
+      const courier=order.courierName?"\nTransporteur : "+order.courierName:"";
+      const link=order.trackingUrl?"\n"+order.trackingUrl:"";
+      return intro+" a été expédiée 🚚\n\nDestination : "+order.city+courier+tracking+link+"\nMontant à régler à la livraison : "+formatDh(order.totalMad)+"\n\nMerci de garder votre téléphone disponible pour la livraison.";
+    }
+    case "EN_LIVRAISON":
+      return intro+" est en cours de livraison 🚚\n\nVotre colis est dans la dernière étape avant remise. Merci de garder votre téléphone disponible.";
+    case "LIVRE":
+      return intro+" est maintenant marquée comme livrée ✅\n\nMerci pour votre achat chez LHAWTA. Nous espérons que tout s’est bien passé.";
+    case "ANNULE":
+      return intro+" a été annulée.\n\nSi vous avez une question ou souhaitez repasser commande, répondez simplement à ce message.";
+    default:
+      return "Bonjour "+order.customerName+", concernant votre commande LHAWTA "+order.orderNumber+" :";
+  }
+}
+
+function statusWhatsappUrl(order:SavedOrder,status:OrderStatus){
+  return "https://wa.me/"+whatsappPhone(order.phone)+"?text="+encodeURIComponent(statusWhatsappMessage(order,status));
+}
+
+type ShippingDraft={
+  courierName:string;
+  trackingNumber:string;
+  trackingUrl:string;
+  shippedAt:string;
+  estimatedDeliveryDate:string;
+  shippingMad:string;
+  deliveryNote:string;
+};
+
+function toDateTimeLocal(value:string|null){
+  if(!value) return "";
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime())) return "";
+  const offset=date.getTimezoneOffset()*60000;
+  return new Date(date.getTime()-offset).toISOString().slice(0,16);
+}
+
+function shippingDraft(order:SavedOrder):ShippingDraft{
+  return {
+    courierName:order.courierName||"",
+    trackingNumber:order.trackingNumber||"",
+    trackingUrl:order.trackingUrl||"",
+    shippedAt:toDateTimeLocal(order.shippedAt),
+    estimatedDeliveryDate:order.estimatedDeliveryDate||"",
+    shippingMad:String(order.shippingMad||0),
+    deliveryNote:order.deliveryNote||"",
+  };
+}
+
 export default function AdminOrdersClient(){
-  const [token,setToken]=useState("");
-  const [tokenInput,setTokenInput]=useState("");
+  const [authenticated,setAuthenticated]=useState(false);
+  const [sessionChecking,setSessionChecking]=useState(true);
+  const [adminEmail,setAdminEmail]=useState("");
+  const [emailInput,setEmailInput]=useState("");
+  const [accessKey,setAccessKey]=useState("");
   const [orders,setOrders]=useState<SavedOrder[]>([]);
   const [search,setSearch]=useState("");
   const [activeSearch,setActiveSearch]=useState("");
@@ -67,17 +141,34 @@ export default function AdminOrdersClient(){
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState("");
   const [expanded,setExpanded]=useState<string>("");
+  const [shippingDrafts,setShippingDrafts]=useState<Record<string,ShippingDraft>>({});
+  const [shippingSaving,setShippingSaving]=useState("");
+  const [shippingNotice,setShippingNotice]=useState("");
+  const [statusNotice,setStatusNotice]=useState<{
+    orderNumber:string;
+    status:OrderStatus;
+    url:string;
+  }|null>(null);
 
   useEffect(()=>{
-    const saved=window.sessionStorage.getItem("lhawta-admin-token")||"";
-    if(saved){
-      setToken(saved);
-      setTokenInput(saved);
-    }
+    const checkSession=async()=>{
+      try{
+        const response=await fetch("/api/admin/session",{cache:"no-store"});
+        const payload=await response.json().catch(()=>({}));
+        if(response.ok&&payload?.email){
+          setAuthenticated(true);
+          setAdminEmail(payload.email);
+          setEmailInput(payload.email);
+        }
+      }finally{
+        setSessionChecking(false);
+      }
+    };
+    void checkSession();
   },[]);
 
-  const fetchOrders=async(nextToken=token,nextSearch=activeSearch,nextStatus=status)=>{
-    if(!nextToken) return;
+  const fetchOrders=async(nextSearch=activeSearch,nextStatus=status)=>{
+    if(!authenticated) return;
     setLoading(true);
     setError("");
     try{
@@ -86,11 +177,10 @@ export default function AdminOrdersClient(){
       if(nextStatus!=="ALL") qs.set("status",nextStatus);
       const response=await fetch("/api/orders?"+qs.toString(),{
         cache:"no-store",
-        headers:{authorization:"Bearer "+nextToken},
       });
       const payload=await response.json().catch(()=>({}));
       if(response.status===401){
-        setError("Clé admin incorrecte.");
+        setError("Session admin expirée ou non autorisée.");
         setOrders([]);
         return;
       }
@@ -112,22 +202,40 @@ export default function AdminOrdersClient(){
   };
 
   useEffect(()=>{
-    if(token) void fetchOrders(token,activeSearch,status);
+    if(authenticated) void fetchOrders(activeSearch,status);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[token,status]);
+  },[authenticated,status]);
 
-  const login=(event:FormEvent)=>{
+  const login=async(event:FormEvent)=>{
     event.preventDefault();
-    const value=tokenInput.trim();
-    if(!value) return;
-    window.sessionStorage.setItem("lhawta-admin-token",value);
-    setToken(value);
+    setError("");
+    setLoading(true);
+    try{
+      const response=await fetch("/api/admin/session",{
+        method:"POST",
+        headers:{"content-type":"application/json"},
+        body:JSON.stringify({email:emailInput.trim(),accessKey}),
+      });
+      const payload=await response.json().catch(()=>({}));
+      if(!response.ok||!payload?.email){
+        setError(payload?.message||"Connexion admin impossible.");
+        return;
+      }
+      setAuthenticated(true);
+      setAdminEmail(payload.email);
+      setAccessKey("");
+    }catch{
+      setError("Impossible de joindre le service d’authentification admin.");
+    }finally{
+      setLoading(false);
+    }
   };
 
-  const logout=()=>{
-    window.sessionStorage.removeItem("lhawta-admin-token");
-    setToken("");
-    setTokenInput("");
+  const logout=async()=>{
+    try{await fetch("/api/admin/session",{method:"DELETE"});}catch{}
+    setAuthenticated(false);
+    setAdminEmail("");
+    setAccessKey("");
     setOrders([]);
     setError("");
   };
@@ -135,18 +243,17 @@ export default function AdminOrdersClient(){
   const runSearch=(event:FormEvent)=>{
     event.preventDefault();
     setActiveSearch(search.trim());
-    void fetchOrders(token,search.trim(),status);
+    void fetchOrders(search.trim(),status);
   };
 
   const updateStatus=async(order:SavedOrder,nextStatus:OrderStatus)=>{
+    if(nextStatus===order.status) return;
     setError("");
+    setStatusNotice(null);
     try{
       const response=await fetch("/api/orders/"+order.id,{
         method:"PATCH",
-        headers:{
-          "content-type":"application/json",
-          authorization:"Bearer "+token,
-        },
+        headers:{"content-type":"application/json"},
         body:JSON.stringify({status:nextStatus}),
       });
       const payload=await response.json().catch(()=>({}));
@@ -154,9 +261,59 @@ export default function AdminOrdersClient(){
         setError("Impossible de modifier le statut de "+order.orderNumber+".");
         return;
       }
-      setOrders(current=>current.map(item=>item.id===order.id?payload.order:item));
+      const updated=payload.order as SavedOrder;
+      setOrders(current=>current.map(item=>item.id===order.id?updated:item));
+      setStatusNotice({
+        orderNumber:updated.orderNumber,
+        status:updated.status,
+        url:statusWhatsappUrl(updated,updated.status),
+      });
     }catch{
       setError("Impossible de modifier cette commande.");
+    }
+  };
+
+  const setShippingField=(order:SavedOrder,field:keyof ShippingDraft,value:string)=>{
+    setShippingDrafts(current=>({
+      ...current,
+      [order.id]:{
+        ...(current[order.id]||shippingDraft(order)),
+        [field]:value,
+      },
+    }));
+  };
+
+  const saveShipping=async(event:FormEvent,order:SavedOrder)=>{
+    event.preventDefault();
+    const draft=shippingDrafts[order.id]||shippingDraft(order);
+    setError("");
+    setShippingNotice("");
+    setShippingSaving(order.id);
+    try{
+      const response=await fetch("/api/orders/"+order.id,{
+        method:"PATCH",
+        headers:{"content-type":"application/json"},
+        body:JSON.stringify({
+          shipping:{
+            ...draft,
+            shippedAt:draft.shippedAt?new Date(draft.shippedAt).toISOString():"",
+            shippingMad:Number(draft.shippingMad)||0,
+          },
+        }),
+      });
+      const payload=await response.json().catch(()=>({}));
+      if(!response.ok||!payload.order){
+        setError(payload?.message||"Impossible d’enregistrer les informations de livraison.");
+        return;
+      }
+      const updated=payload.order as SavedOrder;
+      setOrders(current=>current.map(item=>item.id===order.id?updated:item));
+      setShippingDrafts(current=>({...current,[order.id]:shippingDraft(updated)}));
+      setShippingNotice("Livraison enregistrée pour "+updated.orderNumber+".");
+    }catch{
+      setError("Impossible de modifier les informations de livraison.");
+    }finally{
+      setShippingSaving("");
     }
   };
 
@@ -168,7 +325,24 @@ export default function AdminOrdersClient(){
     return {totalValue,delivered,newCount,itemCount};
   },[orders]);
 
-  if(!token){
+  if(sessionChecking){
+    return (
+      <main className="exact-page admin-orders-page">
+        <SiteMotion/>
+        <StoreHeader/>
+        <section className="admin-login exact-shell">
+          <div className="admin-login-card">
+            <ShieldCheck size={34}/>
+            <span>ADMIN LHAWTA</span>
+            <h1>Vérification de la session</h1>
+            <p>Connexion sécurisée en cours...</p>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if(!authenticated){
     return (
       <main className="exact-page admin-orders-page">
         <SiteMotion/>
@@ -178,18 +352,30 @@ export default function AdminOrdersClient(){
             <ShieldCheck size={34}/>
             <span>ADMIN LHAWTA</span>
             <h1>Gestion des commandes</h1>
-            <p>Entrez la clé admin du preview pour accéder aux commandes COD.</p>
+            <p>Connectez-vous avec un email administrateur autorisé et la clé d’accès LHAWTA.</p>
             <form onSubmit={login}>
-              <label>Clé admin
+              <label>Email administrateur
                 <input
-                  type="password"
-                  value={tokenInput}
-                  onChange={e=>setTokenInput(e.target.value)}
-                  autoComplete="current-password"
-                  placeholder="Clé du preview"
+                  type="email"
+                  value={emailInput}
+                  onChange={e=>setEmailInput(e.target.value)}
+                  autoComplete="username"
+                  placeholder="admin@lhawta.ma"
+                  required
                 />
               </label>
-              <button type="submit">Ouvrir le dashboard</button>
+              <label>Clé d’accès
+                <input
+                  type="password"
+                  value={accessKey}
+                  onChange={e=>setAccessKey(e.target.value)}
+                  autoComplete="current-password"
+                  placeholder="Clé admin"
+                  required
+                />
+              </label>
+              {error&&<div className="admin-error">{error}</div>}
+              <button type="submit" disabled={loading}>{loading?"Connexion...":"Ouvrir le dashboard"}</button>
             </form>
           </div>
         </section>
@@ -207,9 +393,11 @@ export default function AdminOrdersClient(){
           <span>ADMIN LHAWTA</span>
           <h1>Commandes COD</h1>
           <p>Suivez les commandes, contactez les clients et mettez à jour leur statut.</p>
+          <small className="admin-session-email">Connecté : {adminEmail}</small>
         </div>
         <div className="admin-head-actions">
-          <button onClick={()=>void fetchOrders()} disabled={loading}><RefreshCw size={15}/>{loading?"Actualisation...":"Actualiser"}</button>
+          <a href="/admin/inventory"><PackageCheck size={15}/>Stock</a>
+          <button onClick={()=>void fetchOrders(activeSearch,status)} disabled={loading}><RefreshCw size={15}/>{loading?"Actualisation...":"Actualiser"}</button>
           <button onClick={logout}><LogOut size={15}/>Quitter</button>
         </div>
       </section>
@@ -240,14 +428,28 @@ export default function AdminOrdersClient(){
       </section>
 
       {error&&<div className="admin-error exact-shell">{error}</div>}
+      {shippingNotice&&<div className="admin-shipping-notice exact-shell"><CheckCircle2 size={17}/>{shippingNotice}</div>}
+
+      {statusNotice&&(
+        <div className="admin-status-notice exact-shell" aria-live="polite">
+          <CheckCircle2 size={19}/>
+          <div>
+            <b>{statusNotice.orderNumber} · {STATUS_LABEL[statusNotice.status]}</b>
+            <span>Statut enregistré. Le message client est prêt à être envoyé.</span>
+          </div>
+          <a href={statusNotice.url} target="_blank" rel="noreferrer">
+            <MessageCircle size={15}/>Envoyer sur WhatsApp
+          </a>
+          <button type="button" onClick={()=>setStatusNotice(null)}>Fermer</button>
+        </div>
+      )}
 
       <section className="admin-orders-list exact-shell">
         {loading&&!orders.length ? (
           <div className="admin-empty">Chargement des commandes...</div>
         ) : orders.length ? orders.map(order=>{
           const isOpen=expanded===order.id;
-          const phone=whatsappPhone(order.phone);
-          const message=encodeURIComponent("Bonjour "+order.customerName+", concernant votre commande LHAWTA "+order.orderNumber+" :");
+          const contactUrl=statusWhatsappUrl(order,order.status);
           return (
             <article className="admin-order-card" key={order.id}>
               <div className="admin-order-main">
@@ -268,14 +470,14 @@ export default function AdminOrdersClient(){
 
                 <label className={"admin-status status-"+order.status.toLowerCase()}>
                   <select value={order.status} onChange={e=>void updateStatus(order,e.target.value as OrderStatus)}>
-                    {STATUS_OPTIONS.filter(option=>option.value!=="ALL").map(option=>(
-                      <option value={option.value} key={option.value}>{option.label}</option>
+                    {allowedStatusOptions(order.status).map(value=>(
+                      <option value={value} key={value}>{STATUS_LABEL[value]}</option>
                     ))}
                   </select>
                   <ChevronDown size={14}/>
                 </label>
 
-                <a className="admin-whatsapp" href={"https://wa.me/"+phone+"?text="+message} target="_blank" rel="noreferrer">
+                <a className="admin-whatsapp" href={contactUrl} target="_blank" rel="noreferrer">
                   <MessageCircle size={16}/>WhatsApp
                 </a>
               </div>
@@ -293,13 +495,69 @@ export default function AdminOrdersClient(){
                     ))}
                   </div>
                   <div className="admin-delivery">
-                    <h3>Livraison</h3>
+                    <h3>Livraison client</h3>
                     <p><span>Téléphone</span><b>{order.phone}</b></p>
                     <p><span>Ville</span><b>{order.city}</b></p>
                     <p><span>Adresse</span><b>{order.address}</b></p>
-                    {order.note&&<p><span>Note</span><b>{order.note}</b></p>}
+                    {order.note&&<p><span>Note client</span><b>{order.note}</b></p>}
                     <p><span>Paiement</span><b>Paiement à la livraison</b></p>
                   </div>
+
+                  <form className="admin-shipping-editor" onSubmit={event=>void saveShipping(event,order)}>
+                    <div className="admin-shipping-editor-head">
+                      <div>
+                        <span>EXPÉDITION</span>
+                        <h3>Transport & suivi</h3>
+                      </div>
+                      <Truck size={19}/>
+                    </div>
+                    {(()=>{
+                      const draft=shippingDrafts[order.id]||shippingDraft(order);
+                      const locked=order.status==="LIVRE"||order.status==="ANNULE";
+                      return (
+                        <>
+                          <div className="admin-shipping-fields">
+                            <label><span>Transporteur</span><input value={draft.courierName} onChange={e=>setShippingField(order,"courierName",e.target.value)} placeholder="Amana, Cathedis, Jibli..." disabled={locked}/></label>
+                            <label><span>N° de suivi</span><input value={draft.trackingNumber} onChange={e=>setShippingField(order,"trackingNumber",e.target.value)} placeholder="Tracking / bordereau" disabled={locked}/></label>
+                            <label className="wide"><span>Lien de suivi</span><input value={draft.trackingUrl} onChange={e=>setShippingField(order,"trackingUrl",e.target.value)} placeholder="https://..." inputMode="url" disabled={locked}/></label>
+                            <label><span>Date d’expédition</span><input type="datetime-local" value={draft.shippedAt} onChange={e=>setShippingField(order,"shippedAt",e.target.value)} disabled={locked}/></label>
+                            <label><span>Livraison estimée</span><input type="date" value={draft.estimatedDeliveryDate} onChange={e=>setShippingField(order,"estimatedDeliveryDate",e.target.value)} disabled={locked}/></label>
+                            <label><span>Frais de livraison (DH)</span><input type="number" min="0" step="1" value={draft.shippingMad} onChange={e=>setShippingField(order,"shippingMad",e.target.value)} disabled={locked}/></label>
+                            <label className="wide"><span>Note interne</span><textarea value={draft.deliveryNote} onChange={e=>setShippingField(order,"deliveryNote",e.target.value)} placeholder="Instruction interne, incident transporteur..." disabled={locked}/></label>
+                          </div>
+                          <div className="admin-shipping-actions">
+                            <button type="submit" disabled={locked||shippingSaving===order.id}><Save size={14}/>{shippingSaving===order.id?"Enregistrement...":"Enregistrer la livraison"}</button>
+                            {order.trackingUrl&&<a href={order.trackingUrl} target="_blank" rel="noreferrer"><Truck size={14}/>Ouvrir le suivi</a>}
+                            {locked&&<small>Livraison verrouillée : commande {STATUS_LABEL[order.status].toLowerCase()}.</small>}
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </form>
+
+                  {order.events?.length>0&&(
+                    <div className="admin-order-audit">
+                      <div className="admin-order-audit-head">
+                        <div>
+                          <span>HISTORIQUE DE STATUT</span>
+                          <h3>Traçabilité de la commande</h3>
+                        </div>
+                        <b>{order.events.length} événement{order.events.length>1?"s":""}</b>
+                      </div>
+                      <div className="admin-order-audit-list">
+                        {order.events.map((event,index)=>(
+                          <article className={index===order.events.length-1?"current":""} key={event.id}>
+                            <i>{index===order.events.length-1?<PackageCheck size={14}/>:<CheckCircle2 size={14}/>}</i>
+                            <div>
+                              <b>{STATUS_LABEL[event.status]}</b>
+                              <span>{dateTime(event.createdAt)}</span>
+                            </div>
+                            <small>{event.actorType==="ADMIN"?(event.actorLabel||"Admin LHAWTA"):"Système LHAWTA"}</small>
+                          </article>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </article>

@@ -11,13 +11,14 @@ import {
   Star,
   Truck,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FavoriteButton from "@/components/FavoriteButton";
 import { ProductVisual } from "@/components/ProductVisual";
 import {
   catalogs,
   type AllCatalogProduct,
 } from "@/lib/category-catalogs";
+import { loadInventorySummaryMap, type PublicInventorySummary } from "@/lib/inventory-client";
 
 type PriceFilter="under1000"|"1000to5000"|"over5000";
 type SortMode="relevance"|"price-asc"|"price-desc"|"rating-desc"|"name";
@@ -42,6 +43,21 @@ export default function AllProductsClient({products}:{products:AllCatalogProduct
   const [prices,setPrices]=useState<PriceFilter[]>([]);
   const [sort,setSort]=useState<SortMode>("relevance");
   const [showFilters,setShowFilters]=useState(false);
+  const [stock,setStock]=useState<Record<string,PublicInventorySummary>>({});
+  const [stockReady,setStockReady]=useState(false);
+
+  const productSlugs=useMemo(()=>products.map(product=>product.productSlug),[products]);
+
+  useEffect(()=>{
+    let active=true;
+    setStockReady(false);
+    void loadInventorySummaryMap(productSlugs).then(map=>{
+      if(!active) return;
+      setStock(map);
+      setStockReady(true);
+    });
+    return ()=>{active=false;};
+  },[productSlugs]);
 
   const availableBrands=useMemo(
     ()=>[...new Set(products.map(product=>product.brand))].sort((a,b)=>a.localeCompare(b)),
@@ -239,6 +255,9 @@ export default function AllProductsClient({products}:{products:AllCatalogProduct
               {filtered.map(product=>{
                 const favoriteSlug=product.detailSlug||("catalog:"+product.categorySlug+":"+product.brand+":"+product.name);
                 const productHref="/products/"+product.productSlug;
+                const stockState=stock[product.productSlug];
+                const stockClass=!stockReady?"checking":stockState?.inStock?(stockState.lowStock?"low":"ok"):"out";
+                const stockText=!stockReady?"Stock en vérification":stockState?.inStock?(stockState.lowStock?"Stock faible":"En stock"):"Rupture de stock";
                 return (
                   <article className="all-product-card" key={product.categorySlug+"-"+product.name}>
                     {product.badge&&<span className="all-product-badge">{product.badge}</span>}
@@ -266,6 +285,7 @@ export default function AllProductsClient({products}:{products:AllCatalogProduct
 
                       <ul>{product.specs.slice(0,3).map(spec=><li key={spec}>{spec}</li>)}</ul>
 
+                      <div className={"catalog-stock-pill "+stockClass}>{stockText}</div>
                       <div className="all-product-delivery"><Truck size={14}/> Livraison disponible au Maroc</div>
 
                       <div className="all-product-price">

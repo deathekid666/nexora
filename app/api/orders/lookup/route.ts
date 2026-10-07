@@ -2,10 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getOrderByNumberAndPhone,
   isOrderDatabaseConfigured,
+  listCustomerOrdersByVerifiedOrder,
 } from "@/lib/order-db";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
+
+function publicOrder<T extends {
+  events?:Array<{actorLabel?:string|null}>;
+  deliveryNote?:string|null;
+}>(order:T){
+  const {deliveryNote:_deliveryNote,...safeOrder}=order;
+  return {
+    ...safeOrder,
+    events:Array.isArray(order.events)
+      ?order.events.map(event=>({...event,actorLabel:null}))
+      :[],
+  };
+}
 
 export async function POST(request:NextRequest){
   if(!isOrderDatabaseConfigured()){
@@ -35,7 +49,12 @@ export async function POST(request:NextRequest){
       );
     }
 
-    return NextResponse.json({ok:true,order});
+    const orders=await listCustomerOrdersByVerifiedOrder(orderNumber,phone);
+    return NextResponse.json({
+      ok:true,
+      order:publicOrder(order),
+      orders:orders.map(publicOrder),
+    });
   }catch(error){
     console.error("[LHAWTA customer order lookup]",error);
     return NextResponse.json(

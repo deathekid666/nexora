@@ -11,19 +11,46 @@ import {
   Truck,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 import FavoriteButton from "@/components/FavoriteButton";
 import { ProductVisual } from "@/components/ProductVisual";
 import type { AllCatalogProduct } from "@/lib/category-catalogs";
 import { addToCart } from "@/lib/cart-client";
+import { loadInventoryRows, type PublicInventoryRow } from "@/lib/inventory-client";
 
 export default function CatalogProductDetail({product}:{product:AllCatalogProduct}){
   const router=useRouter();
   const categoryHref="/category/"+product.categorySlug;
   const favoriteSlug=product.detailSlug||("catalog:"+product.categorySlug+":"+product.brand+":"+product.name);
+  const [stockRows,setStockRows]=useState<PublicInventoryRow[]>([]);
+  const [stockChecked,setStockChecked]=useState(false);
+
+  useEffect(()=>{
+    let active=true;
+    setStockChecked(false);
+    void loadInventoryRows(product.productSlug).then(rows=>{
+      if(!active) return;
+      setStockRows(rows);
+      setStockChecked(true);
+    });
+    return ()=>{active=false;};
+  },[product.productSlug]);
+
+  const stock=stockRows.find(row=>row.variant==="Standard"&&row.color==="Standard");
+  const availableQty=stock?.availableQty||0;
+  const canBuy=stockChecked&&availableQty>0;
+  const stockLabel=!stockChecked
+    ?"Vérification du stock..."
+    :availableQty<=0
+      ?"Rupture de stock"
+      :stock?.lowStock
+        ?availableQty+" disponible(s) · stock faible"
+        :availableQty+" disponible(s)";
 
   const addAndGoToCart=()=>{
+    if(!canBuy) return;
     addToCart({
       slug:product.productSlug,
       name:product.name,
@@ -86,13 +113,13 @@ export default function CatalogProductDetail({product}:{product:AllCatalogProduc
           </div>
 
           <div className="pdetail-assurance">
-            <div><BadgeCheck size={18}/><span><b>{product.stock===false?"Disponibilité à confirmer":"Disponible au catalogue"}</b><small>Statut affiché selon les données catalogue actuelles.</small></span></div>
+            <div className={"pdetail-stock-live "+(canBuy?"available":"unavailable")}><BadgeCheck size={18}/><span><b>{stockLabel}</b><small>Stock LHAWTA vérifié en direct.</small></span></div>
             <div><Truck size={18}/><span><b>Livraison au Maroc</b><small>Les modalités sont confirmées avant validation de commande.</small></span></div>
             <div><ShieldCheck size={18}/><span><b>Informations transparentes</b><small>Aucune caractéristique supplémentaire n’est inventée sur cette fiche.</small></span></div>
           </div>
 
           <div className="catalog-detail-actions">
-            <button className="primary" type="button" onClick={addAndGoToCart}><ShoppingCart size={16}/> Ajouter au panier</button>
+            <button className="primary" type="button" onClick={addAndGoToCart} disabled={!canBuy}><ShoppingCart size={16}/> {canBuy?"Ajouter au panier":stockChecked?"Rupture de stock":"Vérification..."}</button>
             <a className="secondary" href={categoryHref}>Voir d’autres {product.categoryTitle}</a>
           </div>
         </aside>
