@@ -204,13 +204,14 @@ export function HeroProductVisual({
   className?:string;
   isolateLargest?:boolean;
 }){
-  const [resolved,setResolved]=useState(()=>cutoutCache.get(src)??src);
+  const cacheKey=isolateLargest?src+"#largest":src;
+  const [resolved,setResolved]=useState(()=>cutoutCache.get(cacheKey)??src);
   const [failed,setFailed]=useState(false);
   const mounted=useRef(true);
 
   useEffect(()=>{
     mounted.current=true;
-    const cached=cutoutCache.get(src);
+    const cached=cutoutCache.get(cacheKey);
     if(cached){
       setResolved(cached);
       return ()=>{mounted.current=false;};
@@ -243,7 +244,7 @@ export function HeroProductVisual({
             return;
           }
           const url=URL.createObjectURL(blob);
-          cutoutCache.set(src,url);
+          cutoutCache.set(cacheKey,url);
           if(mounted.current) setResolved(url);
         },"image/webp",0.95);
       }catch{
@@ -257,7 +258,7 @@ export function HeroProductVisual({
 
     image.src=src;
     return()=>{mounted.current=false;};
-  },[src,isolateLargest]);
+  },[src,isolateLargest,cacheKey]);
 
   if(failed){
     return <span className={"product-visual-fallback "+className}><ImageOff size={24}/></span>;
