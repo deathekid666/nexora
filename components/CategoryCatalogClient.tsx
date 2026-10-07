@@ -8,10 +8,11 @@ import {
   Star,
   Truck,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FavoriteButton from "@/components/FavoriteButton";
 import { ProductVisual } from "@/components/ProductVisual";
 import { catalogProductSlug, productDetailSlugs, type CategoryProduct } from "@/lib/category-catalogs";
+import { loadInventorySummaryMap, type PublicInventorySummary } from "@/lib/inventory-client";
 
 type QuickFilter="all"|"new"|"best"|"stock";
 type PriceFilter="under2000"|"2000to5000"|"over5000";
@@ -33,6 +34,28 @@ export default function CategoryCatalogClient({
   const [prices,setPrices]=useState<PriceFilter[]>([]);
   const [sort,setSort]=useState<SortMode>("relevance");
   const [showFilters,setShowFilters]=useState(false);
+  const [stock,setStock]=useState<Record<string,PublicInventorySummary>>({});
+  const [stockReady,setStockReady]=useState(false);
+
+  const productSlugs=useMemo(
+    ()=>products.map(product=>catalogProductSlug({
+      name:product.name,
+      categorySlug:slug,
+      detailSlug:productDetailSlugs[product.name],
+    })),
+    [products,slug]
+  );
+
+  useEffect(()=>{
+    let active=true;
+    setStockReady(false);
+    void loadInventorySummaryMap(productSlugs).then(map=>{
+      if(!active) return;
+      setStock(map);
+      setStockReady(true);
+    });
+    return ()=>{active=false;};
+  },[productSlugs]);
 
   const availableBrands=useMemo(
     ()=>[...new Set(products.map(product=>product.brand))].sort((a,b)=>a.localeCompare(b)),
@@ -43,11 +66,17 @@ export default function CategoryCatalogClient({
     const result=products.filter(product=>{
       const badge=(product.badge||"").toLowerCase();
       const price=numericPrice(product.price);
-      const stock=product.stock!==false;
+      const productSlug=catalogProductSlug({
+        name:product.name,
+        categorySlug:slug,
+        detailSlug:productDetailSlugs[product.name],
+      });
+      const stockState=stock[productSlug];
+      const inStock=stockState?stockState.inStock:stockReady?false:product.stock!==false;
 
       if(quick==="new"&&!badge.includes("nouveau")) return false;
       if(quick==="best"&&!badge.includes("top vente")) return false;
-      if(quick==="stock"&&!stock) return false;
+      if(quick==="stock"&&!inStock) return false;
 
       if(brands.length&&!brands.includes(product.brand)) return false;
 
@@ -68,7 +97,7 @@ export default function CategoryCatalogClient({
     if(sort==="rating-desc") return [...result].sort((a,b)=>Number(b.rating)-Number(a.rating));
     if(sort==="name") return [...result].sort((a,b)=>a.name.localeCompare(b.name));
     return result;
-  },[products,quick,brands,prices,sort]);
+  },[products,quick,brands,prices,sort,slug,stock,stockReady]);
 
   const toggleBrand=(brand:string)=>{
     setBrands(current=>current.includes(brand)?current.filter(item=>item!==brand):[...current,brand]);
@@ -198,7 +227,11 @@ export default function CategoryCatalogClient({
             <div className="category-grid">
               {filtered.map(product=>{
                 const detailSlug=productDetailSlugs[product.name];
-                const detailHref=`/products/${catalogProductSlug({name:product.name,categorySlug:slug,detailSlug})}`;
+                const productSlug=catalogProductSlug({name:product.name,categorySlug:slug,detailSlug});
+                const detailHref=`/products/${productSlug}`;
+                const stockState=stock[productSlug];
+                const stockClass=!stockReady?"checking":stockState?.inStock?(stockState.lowStock?"low":"ok"):"out";
+                const stockText=!stockReady?"Stock en vérification":stockState?.inStock?(stockState.lowStock?"Stock faible":"En stock"):"Rupture de stock";
                 return (
                   <article className="category-product-card" key={product.name}>
                     {product.badge&&<span className="category-badge">{product.badge}</span>}
@@ -209,6 +242,7 @@ export default function CategoryCatalogClient({
                       <h2><a href={detailHref} className="product-name-link">{product.name}</a></h2>
                       <div className="category-rating"><Star size={13} fill="currentColor"/><b>{product.rating}</b><span>avis</span></div>
                       <ul>{product.specs.map(spec=><li key={spec}>{spec}</li>)}</ul>
+                      <div className={"catalog-stock-pill "+stockClass}>{stockText}</div>
                       <div className="category-delivery"><Truck size={14}/> Livraison disponible</div>
                       <div className="category-price"><strong>{product.price}</strong>{product.old&&<del>{product.old}</del>}</div>
                       <div className="category-actions">
