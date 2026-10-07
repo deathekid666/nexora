@@ -175,7 +175,7 @@ export default function OrderConfirmationClient(){
                 <span>PROCHAINES ÉTAPES</span>
                 <h3>Votre commande est bien enregistrée.</h3>
                 <p>LHAWTA confirmera les détails de livraison avant expédition. Le paiement reste à la livraison.</p>
-                <a href={"/account"} className="primary">Suivre ma commande <ArrowRight size={15}/></a>
+                <a href={"/account?order="+encodeURIComponent(order.orderNumber)} className="primary">Suivre ma commande <ArrowRight size={15}/></a>
                 <a href="/products">Continuer mes achats <ShoppingBag size={15}/></a>
                 {stored?.whatsappUrl&&(
                   <a href={stored.whatsappUrl} target="_blank" rel="noreferrer">
