@@ -5687,3 +5687,188 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
     text-align:left;
   }
 }
+
+
+/* shipping tracking */
+.admin-status.status-en_livraison select{
+  background:#eef7ff;
+  color:#0f669a;
+  border-color:#cfe5f5;
+}
+.account-order-status.status-en_livraison{
+  background:#eef7ff;
+  color:#0f669a;
+  border-color:#cfe5f5;
+}
+.admin-shipping-notice{
+  margin-bottom:12px;
+  min-height:48px;
+  padding:10px 12px;
+  border:1px solid #cbe7d5;
+  border-radius:10px;
+  background:#f1fbf5;
+  color:#17633f;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:9px;
+  font-weight:800;
+}
+.admin-shipping-editor{
+  grid-column:1/-1;
+  padding:16px;
+  border:1px solid #dce6ef;
+  border-radius:12px;
+  background:#fff;
+}
+.admin-shipping-editor-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:13px;
+}
+.admin-shipping-editor-head span{
+  display:block;
+  color:#086cff;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.11em;
+}
+.admin-shipping-editor-head h3{
+  margin:4px 0 0;
+  color:#12385f;
+  font-size:13px;
+}
+.admin-shipping-editor-head svg{color:#086cff}
+.admin-shipping-fields{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+.admin-shipping-fields label{
+  display:grid;
+  gap:6px;
+  color:#617389;
+  font-size:8px;
+  font-weight:800;
+}
+.admin-shipping-fields label.wide{grid-column:span 2}
+.admin-shipping-fields input,
+.admin-shipping-fields textarea{
+  width:100%;
+  min-width:0;
+  border:1px solid #d9e3ed;
+  border-radius:9px;
+  background:#fbfdff;
+  color:#173a60;
+  outline:0;
+  font:inherit;
+}
+.admin-shipping-fields input{height:39px;padding:0 10px}
+.admin-shipping-fields textarea{min-height:78px;padding:10px;resize:vertical}
+.admin-shipping-fields input:focus,
+.admin-shipping-fields textarea:focus{
+  border-color:#086cff;
+  box-shadow:0 0 0 3px rgba(8,108,255,.07);
+}
+.admin-shipping-fields input:disabled,
+.admin-shipping-fields textarea:disabled{opacity:.55;background:#f3f5f7}
+.admin-shipping-actions{
+  margin-top:12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.admin-shipping-actions button,
+.admin-shipping-actions a{
+  min-height:38px;
+  padding:0 13px;
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  font-size:8px;
+  font-weight:900;
+}
+.admin-shipping-actions button{
+  border:0;
+  background:#086cff;
+  color:#fff;
+}
+.admin-shipping-actions button:disabled{opacity:.55}
+.admin-shipping-actions a{
+  border:1px solid #d5e1ec;
+  background:#fff;
+  color:#234867!important;
+}
+.admin-shipping-actions small{color:#8a5360;font-size:8px}
+.account-shipping-card{
+  margin:14px 18px 4px;
+  padding:16px;
+  border:1px solid #dce6ef;
+  border-radius:14px;
+  background:linear-gradient(145deg,#f8fbff,#fff);
+}
+.account-shipping-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:15px;
+}
+.account-shipping-head span{
+  color:#086cff;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.11em;
+}
+.account-shipping-head h3{
+  margin:4px 0 0;
+  color:#12385f;
+  font-size:14px;
+}
+.account-shipping-head svg{color:#086cff}
+.account-shipping-grid{
+  margin-top:13px;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.account-shipping-grid p{
+  margin:0;
+  padding:10px 11px;
+  border:1px solid #e2eaf2;
+  border-radius:10px;
+  background:#fff;
+  display:grid;
+  gap:3px;
+}
+.account-shipping-grid span{color:#8190a1;font-size:8px}
+.account-shipping-grid b{color:#1b3d62;font-size:9px;overflow-wrap:anywhere}
+.account-shipping-card>a{
+  margin-top:11px;
+  min-height:40px;
+  padding:0 13px;
+  border-radius:8px;
+  background:#086cff;
+  color:#fff!important;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  font-size:9px;
+  font-weight:900;
+}
+@media(max-width:900px){
+  .admin-shipping-fields{grid-template-columns:1fr 1fr}
+}
+@media(max-width:720px){
+  .admin-shipping-fields{grid-template-columns:1fr}
+  .admin-shipping-fields label.wide{grid-column:auto}
+  .admin-shipping-actions button,
+  .admin-shipping-actions a{width:100%}
+  .account-shipping-card{margin-left:12px;margin-right:12px;padding:13px}
+  .account-shipping-grid{grid-template-columns:1fr}
+  .account-shipping-card>a{width:100%;justify-content:center}
+}
