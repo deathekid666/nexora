@@ -10,6 +10,7 @@ import {
   MessageCircle,
   PackageCheck,
   RefreshCw,
+  Save,
   Search,
   ShieldCheck,
   Truck,
@@ -23,6 +24,7 @@ const STATUS_OPTIONS:Array<{value:"ALL"|OrderStatus;label:string}>=[
   {value:"NOUVEAU",label:"Nouveau"},
   {value:"CONFIRME",label:"Confirmé"},
   {value:"EXPEDIE",label:"Expédié"},
+  {value:"EN_LIVRAISON",label:"En livraison"},
   {value:"LIVRE",label:"Livré"},
   {value:"ANNULE",label:"Annulé"},
 ];
@@ -31,6 +33,7 @@ const STATUS_LABEL:Record<OrderStatus,string>={
   NOUVEAU:"Nouveau",
   CONFIRME:"Confirmé",
   EXPEDIE:"Expédié",
+  EN_LIVRAISON:"En livraison",
   LIVRE:"Livré",
   ANNULE:"Annulé",
 };
@@ -39,7 +42,8 @@ function allowedStatusOptions(current:OrderStatus){
   const next:Record<OrderStatus,OrderStatus[]>={
     NOUVEAU:["NOUVEAU","CONFIRME","ANNULE"],
     CONFIRME:["CONFIRME","EXPEDIE","ANNULE"],
-    EXPEDIE:["EXPEDIE","LIVRE","ANNULE"],
+    EXPEDIE:["EXPEDIE","EN_LIVRAISON","ANNULE"],
+    EN_LIVRAISON:["EN_LIVRAISON","LIVRE","ANNULE"],
     LIVRE:["LIVRE"],
     ANNULE:["ANNULE"],
   };
@@ -73,8 +77,14 @@ function statusWhatsappMessage(order:SavedOrder,status:OrderStatus){
   switch(status){
     case "CONFIRME":
       return intro+" est confirmée ✅\n\nMontant : "+formatDh(order.totalMad)+"\nPaiement : à la livraison\n\nNous vous informerons dès son expédition.";
-    case "EXPEDIE":
-      return intro+" a été expédiée 🚚\n\nDestination : "+order.city+"\nMontant à régler à la livraison : "+formatDh(order.totalMad)+"\n\nMerci de garder votre téléphone disponible pour la livraison.";
+    case "EXPEDIE":{
+      const tracking=order.trackingNumber?"\nSuivi : "+order.trackingNumber:"";
+      const courier=order.courierName?"\nTransporteur : "+order.courierName:"";
+      const link=order.trackingUrl?"\n"+order.trackingUrl:"";
+      return intro+" a été expédiée 🚚\n\nDestination : "+order.city+courier+tracking+link+"\nMontant à régler à la livraison : "+formatDh(order.totalMad)+"\n\nMerci de garder votre téléphone disponible pour la livraison.";
+    }
+    case "EN_LIVRAISON":
+      return intro+" est en cours de livraison 🚚\n\nVotre colis est dans la dernière étape avant remise. Merci de garder votre téléphone disponible.";
     case "LIVRE":
       return intro+" est maintenant marquée comme livrée ✅\n\nMerci pour votre achat chez LHAWTA. Nous espérons que tout s’est bien passé.";
     case "ANNULE":
@@ -86,6 +96,36 @@ function statusWhatsappMessage(order:SavedOrder,status:OrderStatus){
 
 function statusWhatsappUrl(order:SavedOrder,status:OrderStatus){
   return "https://wa.me/"+whatsappPhone(order.phone)+"?text="+encodeURIComponent(statusWhatsappMessage(order,status));
+}
+
+type ShippingDraft={
+  courierName:string;
+  trackingNumber:string;
+  trackingUrl:string;
+  shippedAt:string;
+  estimatedDeliveryDate:string;
+  shippingMad:string;
+  deliveryNote:string;
+};
+
+function toDateTimeLocal(value:string|null){
+  if(!value) return "";
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime())) return "";
+  const offset=date.getTimezoneOffset()*60000;
+  return new Date(date.getTime()-offset).toISOString().slice(0,16);
+}
+
+function shippingDraft(order:SavedOrder):ShippingDraft{
+  return {
+    courierName:order.courierName||"",
+    trackingNumber:order.trackingNumber||"",
+    trackingUrl:order.trackingUrl||"",
+    shippedAt:toDateTimeLocal(order.shippedAt),
+    estimatedDeliveryDate:order.estimatedDeliveryDate||"",
+    shippingMad:String(order.shippingMad||0),
+    deliveryNote:order.deliveryNote||"",
+  };
 }
 
 export default function AdminOrdersClient(){
@@ -101,6 +141,9 @@ export default function AdminOrdersClient(){
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState("");
   const [expanded,setExpanded]=useState<string>("");
+  const [shippingDrafts,setShippingDrafts]=useState<Record<string,ShippingDraft>>({});
+  const [shippingSaving,setShippingSaving]=useState("");
+  const [shippingNotice,setShippingNotice]=useState("");
   const [statusNotice,setStatusNotice]=useState<{
     orderNumber:string;
     status:OrderStatus;
@@ -230,6 +273,50 @@ export default function AdminOrdersClient(){
     }
   };
 
+  const setShippingField=(order:SavedOrder,field:keyof ShippingDraft,value:string)=>{
+    setShippingDrafts(current=>({
+      ...current,
+      [order.id]:{
+        ...(current[order.id]||shippingDraft(order)),
+        [field]:value,
+      },
+    }));
+  };
+
+  const saveShipping=async(event:FormEvent,order:SavedOrder)=>{
+    event.preventDefault();
+    const draft=shippingDrafts[order.id]||shippingDraft(order);
+    setError("");
+    setShippingNotice("");
+    setShippingSaving(order.id);
+    try{
+      const response=await fetch("/api/orders/"+order.id,{
+        method:"PATCH",
+        headers:{"content-type":"application/json"},
+        body:JSON.stringify({
+          shipping:{
+            ...draft,
+            shippedAt:draft.shippedAt?new Date(draft.shippedAt).toISOString():"",
+            shippingMad:Number(draft.shippingMad)||0,
+          },
+        }),
+      });
+      const payload=await response.json().catch(()=>({}));
+      if(!response.ok||!payload.order){
+        setError(payload?.message||"Impossible d’enregistrer les informations de livraison.");
+        return;
+      }
+      const updated=payload.order as SavedOrder;
+      setOrders(current=>current.map(item=>item.id===order.id?updated:item));
+      setShippingDrafts(current=>({...current,[order.id]:shippingDraft(updated)}));
+      setShippingNotice("Livraison enregistrée pour "+updated.orderNumber+".");
+    }catch{
+      setError("Impossible de modifier les informations de livraison.");
+    }finally{
+      setShippingSaving("");
+    }
+  };
+
   const metrics=useMemo(()=>{
     const totalValue=orders.reduce((sum,order)=>sum+order.totalMad,0);
     const delivered=orders.filter(order=>order.status==="LIVRE").reduce((sum,order)=>sum+order.totalMad,0);
@@ -340,6 +427,7 @@ export default function AdminOrdersClient(){
       </section>
 
       {error&&<div className="admin-error exact-shell">{error}</div>}
+      {shippingNotice&&<div className="admin-shipping-notice exact-shell"><CheckCircle2 size={17}/>{shippingNotice}</div>}
 
       {statusNotice&&(
         <div className="admin-status-notice exact-shell" aria-live="polite">
@@ -406,13 +494,45 @@ export default function AdminOrdersClient(){
                     ))}
                   </div>
                   <div className="admin-delivery">
-                    <h3>Livraison</h3>
+                    <h3>Livraison client</h3>
                     <p><span>Téléphone</span><b>{order.phone}</b></p>
                     <p><span>Ville</span><b>{order.city}</b></p>
                     <p><span>Adresse</span><b>{order.address}</b></p>
-                    {order.note&&<p><span>Note</span><b>{order.note}</b></p>}
+                    {order.note&&<p><span>Note client</span><b>{order.note}</b></p>}
                     <p><span>Paiement</span><b>Paiement à la livraison</b></p>
                   </div>
+
+                  <form className="admin-shipping-editor" onSubmit={event=>void saveShipping(event,order)}>
+                    <div className="admin-shipping-editor-head">
+                      <div>
+                        <span>EXPÉDITION</span>
+                        <h3>Transport & suivi</h3>
+                      </div>
+                      <Truck size={19}/>
+                    </div>
+                    {(()=>{
+                      const draft=shippingDrafts[order.id]||shippingDraft(order);
+                      const locked=order.status==="LIVRE"||order.status==="ANNULE";
+                      return (
+                        <>
+                          <div className="admin-shipping-fields">
+                            <label><span>Transporteur</span><input value={draft.courierName} onChange={e=>setShippingField(order,"courierName",e.target.value)} placeholder="Amana, Cathedis, Jibli..." disabled={locked}/></label>
+                            <label><span>N° de suivi</span><input value={draft.trackingNumber} onChange={e=>setShippingField(order,"trackingNumber",e.target.value)} placeholder="Tracking / bordereau" disabled={locked}/></label>
+                            <label className="wide"><span>Lien de suivi</span><input value={draft.trackingUrl} onChange={e=>setShippingField(order,"trackingUrl",e.target.value)} placeholder="https://..." inputMode="url" disabled={locked}/></label>
+                            <label><span>Date d’expédition</span><input type="datetime-local" value={draft.shippedAt} onChange={e=>setShippingField(order,"shippedAt",e.target.value)} disabled={locked}/></label>
+                            <label><span>Livraison estimée</span><input type="date" value={draft.estimatedDeliveryDate} onChange={e=>setShippingField(order,"estimatedDeliveryDate",e.target.value)} disabled={locked}/></label>
+                            <label><span>Frais de livraison (DH)</span><input type="number" min="0" step="1" value={draft.shippingMad} onChange={e=>setShippingField(order,"shippingMad",e.target.value)} disabled={locked}/></label>
+                            <label className="wide"><span>Note interne</span><textarea value={draft.deliveryNote} onChange={e=>setShippingField(order,"deliveryNote",e.target.value)} placeholder="Instruction interne, incident transporteur..." disabled={locked}/></label>
+                          </div>
+                          <div className="admin-shipping-actions">
+                            <button type="submit" disabled={locked||shippingSaving===order.id}><Save size={14}/>{shippingSaving===order.id?"Enregistrement...":"Enregistrer la livraison"}</button>
+                            {order.trackingUrl&&<a href={order.trackingUrl} target="_blank" rel="noreferrer"><Truck size={14}/>Ouvrir le suivi</a>}
+                            {locked&&<small>Livraison verrouillée : commande {STATUS_LABEL[order.status].toLowerCase()}.</small>}
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </form>
 
                   {order.events?.length>0&&(
                     <div className="admin-order-audit">
