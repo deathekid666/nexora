@@ -413,6 +413,30 @@ export default function AdminOrdersClient(){
                     {order.note&&<p><span>Note</span><b>{order.note}</b></p>}
                     <p><span>Paiement</span><b>Paiement à la livraison</b></p>
                   </div>
+
+                  {order.events?.length>0&&(
+                    <div className="admin-order-audit">
+                      <div className="admin-order-audit-head">
+                        <div>
+                          <span>HISTORIQUE DE STATUT</span>
+                          <h3>Traçabilité de la commande</h3>
+                        </div>
+                        <b>{order.events.length} événement{order.events.length>1?"s":""}</b>
+                      </div>
+                      <div className="admin-order-audit-list">
+                        {order.events.map((event,index)=>(
+                          <article className={index===order.events.length-1?"current":""} key={event.id}>
+                            <i>{index===order.events.length-1?<PackageCheck size={14}/>:<CheckCircle2 size={14}/>}</i>
+                            <div>
+                              <b>{STATUS_LABEL[event.status]}</b>
+                              <span>{dateTime(event.createdAt)}</span>
+                            </div>
+                            <small>{event.actorType==="ADMIN"?(event.actorLabel||"Admin LHAWTA"):"Système LHAWTA"}</small>
+                          </article>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </article>
