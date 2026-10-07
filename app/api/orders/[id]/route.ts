@@ -101,6 +101,12 @@ export async function PATCH(
         {status:400}
       );
     }
+    if(code.startsWith("INVENTORY_")){
+      return NextResponse.json(
+        {ok:false,error:"INVENTORY_TRANSITION_FAILED",message:"Le mouvement de stock associé à cette transition a échoué. Vérifiez l’inventaire avant de réessayer."},
+        {status:409}
+      );
+    }
     console.error("[LHAWTA order update]",error);
     return NextResponse.json({ok:false,error:"ORDER_UPDATE_FAILED"},{status:500});
   }
