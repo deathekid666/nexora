@@ -19,6 +19,7 @@ import {
   writeFavorites,
 } from "@/lib/favorites-client";
 import { storeProducts } from "@/lib/store-products";
+import { catalogProductSlug } from "@/lib/category-catalogs";
 
 type CatalogFavorite={
   id:string;
@@ -164,7 +165,7 @@ export default function FavoritesPageClient(){
                   <article className="favorite-product-card favorite-catalog-card" key={item.id}>
                     <span className="favorite-product-badge">Favori</span>
                     <FavoriteButton className="favorite-product-heart" slug={item.id} size={18}/>
-                    <a href={`/category/${product.categorySlug}`} className="favorite-product-media">
+                    <a href={`/products/${catalogProductSlug({name:product.name,categorySlug:product.categorySlug})}`} className="favorite-product-media">
                       <ProductVisual
                         src={categoryImages[product.categorySlug]||categoryImages.accessoires}
                         alt={product.name}
@@ -172,14 +173,14 @@ export default function FavoritesPageClient(){
                     </a>
                     <div className="favorite-product-body">
                       <small>{product.brand}</small>
-                      <h2><a href={`/category/${product.categorySlug}`} className="product-name-link">{product.name}</a></h2>
+                      <h2><a href={`/products/${catalogProductSlug({name:product.name,categorySlug:product.categorySlug})}`} className="product-name-link">{product.name}</a></h2>
                       <p>Produit enregistré depuis la catégorie {categoryLabels[product.categorySlug]||product.categorySlug}.</p>
                       <div className="favorite-catalog-note">
                         <PackageSearch size={15}/>
                         <span>La fiche produit détaillée sera ajoutée au catalogue.</span>
                       </div>
                       <div className="favorite-product-actions single">
-                        <a href={`/category/${product.categorySlug}`}><ShoppingCart size={15}/> Voir la catégorie</a>
+                        <a href={`/products/${catalogProductSlug({name:product.name,categorySlug:product.categorySlug})}`}><ShoppingCart size={15}/> Voir le produit</a>
                       </div>
                     </div>
                   </article>
