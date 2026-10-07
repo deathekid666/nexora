@@ -8,9 +8,13 @@ import {
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 
-function publicOrder<T extends {events?:Array<{actorLabel?:string|null}>}>(order:T){
+function publicOrder<T extends {
+  events?:Array<{actorLabel?:string|null}>;
+  deliveryNote?:string|null;
+}>(order:T){
+  const {deliveryNote:_deliveryNote,...safeOrder}=order;
   return {
-    ...order,
+    ...safeOrder,
     events:Array.isArray(order.events)
       ?order.events.map(event=>({...event,actorLabel:null}))
       :[],
