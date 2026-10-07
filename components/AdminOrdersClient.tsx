@@ -69,8 +69,11 @@ function whatsappPhone(phone:string){
 }
 
 export default function AdminOrdersClient(){
-  const [token,setToken]=useState("");
-  const [tokenInput,setTokenInput]=useState("");
+  const [authenticated,setAuthenticated]=useState(false);
+  const [sessionChecking,setSessionChecking]=useState(true);
+  const [adminEmail,setAdminEmail]=useState("");
+  const [emailInput,setEmailInput]=useState("nlaassali1@gmail.com");
+  const [accessKey,setAccessKey]=useState("");
   const [orders,setOrders]=useState<SavedOrder[]>([]);
   const [search,setSearch]=useState("");
   const [activeSearch,setActiveSearch]=useState("");
@@ -80,15 +83,24 @@ export default function AdminOrdersClient(){
   const [expanded,setExpanded]=useState<string>("");
 
   useEffect(()=>{
-    const saved=window.sessionStorage.getItem("lhawta-admin-token")||"";
-    if(saved){
-      setToken(saved);
-      setTokenInput(saved);
-    }
+    const checkSession=async()=>{
+      try{
+        const response=await fetch("/api/admin/session",{cache:"no-store"});
+        const payload=await response.json().catch(()=>({}));
+        if(response.ok&&payload?.email){
+          setAuthenticated(true);
+          setAdminEmail(payload.email);
+          setEmailInput(payload.email);
+        }
+      }finally{
+        setSessionChecking(false);
+      }
+    };
+    void checkSession();
   },[]);
 
-  const fetchOrders=async(nextToken=token,nextSearch=activeSearch,nextStatus=status)=>{
-    if(!nextToken) return;
+  const fetchOrders=async(nextSearch=activeSearch,nextStatus=status)=>{
+    if(!authenticated) return;
     setLoading(true);
     setError("");
     try{
@@ -97,7 +109,6 @@ export default function AdminOrdersClient(){
       if(nextStatus!=="ALL") qs.set("status",nextStatus);
       const response=await fetch("/api/orders?"+qs.toString(),{
         cache:"no-store",
-        headers:{authorization:"Bearer "+nextToken},
       });
       const payload=await response.json().catch(()=>({}));
       if(response.status===401){
@@ -123,22 +134,40 @@ export default function AdminOrdersClient(){
   };
 
   useEffect(()=>{
-    if(token) void fetchOrders(token,activeSearch,status);
+    if(authenticated) void fetchOrders(activeSearch,status);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[token,status]);
+  },[authenticated,status]);
 
-  const login=(event:FormEvent)=>{
+  const login=async(event:FormEvent)=>{
     event.preventDefault();
-    const value=tokenInput.trim();
-    if(!value) return;
-    window.sessionStorage.setItem("lhawta-admin-token",value);
-    setToken(value);
+    setError("");
+    setLoading(true);
+    try{
+      const response=await fetch("/api/admin/session",{
+        method:"POST",
+        headers:{"content-type":"application/json"},
+        body:JSON.stringify({email:emailInput.trim(),accessKey}),
+      });
+      const payload=await response.json().catch(()=>({}));
+      if(!response.ok||!payload?.email){
+        setError(payload?.message||"Connexion admin impossible.");
+        return;
+      }
+      setAuthenticated(true);
+      setAdminEmail(payload.email);
+      setAccessKey("");
+    }catch{
+      setError("Impossible de joindre le service d’authentification admin.");
+    }finally{
+      setLoading(false);
+    }
   };
 
-  const logout=()=>{
-    window.sessionStorage.removeItem("lhawta-admin-token");
-    setToken("");
-    setTokenInput("");
+  const logout=async()=>{
+    try{await fetch("/api/admin/session",{method:"DELETE"});}catch{}
+    setAuthenticated(false);
+    setAdminEmail("");
+    setAccessKey("");
     setOrders([]);
     setError("");
   };
@@ -146,7 +175,7 @@ export default function AdminOrdersClient(){
   const runSearch=(event:FormEvent)=>{
     event.preventDefault();
     setActiveSearch(search.trim());
-    void fetchOrders(token,search.trim(),status);
+    void fetchOrders(search.trim(),status);
   };
 
   const updateStatus=async(order:SavedOrder,nextStatus:OrderStatus)=>{
@@ -154,10 +183,7 @@ export default function AdminOrdersClient(){
     try{
       const response=await fetch("/api/orders/"+order.id,{
         method:"PATCH",
-        headers:{
-          "content-type":"application/json",
-          authorization:"Bearer "+token,
-        },
+        headers:{"content-type":"application/json"},
         body:JSON.stringify({status:nextStatus}),
       });
       const payload=await response.json().catch(()=>({}));
@@ -179,7 +205,24 @@ export default function AdminOrdersClient(){
     return {totalValue,delivered,newCount,itemCount};
   },[orders]);
 
-  if(!token){
+  if(sessionChecking){
+    return (
+      <main className="exact-page admin-orders-page">
+        <SiteMotion/>
+        <StoreHeader/>
+        <section className="admin-login exact-shell">
+          <div className="admin-login-card">
+            <ShieldCheck size={34}/>
+            <span>ADMIN LHAWTA</span>
+            <h1>Vérification de la session</h1>
+            <p>Connexion sécurisée en cours...</p>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if(!authenticated){
     return (
       <main className="exact-page admin-orders-page">
         <SiteMotion/>
@@ -189,18 +232,30 @@ export default function AdminOrdersClient(){
             <ShieldCheck size={34}/>
             <span>ADMIN LHAWTA</span>
             <h1>Gestion des commandes</h1>
-            <p>Entrez la clé admin du preview pour accéder aux commandes COD.</p>
+            <p>Connectez-vous avec un email administrateur autorisé et la clé d’accès LHAWTA.</p>
             <form onSubmit={login}>
-              <label>Clé admin
+              <label>Email administrateur
                 <input
-                  type="password"
-                  value={tokenInput}
-                  onChange={e=>setTokenInput(e.target.value)}
-                  autoComplete="current-password"
-                  placeholder="Clé du preview"
+                  type="email"
+                  value={emailInput}
+                  onChange={e=>setEmailInput(e.target.value)}
+                  autoComplete="username"
+                  placeholder="admin@lhawta.ma"
+                  required
                 />
               </label>
-              <button type="submit">Ouvrir le dashboard</button>
+              <label>Clé d’accès
+                <input
+                  type="password"
+                  value={accessKey}
+                  onChange={e=>setAccessKey(e.target.value)}
+                  autoComplete="current-password"
+                  placeholder="Clé admin"
+                  required
+                />
+              </label>
+              {error&&<div className="admin-error">{error}</div>}
+              <button type="submit" disabled={loading}>{loading?"Connexion...":"Ouvrir le dashboard"}</button>
             </form>
           </div>
         </section>
@@ -218,9 +273,10 @@ export default function AdminOrdersClient(){
           <span>ADMIN LHAWTA</span>
           <h1>Commandes COD</h1>
           <p>Suivez les commandes, contactez les clients et mettez à jour leur statut.</p>
+          <small className="admin-session-email">Connecté : {adminEmail}</small>
         </div>
         <div className="admin-head-actions">
-          <button onClick={()=>void fetchOrders()} disabled={loading}><RefreshCw size={15}/>{loading?"Actualisation...":"Actualiser"}</button>
+          <button onClick={()=>void fetchOrders(activeSearch,status)} disabled={loading}><RefreshCw size={15}/>{loading?"Actualisation...":"Actualiser"}</button>
           <button onClick={logout}><LogOut size={15}/>Quitter</button>
         </div>
       </section>
