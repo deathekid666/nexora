@@ -83,7 +83,7 @@ export default function PromotionsPage(){
         {promotions.length?(
           <div className="promotions-grid">
             {promotions.map(product=>{
-              const detailHref=product.detailSlug?"/products/"+product.detailSlug:"/category/"+product.categorySlug;
+              const detailHref="/products/"+product.productSlug;
               const favoriteSlug=product.detailSlug||("catalog:"+product.categorySlug+":"+product.brand+":"+product.name);
               return (
                 <article className="promotion-card" key={product.categorySlug+"-"+product.name}>
@@ -115,7 +115,7 @@ export default function PromotionsPage(){
                     </div>
 
                     <div className="promotion-actions">
-                      <a className="primary" href={detailHref}><ShoppingCart size={15}/>{product.detailSlug?"Voir le produit":"Voir la catégorie"}</a>
+                      <a className="primary" href={detailHref}><ShoppingCart size={15}/>Voir le produit</a>
                       {product.detailSlug&&<a href={"/compare?products="+product.detailSlug}><BarChart3 size={15}/>Comparer</a>}
                     </div>
                   </div>
