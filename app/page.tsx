@@ -154,14 +154,14 @@ export default function Home(){
                 size={17}
                 label={"Ajouter "+product.name+" aux favoris"}
               />
-              <a href={product.detailSlug?"/products/"+product.detailSlug:"/category/"+product.categorySlug} className="home-deal-media">
+              <a href={"/products/"+product.productSlug} className="home-deal-media">
                 <ProductVisual src={product.image} alt={product.name}/>
               </a>
               <div className="home-deal-copy">
                 <small>{product.brand} · {product.categoryTitle}</small>
                 <h3>
                   <a
-                    href={product.detailSlug?"/products/"+product.detailSlug:"/category/"+product.categorySlug}
+                    href={"/products/"+product.productSlug}
                     className="product-name-link"
                   >
                     {product.name}
