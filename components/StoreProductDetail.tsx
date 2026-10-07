@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -17,6 +17,7 @@ import SiteMotion from "@/components/SiteMotion";
 import { ProductVisual } from "@/components/ProductVisual";
 import type { StoreProduct } from "@/lib/store-products";
 import { addToCart } from "@/lib/cart-client";
+import { loadInventoryRows, type PublicInventoryRow } from "@/lib/inventory-client";
 import FavoriteButton from "@/components/FavoriteButton";
 
 export default function StoreProductDetail({product}:{product:StoreProduct}){
@@ -24,9 +25,34 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
   const [imageIndex,setImageIndex]=useState(0);
   const [variant,setVariant]=useState(product.variants[0]||"Standard");
   const [color,setColor]=useState(product.colors[0]||"Standard");
+  const [stockRows,setStockRows]=useState<PublicInventoryRow[]>([]);
+  const [stockChecked,setStockChecked]=useState(false);
   const selectedImage=product.gallery[imageIndex]||product.gallery[0];
 
+  useEffect(()=>{
+    let active=true;
+    setStockChecked(false);
+    void loadInventoryRows(product.slug).then(rows=>{
+      if(!active) return;
+      setStockRows(rows);
+      setStockChecked(true);
+    });
+    return ()=>{active=false;};
+  },[product.slug]);
+
+  const selectedStock=stockRows.find(row=>row.variant===variant&&row.color===color);
+  const availableQty=selectedStock?.availableQty||0;
+  const canBuy=stockChecked&&availableQty>0;
+  const stockLabel=!stockChecked
+    ?"Vérification du stock..."
+    :availableQty<=0
+      ?"Rupture de stock"
+      :selectedStock?.lowStock
+        ?availableQty+" disponible(s) · stock faible"
+        :availableQty+" disponible(s)";
+
   const addAndGoToCart=()=>{
+    if(!canBuy) return;
     addToCart({
       slug:product.slug,
       name:product.name,
@@ -122,13 +148,13 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
           </div>
 
           <div className="pdetail-assurance">
-            <div><Check size={17}/><span><b>{product.availability}</b><small>Disponibilité affichée avant commande</small></span></div>
+            <div className={"pdetail-stock-live "+(canBuy?"available":"unavailable")}><Check size={17}/><span><b>{stockLabel}</b><small>Stock vérifié pour {variant} · {color}</small></span></div>
             <div><ShieldCheck size={18}/><span><b>{product.warranty}</b><small>Conditions visibles avant achat</small></span></div>
             <div><Truck size={18}/><span><b>Livraison partout au Maroc</b><small>Délai confirmé avant validation</small></span></div>
           </div>
 
           <div className="pdetail-actions">
-            <button className="primary" onClick={addAndGoToCart}><ShoppingCart size={17}/>Ajouter au panier</button>
+            <button className="primary" onClick={addAndGoToCart} disabled={!canBuy}><ShoppingCart size={17}/>{canBuy?"Ajouter au panier":stockChecked?"Rupture de stock":"Vérification..."}</button>
             <a className="secondary compare-action" href={"/compare?products="+product.slug}>Comparer</a>
           </div>
         </aside>
