@@ -203,3 +203,16 @@ export async function adjustInventory(input:{
 
   return rows[0]||null;
 }
+
+
+export async function getPublicInventorySummaries(slugs:string[]){
+  await ensureInventorySchema();
+  const sql=db();
+  const safe=[...new Set(slugs.map(value=>clean(value,160)).filter(Boolean))].slice(0,100);
+  if(!safe.length) return [];
+
+  return sql.query(
+    "SELECT slug,SUM(GREATEST(physical_qty-reserved_qty,0))::integer AS \"availableQty\",BOOL_OR((physical_qty-reserved_qty)>0) AS \"inStock\",BOOL_AND((physical_qty-reserved_qty)<=low_stock_threshold) AS \"lowStock\" FROM lhawta_inventory WHERE slug=ANY($1::text[]) GROUP BY slug ORDER BY slug",
+    [safe]
+  ) as Promise<Array<{slug:string;availableQty:number;inStock:boolean;lowStock:boolean}>>;
+}
