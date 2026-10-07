@@ -72,7 +72,7 @@ export default function AdminOrdersClient(){
   const [authenticated,setAuthenticated]=useState(false);
   const [sessionChecking,setSessionChecking]=useState(true);
   const [adminEmail,setAdminEmail]=useState("");
-  const [emailInput,setEmailInput]=useState("nlaassali1@gmail.com");
+  const [emailInput,setEmailInput]=useState("");
   const [accessKey,setAccessKey]=useState("");
   const [orders,setOrders]=useState<SavedOrder[]>([]);
   const [search,setSearch]=useState("");
@@ -112,7 +112,7 @@ export default function AdminOrdersClient(){
       });
       const payload=await response.json().catch(()=>({}));
       if(response.status===401){
-        setError("Clé admin incorrecte.");
+        setError("Session admin expirée ou non autorisée.");
         setOrders([]);
         return;
       }
