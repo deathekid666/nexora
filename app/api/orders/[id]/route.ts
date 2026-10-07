@@ -61,6 +61,13 @@ export async function PATCH(
     if(!order) return NextResponse.json({ok:false,error:"ORDER_NOT_FOUND"},{status:404});
     return NextResponse.json({ok:true,order});
   }catch(error){
+    const code=error instanceof Error?error.message:"ORDER_UPDATE_FAILED";
+    if(code==="INVALID_STATUS_TRANSITION"){
+      return NextResponse.json(
+        {ok:false,error:code,message:"Transition de statut non autorisée."},
+        {status:409}
+      );
+    }
     console.error("[LHAWTA order update]",error);
     return NextResponse.json({ok:false,error:"ORDER_UPDATE_FAILED"},{status:500});
   }
