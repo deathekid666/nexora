@@ -54,6 +54,14 @@ type CustomerOrder={
     unitPriceMad:number;
     lineTotalMad:number;
   }[];
+  events:{
+    id:string;
+    status:OrderStatus;
+    previousStatus:OrderStatus|null;
+    actorType:"SYSTEM"|"ADMIN";
+    actorLabel:string|null;
+    createdAt:string;
+  }[];
 };
 
 const statusSteps=[
@@ -70,6 +78,17 @@ function money(value:number){
 function statusIndex(status:OrderStatus){
   if(status==="ANNULE") return -1;
   return statusSteps.findIndex(step=>step.key===status);
+}
+
+function statusLabel(status:OrderStatus){
+  const labels:Record<OrderStatus,string>={
+    NOUVEAU:"Commande reçue",
+    CONFIRME:"Commande confirmée",
+    EXPEDIE:"Commande expédiée",
+    LIVRE:"Commande livrée",
+    ANNULE:"Commande annulée",
+  };
+  return labels[status];
 }
 
 export default function AccountPageClient(){
@@ -287,6 +306,26 @@ export default function AccountPageClient(){
                         <span>{step.label}</span>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {order.events?.length>0&&(
+                  <div className="account-order-timeline">
+                    <div className="account-order-timeline-head">
+                      <span>HISTORIQUE DE SUIVI</span>
+                      <b>{order.events.length} étape{order.events.length>1?"s":""}</b>
+                    </div>
+                    <div className="account-order-timeline-list">
+                      {order.events.map((event,index)=>(
+                        <article className={index===order.events.length-1?"current":""} key={event.id}>
+                          <i>{index===order.events.length-1?<PackageCheck size={14}/>:<CheckCircle2 size={14}/>}</i>
+                          <div>
+                            <b>{statusLabel(event.status)}</b>
+                            <span>{new Date(event.createdAt).toLocaleString("fr-MA",{dateStyle:"medium",timeStyle:"short"})}</span>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
                   </div>
                 )}
 
