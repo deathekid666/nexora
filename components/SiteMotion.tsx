@@ -50,10 +50,6 @@ export default function SiteMotion(){
           },
         });
 
-        gsap.to(".line-s26",{y:-8,ease:"none",scrollTrigger:{trigger:".exact-hero",start:"top top",end:"bottom top",scrub:1}});
-        gsap.to(".line-xiaomi",{y:6,ease:"none",scrollTrigger:{trigger:".exact-hero",start:"top top",end:"bottom top",scrub:1.05}});
-        gsap.to(".line-tab",{y:-7,ease:"none",scrollTrigger:{trigger:".exact-hero",start:"top top",end:"bottom top",scrub:1.1}});
-        gsap.to(".line-ps5",{y:7,ease:"none",scrollTrigger:{trigger:".exact-hero",start:"top top",end:"bottom top",scrub:1.15}});
 
         const hero=document.querySelector<HTMLElement>(".exact-hero");
         const lineup=document.querySelector<HTMLElement>(".exact-product-lineup");
