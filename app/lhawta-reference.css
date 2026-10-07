@@ -80,62 +80,35 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
 .exact-product-lineup{
   position:absolute;
   z-index:7;
-  left:33.2%;
-  right:1.4%;
+  left:32.5%;
+  right:2.2%;
   top:0;
   bottom:0;
   pointer-events:none;
-  perspective:1100px;
-  transform-style:preserve-3d;
   transform-origin:60% 58%;
   will-change:transform;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
 }
-.exact-product-lineup:before{
-  content:"";
+.exact-product-lineup:before,
+.exact-product-lineup:after{content:none}
+.hero-lineup-image{
   position:absolute;
-  left:5%;
-  right:3%;
-  bottom:-4px;
-  height:22%;
-  z-index:0;
-  border-radius:50%;
-  background:
-    radial-gradient(ellipse at center,rgba(4,20,42,.44) 0%,rgba(5,24,48,.25) 32%,rgba(8,36,69,.08) 62%,transparent 76%);
-  filter:blur(8px);
-  transform:perspective(700px) rotateX(67deg) translateZ(-28px);
-  opacity:.9;
-}
-.exact-product-lineup:after{
-  content:"";
-  position:absolute;
-  left:9%;
-  right:6%;
-  bottom:0;
-  height:18%;
-  z-index:1;
-  border-radius:50%;
-  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,0));
-  filter:blur(5px);
-  transform:perspective(760px) rotateX(72deg) translateZ(-18px);
-  opacity:.72;
-}
-.exact-product-lineup img{
-  position:absolute;
+  left:0;
+  right:0;
+  bottom:-1.5%;
+  width:100%;
+  height:auto;
+  max-height:96%;
   object-fit:contain;
   object-position:center bottom;
-  transform-origin:50% 100%;
+  user-select:none;
+  -webkit-user-drag:none;
   backface-visibility:hidden;
-  will-change:transform,filter;
-  filter:
-    drop-shadow(0 23px 18px rgba(5,20,43,.28))
-    drop-shadow(0 7px 5px rgba(9,34,68,.18));
+  filter:drop-shadow(0 20px 18px rgba(5,20,43,.24));
 }
-.line-s26{left:4%;bottom:-1.2%;width:20%;height:87%;z-index:6;transform:translateZ(18px) rotateY(3deg) rotateX(-1deg)}
-.line-xiaomi{left:19%;bottom:-1%;width:15.5%;height:83%;z-index:7;transform:translateZ(34px) rotateY(-4deg) rotateX(-1deg)}
-.line-honor{left:29%;bottom:-1.4%;width:14.2%;height:79%;z-index:10;transform:translateZ(62px) rotateY(3deg) rotateX(-1deg)}
-.line-redmi{left:39.5%;bottom:-1%;width:15%;height:82%;z-index:8;transform:translateZ(45px) rotateY(-3deg) rotateX(-1deg)}
-.line-tab{left:53%;bottom:-1.7%;width:29.5%;height:72%;z-index:3;transform:translateZ(-18px) rotateY(-1.5deg) rotateX(-1deg);filter:drop-shadow(0 25px 20px rgba(5,20,43,.25)) drop-shadow(0 8px 6px rgba(9,34,68,.15))}
-.line-ps5{right:.8%;bottom:-1.3%;width:15.8%;height:94%;z-index:9;transform:translateZ(70px) rotateY(-5deg) rotateX(-1deg);filter:drop-shadow(0 28px 20px rgba(5,20,43,.34)) drop-shadow(0 9px 7px rgba(9,34,68,.18))}
+
 .exact-hero-script{position:absolute;z-index:10;right:22.2%;top:21px;color:#112b52;font-family:"Segoe Script","Brush Script MT",cursive;font-size:20px;line-height:1.04;transform:rotate(-7deg);text-align:center}
 .exact-hero-script b{font-weight:600}
 .exact-location-badge{position:absolute;z-index:14;right:12px;bottom:10px;height:58px;padding:0 14px;border-radius:20px;background:#123e73;color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 10px 22px rgba(5,32,67,.2)}
@@ -210,20 +183,13 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
   .exact-product-grid{grid-template-columns:repeat(3,1fr)}
 }
 @media(max-width:900px){
-  .exact-product-lineup{
-    perspective:none;
-    transform-style:flat;
-    will-change:auto;
-  }
-  .exact-product-lineup:before,
-  .exact-product-lineup:after{
-    opacity:.42;
+  .exact-product-lineup{will-change:auto}
+  .hero-lineup-image{
+    width:112%;
+    left:-6%;
+    bottom:0;
     transform:none;
-    filter:blur(9px);
-  }
-  .exact-product-lineup img{
-    transform:none;
-    filter:drop-shadow(0 16px 13px rgba(5,20,43,.24));
+    filter:drop-shadow(0 14px 12px rgba(5,20,43,.22));
   }
   .exact-shell{width:calc(100% - 28px)}
   .exact-topbar-inner i,.exact-topbar-inner>span:nth-of-type(n+3){display:none}
@@ -249,6 +215,7 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
   .exact-all{min-width:auto}
   .exact-hero{height:560px}.exact-hero-copy p{font-size:9px}.exact-hero-buttons{flex-direction:column;align-items:flex-start}
   .exact-product-lineup{top:245px}
+  .hero-lineup-image{width:165%;left:-32.5%;bottom:0}
   .exact-trust{grid-template-columns:1fr}.exact-trust>div{border-right:0;border-bottom:1px solid #e1e8f0}
   .exact-product-grid{grid-template-columns:1fr 1fr}.exact-card-media{height:145px}.exact-card-body h3{font-size:12px}.exact-card-actions{grid-template-columns:1fr}.exact-card-actions button:nth-child(2){display:none}
   .exact-afterfold{grid-template-columns:1fr}
