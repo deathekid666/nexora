@@ -47,6 +47,15 @@ export type SavedOrderItem={
   lineTotalMad:number;
 };
 
+export type OrderEvent={
+  id:string;
+  status:OrderStatus;
+  previousStatus:OrderStatus|null;
+  actorType:"SYSTEM"|"ADMIN";
+  actorLabel:string|null;
+  createdAt:string;
+};
+
 export type SavedOrder={
   id:string;
   orderNumber:string;
@@ -64,6 +73,7 @@ export type SavedOrder={
   createdAt:string;
   updatedAt:string;
   items:SavedOrderItem[];
+  events:OrderEvent[];
 };
 
 function moneyToMad(value:string){
@@ -97,9 +107,12 @@ export async function ensureOrderSchema(){
     await sql.query("CREATE SEQUENCE IF NOT EXISTS lhawta_order_seq START WITH 1001");
     await sql.query("CREATE TABLE IF NOT EXISTS lhawta_orders (id uuid PRIMARY KEY, order_number text NOT NULL UNIQUE, status text NOT NULL DEFAULT 'NOUVEAU' CHECK (status IN ('NOUVEAU','CONFIRME','EXPEDIE','LIVRE','ANNULE')), customer_name text NOT NULL, phone text NOT NULL, city text NOT NULL, address text NOT NULL, note text, subtotal_mad integer NOT NULL CHECK (subtotal_mad >= 0), shipping_mad integer NOT NULL DEFAULT 0 CHECK (shipping_mad >= 0), total_mad integer NOT NULL CHECK (total_mad >= 0), payment_method text NOT NULL DEFAULT 'COD', source text NOT NULL DEFAULT 'WHATSAPP', created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now())");
     await sql.query("CREATE TABLE IF NOT EXISTS lhawta_order_items (id uuid PRIMARY KEY, order_id uuid NOT NULL REFERENCES lhawta_orders(id) ON DELETE CASCADE, slug text NOT NULL, brand text NOT NULL, product_name text NOT NULL, variant text NOT NULL, color text NOT NULL, quantity integer NOT NULL CHECK (quantity > 0), unit_price_mad integer NOT NULL CHECK (unit_price_mad >= 0), line_total_mad integer NOT NULL CHECK (line_total_mad >= 0), created_at timestamptz NOT NULL DEFAULT now())");
+    await sql.query("CREATE TABLE IF NOT EXISTS lhawta_order_events (id uuid PRIMARY KEY, order_id uuid NOT NULL REFERENCES lhawta_orders(id) ON DELETE CASCADE, status text NOT NULL CHECK (status IN ('NOUVEAU','CONFIRME','EXPEDIE','LIVRE','ANNULE')), previous_status text CHECK (previous_status IS NULL OR previous_status IN ('NOUVEAU','CONFIRME','EXPEDIE','LIVRE','ANNULE')), actor_type text NOT NULL DEFAULT 'SYSTEM' CHECK (actor_type IN ('SYSTEM','ADMIN')), actor_label text, created_at timestamptz NOT NULL DEFAULT now())");
     await sql.query("CREATE INDEX IF NOT EXISTS lhawta_orders_created_at_idx ON lhawta_orders (created_at DESC)");
     await sql.query("CREATE INDEX IF NOT EXISTS lhawta_orders_phone_idx ON lhawta_orders (phone)");
     await sql.query("CREATE INDEX IF NOT EXISTS lhawta_order_items_order_id_idx ON lhawta_order_items (order_id)");
+    await sql.query("CREATE INDEX IF NOT EXISTS lhawta_order_events_order_id_created_at_idx ON lhawta_order_events (order_id, created_at ASC)");
+    await sql.query("INSERT INTO lhawta_order_events (id,order_id,status,previous_status,actor_type,actor_label,created_at) SELECT gen_random_uuid(),o.id,o.status,NULL,'SYSTEM','Historique initial',o.created_at FROM lhawta_orders o WHERE NOT EXISTS (SELECT 1 FROM lhawta_order_events e WHERE e.order_id=o.id)");
   })();
 
   try{
@@ -194,6 +207,7 @@ export async function createOrder(input:CreateOrderInput):Promise<SavedOrder>{
   const totalMad=subtotalMad+shippingMad;
 
   const itemJson=JSON.stringify(validated.items);
+  const eventId=crypto.randomUUID();
   const result=await sql.query(
     "WITH new_order AS ("+
     " INSERT INTO lhawta_orders (id, order_number, status, customer_name, phone, city, address, note, subtotal_mad, shipping_mad, total_mad, payment_method, source)"+
@@ -205,7 +219,10 @@ export async function createOrder(input:CreateOrderInput):Promise<SavedOrder>{
     " INSERT INTO lhawta_order_items (id, order_id, slug, brand, product_name, variant, color, quantity, unit_price_mad, line_total_mad)"+
     " SELECT x.id, n.id::uuid, x.slug, x.brand, x.name, x.variant, x.color, x.quantity, x.\"unitPriceMad\", x.\"lineTotalMad\" FROM item_data x CROSS JOIN new_order n"+
     " RETURNING id"+
-    ") SELECT n.id, n.\"orderNumber\", (SELECT count(*)::int FROM inserted_items) AS \"itemCount\" FROM new_order n",
+    "), inserted_event AS ("+
+    " INSERT INTO lhawta_order_events (id,order_id,status,previous_status,actor_type,actor_label)"+
+    " SELECT $11::uuid,n.id::uuid,'NOUVEAU',NULL,'SYSTEM','Commande créée' FROM new_order n RETURNING id"+
+    ") SELECT n.id, n.\"orderNumber\", (SELECT count(*)::int FROM inserted_items) AS \"itemCount\" FROM new_order n CROSS JOIN inserted_event",
     [
       orderId,
       validated.customer.name,
@@ -217,6 +234,7 @@ export async function createOrder(input:CreateOrderInput):Promise<SavedOrder>{
       shippingMad,
       totalMad,
       itemJson,
+      eventId,
     ]
   ) as Array<{id:string;orderNumber:string;itemCount:number}>;
 
@@ -236,7 +254,7 @@ export async function getOrderById(id:string):Promise<SavedOrder|null>{
   const orders=await sql.query(
     "SELECT id::text AS id, order_number AS \"orderNumber\", status, customer_name AS \"customerName\", phone, city, address, note, subtotal_mad AS \"subtotalMad\", shipping_mad AS \"shippingMad\", total_mad AS \"totalMad\", payment_method AS \"paymentMethod\", source, created_at::text AS \"createdAt\", updated_at::text AS \"updatedAt\" FROM lhawta_orders WHERE id=$1::uuid LIMIT 1",
     [id]
-  ) as Array<Omit<SavedOrder,"items">>;
+  ) as Array<Omit<SavedOrder,"items"|"events">>;
 
   if(!orders[0]) return null;
 
@@ -245,7 +263,12 @@ export async function getOrderById(id:string):Promise<SavedOrder|null>{
     [id]
   ) as SavedOrderItem[];
 
-  return {...orders[0],items};
+  const events=await sql.query(
+    "SELECT id::text AS id, status, previous_status AS \"previousStatus\", actor_type AS \"actorType\", actor_label AS \"actorLabel\", created_at::text AS \"createdAt\" FROM lhawta_order_events WHERE order_id=$1::uuid ORDER BY created_at ASC, id ASC",
+    [id]
+  ) as OrderEvent[];
+
+  return {...orders[0],items,events};
 }
 
 export async function listOrders(options?:{
@@ -262,7 +285,7 @@ export async function listOrders(options?:{
   const rows=await sql.query(
     "SELECT id::text AS id, order_number AS \"orderNumber\", status, customer_name AS \"customerName\", phone, city, address, note, subtotal_mad AS \"subtotalMad\", shipping_mad AS \"shippingMad\", total_mad AS \"totalMad\", payment_method AS \"paymentMethod\", source, created_at::text AS \"createdAt\", updated_at::text AS \"updatedAt\" FROM lhawta_orders WHERE ($1='' OR order_number ILIKE $2 OR customer_name ILIKE $2 OR phone ILIKE $2 OR city ILIKE $2) AND ($3::text IS NULL OR status=$3) ORDER BY created_at DESC LIMIT $4",
     [search,"%"+search+"%",status,limit]
-  ) as Array<Omit<SavedOrder,"items">>;
+  ) as Array<Omit<SavedOrder,"items"|"events">>;
 
   if(!rows.length) return [];
 
@@ -271,7 +294,11 @@ export async function listOrders(options?:{
       "SELECT id::text AS id, slug, brand, product_name AS name, variant, color, quantity, unit_price_mad AS \"unitPriceMad\", line_total_mad AS \"lineTotalMad\" FROM lhawta_order_items WHERE order_id=$1::uuid ORDER BY created_at ASC",
       [row.id]
     ) as SavedOrderItem[];
-    return {...row,items};
+    const events=await sql.query(
+      "SELECT id::text AS id, status, previous_status AS \"previousStatus\", actor_type AS \"actorType\", actor_label AS \"actorLabel\", created_at::text AS \"createdAt\" FROM lhawta_order_events WHERE order_id=$1::uuid ORDER BY created_at ASC, id ASC",
+      [row.id]
+    ) as OrderEvent[];
+    return {...row,items,events};
   }));
 }
 
@@ -309,7 +336,11 @@ export async function listCustomerOrdersByVerifiedOrder(orderNumber:string,phone
   return orders.filter((order):order is SavedOrder=>Boolean(order));
 }
 
-export async function updateOrderStatus(id:string,status:OrderStatus):Promise<SavedOrder|null>{
+export async function updateOrderStatus(
+  id:string,
+  status:OrderStatus,
+  actorLabel:string|null
+):Promise<SavedOrder|null>{
   if(!ORDER_STATUSES.includes(status)) throw new Error("INVALID_STATUS");
   await ensureOrderSchema();
   const sql=db();
@@ -319,9 +350,18 @@ export async function updateOrderStatus(id:string,status:OrderStatus):Promise<Sa
   if(!canTransitionOrderStatus(current.status,status)) throw new Error("INVALID_STATUS_TRANSITION");
   if(current.status===status) return current;
 
+  const eventId=crypto.randomUUID();
+  const actor=clean(actorLabel,180)||"Admin LHAWTA";
   const changed=await sql.query(
-    "UPDATE lhawta_orders SET status=$1, updated_at=now() WHERE id=$2::uuid RETURNING id::text AS id",
-    [status,id]
+    "WITH current AS ("+
+    " SELECT status FROM lhawta_orders WHERE id=$2::uuid FOR UPDATE"+
+    "), updated AS ("+
+    " UPDATE lhawta_orders SET status=$1, updated_at=now() WHERE id=$2::uuid AND EXISTS (SELECT 1 FROM current) RETURNING id"+
+    "), event AS ("+
+    " INSERT INTO lhawta_order_events (id,order_id,status,previous_status,actor_type,actor_label)"+
+    " SELECT $3::uuid,$2::uuid,$1,current.status,'ADMIN',$4 FROM current CROSS JOIN updated RETURNING id"+
+    ") SELECT updated.id::text AS id FROM updated CROSS JOIN event",
+    [status,id,eventId,actor]
   ) as Array<{id:string}>;
 
   if(!changed[0]) return null;
