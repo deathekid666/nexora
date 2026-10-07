@@ -79,11 +79,17 @@ export default function AccountPageClient(){
   const [lookupError,setLookupError]=useState("");
   const [loading,setLoading]=useState(false);
   const [order,setOrder]=useState<CustomerOrder|null>(null);
+  const [orders,setOrders]=useState<CustomerOrder[]>([]);
 
   useEffect(()=>{
     const stored=readCustomerProfile();
     setProfile(stored);
-    if(stored.phone) setLookup(current=>({...current,phone:stored.phone}));
+    const requestedOrder=new URLSearchParams(window.location.search).get("order")?.trim()||"";
+    setLookup(current=>({
+      ...current,
+      phone:stored.phone||current.phone,
+      orderNumber:requestedOrder||current.orderNumber,
+    }));
   },[]);
 
   const profileComplete=useMemo(
@@ -110,6 +116,7 @@ export default function AccountPageClient(){
     event.preventDefault();
     setLookupError("");
     setOrder(null);
+    setOrders([]);
 
     if(!lookup.orderNumber.trim()||lookup.phone.replace(/\D/g,"").length<8){
       setLookupError("Entrez le numéro de commande et le téléphone utilisé lors de l’achat.");
@@ -129,6 +136,7 @@ export default function AccountPageClient(){
         return;
       }
       setOrder(payload.order);
+      setOrders(Array.isArray(payload.orders)?payload.orders:[payload.order]);
     }catch{
       setLookupError("Impossible de vérifier la commande pour le moment.");
     }finally{
@@ -137,6 +145,14 @@ export default function AccountPageClient(){
   };
 
   const currentStep=order?statusIndex(order.status):-1;
+  const activeOrders=useMemo(
+    ()=>orders.filter(item=>item.status==="NOUVEAU"||item.status==="CONFIRME"||item.status==="EXPEDIE"),
+    [orders]
+  );
+  const historyOrders=useMemo(
+    ()=>orders.filter(item=>item.status==="LIVRE"||item.status==="ANNULE"),
+    [orders]
+  );
 
   return (
     <main className="exact-page account-page">
@@ -288,6 +304,70 @@ export default function AccountPageClient(){
                   <p><span>Paiement</span><b>Paiement à la livraison</b></p>
                   <p className="total"><span>Total</span><strong>{money(order.totalMad)}</strong></p>
                 </div>
+              </div>
+            )}
+
+            {orders.length>0&&(
+              <div className="account-order-history-groups">
+                <section className="account-order-history-group">
+                  <div className="account-order-history-head">
+                    <div>
+                      <span>COMMANDES EN COURS</span>
+                      <h3>{activeOrders.length} commande{activeOrders.length!==1?"s":""}</h3>
+                    </div>
+                    <PackageCheck size={20}/>
+                  </div>
+
+                  {activeOrders.length?(
+                    <div className="account-order-history-list">
+                      {activeOrders.map(item=>(
+                        <article key={item.id}>
+                          <div>
+                            <small>{new Date(item.createdAt).toLocaleDateString("fr-MA",{day:"2-digit",month:"short",year:"numeric"})}</small>
+                            <a href={"/account?order="+encodeURIComponent(item.orderNumber)}>{item.orderNumber}</a>
+                            <span>{item.items.reduce((sum,line)=>sum+line.quantity,0)} article(s) · {item.city}</span>
+                          </div>
+                          <div>
+                            <strong>{money(item.totalMad)}</strong>
+                            <b className={"account-order-status status-"+item.status.toLowerCase()}>{item.status}</b>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  ):(
+                    <p className="account-order-history-empty">Aucune commande en cours.</p>
+                  )}
+                </section>
+
+                <section className="account-order-history-group history">
+                  <div className="account-order-history-head">
+                    <div>
+                      <span>HISTORIQUE</span>
+                      <h3>{historyOrders.length} commande{historyOrders.length!==1?"s":""}</h3>
+                    </div>
+                    <CheckCircle2 size={20}/>
+                  </div>
+
+                  {historyOrders.length?(
+                    <div className="account-order-history-list">
+                      {historyOrders.map(item=>(
+                        <article key={item.id}>
+                          <div>
+                            <small>{new Date(item.updatedAt).toLocaleDateString("fr-MA",{day:"2-digit",month:"short",year:"numeric"})}</small>
+                            <a href={"/account?order="+encodeURIComponent(item.orderNumber)}>{item.orderNumber}</a>
+                            <span>{item.items.reduce((sum,line)=>sum+line.quantity,0)} article(s) · {item.city}</span>
+                          </div>
+                          <div>
+                            <strong>{money(item.totalMad)}</strong>
+                            <b className={"account-order-status status-"+item.status.toLowerCase()}>{item.status==="LIVRE"?"LIVRÉE":"ANNULÉE"}</b>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  ):(
+                    <p className="account-order-history-empty">Les commandes livrées apparaîtront ici automatiquement.</p>
+                  )}
+                </section>
               </div>
             )}
           </section>
