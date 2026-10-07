@@ -71,7 +71,7 @@ export default function NewArrivalsPage(){
         {products.length?(
           <div className="new-arrivals-grid">
             {products.map(product=>{
-              const href=product.detailSlug?"/products/"+product.detailSlug:"/category/"+product.categorySlug;
+              const href="/products/"+product.productSlug;
               const favoriteSlug=product.detailSlug||("catalog:"+product.categorySlug+":"+product.brand+":"+product.name);
               return (
                 <article className="new-arrival-card" key={product.categorySlug+"-"+product.name}>
@@ -104,7 +104,7 @@ export default function NewArrivalsPage(){
                     </div>
 
                     <div className="new-arrival-actions">
-                      <a className="primary" href={href}><ShoppingCart size={15}/>{product.detailSlug?"Voir le produit":"Voir la catégorie"}</a>
+                      <a className="primary" href={href}><ShoppingCart size={15}/>Voir le produit</a>
                       {product.detailSlug&&<a href={"/compare?products="+product.detailSlug}><BarChart3 size={15}/>Comparer</a>}
                     </div>
                   </div>
