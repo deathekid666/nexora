@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { storeProducts } from "@/lib/store-products";
+import { getCatalogProductBySlug } from "@/lib/category-catalogs";
 
 export const ORDER_STATUSES=["NOUVEAU","CONFIRME","EXPEDIE","LIVRE","ANNULE"] as const;
 export type OrderStatus=typeof ORDER_STATUSES[number];
@@ -115,26 +116,52 @@ function validateOrderInput(input:CreateOrderInput){
   }
 
   const items=input.items.map(raw=>{
-    const product=storeProducts[clean(raw.slug,120)];
-    if(!product) throw new Error("UNKNOWN_PRODUCT");
+    const slug=clean(raw.slug,120);
+    const product=storeProducts[slug];
+    const catalogProduct=product?null:getCatalogProductBySlug(slug);
+
+    if(!product&&!catalogProduct) throw new Error("UNKNOWN_PRODUCT");
 
     const qty=Math.max(1,Math.min(20,Math.floor(Number(raw.qty)||1)));
     const variant=clean(raw.variant,120);
     const color=clean(raw.color,120);
 
-    if(!product.variants.includes(variant)) throw new Error("INVALID_VARIANT");
-    if(!product.colors.includes(color)) throw new Error("INVALID_COLOR");
+    if(product){
+      if(!product.variants.includes(variant)) throw new Error("INVALID_VARIANT");
+      if(!product.colors.includes(color)) throw new Error("INVALID_COLOR");
 
-    const unitPriceMad=moneyToMad(product.price);
+      const unitPriceMad=moneyToMad(product.price);
+      if(unitPriceMad<=0) throw new Error("INVALID_PRODUCT_PRICE");
+
+      return {
+        id:crypto.randomUUID(),
+        slug:product.slug,
+        brand:product.brand,
+        name:product.name,
+        variant,
+        color,
+        quantity:qty,
+        unitPriceMad,
+        lineTotalMad:unitPriceMad*qty,
+      };
+    }
+
+    if(!catalogProduct) throw new Error("UNKNOWN_PRODUCT");
+    const safeVariant=variant||"Standard";
+    const safeColor=color||"Standard";
+    if(safeVariant!=="Standard") throw new Error("INVALID_VARIANT");
+    if(safeColor!=="Standard") throw new Error("INVALID_COLOR");
+
+    const unitPriceMad=moneyToMad(catalogProduct.price);
     if(unitPriceMad<=0) throw new Error("INVALID_PRODUCT_PRICE");
 
     return {
       id:crypto.randomUUID(),
-      slug:product.slug,
-      brand:product.brand,
-      name:product.name,
-      variant,
-      color,
+      slug:catalogProduct.productSlug,
+      brand:catalogProduct.brand,
+      name:catalogProduct.name,
+      variant:safeVariant,
+      color:safeColor,
       quantity:qty,
       unitPriceMad,
       lineTotalMad:unitPriceMad*qty,
