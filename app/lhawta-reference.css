@@ -5445,3 +5445,87 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
   .order-confirmation-missing{padding:25px 18px}
   .order-confirmation-missing>div{flex-direction:column}
 }
+
+
+/* customer order history */
+.account-order-history-groups{display:grid;gap:14px;margin-top:18px}
+.account-order-history-group{
+  border:1px solid #e5ebf1;
+  border-radius:16px;
+  overflow:hidden;
+  background:#fff;
+}
+.account-order-history-group.history{background:linear-gradient(180deg,#fff,#fbfcfe)}
+.account-order-history-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:17px 18px;
+  border-bottom:1px solid #edf1f5;
+}
+.account-order-history-head>div{display:grid;gap:3px}
+.account-order-history-head span{
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.12em;
+  color:#0872df;
+}
+.account-order-history-head h3{margin:0;font-size:16px;letter-spacing:-.015em}
+.account-order-history-head svg{color:#55728f}
+.account-order-history-list{display:grid}
+.account-order-history-list article{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:14px 18px;
+  border-top:1px solid #eef2f6;
+}
+.account-order-history-list article:first-child{border-top:0}
+.account-order-history-list article>div:first-child{display:grid;gap:3px;min-width:0}
+.account-order-history-list article>div:last-child{
+  display:grid;
+  gap:6px;
+  justify-items:end;
+  flex:none;
+}
+.account-order-history-list small{
+  font-size:9px;
+  color:#8995a6;
+  text-transform:capitalize;
+}
+.account-order-history-list button{
+  width:max-content;
+  max-width:100%;
+  padding:0;
+  border:0;
+  background:none;
+  color:#17365a;
+  font-size:12px;
+  font-weight:900;
+  cursor:pointer;
+  text-align:left;
+  text-decoration:none;
+}
+.account-order-history-list button:hover,
+.account-order-history-list button:focus-visible{
+  color:#086cff;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.account-order-history-list span{font-size:10px;color:#7b899c}
+.account-order-history-list strong{font-size:12px;color:#1b2a41}
+.account-order-history-list .account-order-status{font-size:8px}
+.account-order-history-empty{
+  margin:0;
+  padding:18px;
+  color:#7a8799;
+  font-size:10px;
+  line-height:1.55;
+}
+@media(max-width:640px){
+  .account-order-history-list article{align-items:flex-start;padding:13px 14px}
+  .account-order-history-list article>div:last-child{justify-items:end}
+  .account-order-history-head{padding:15px 14px}
+}
