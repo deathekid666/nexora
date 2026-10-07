@@ -18,12 +18,13 @@ import {
   Tag,
   Truck,
 } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 import { ProductVisual } from "@/components/ProductVisual";
 import FavoriteButton from "@/components/FavoriteButton";
 import { allCatalogProducts } from "@/lib/category-catalogs";
+import { loadInventorySummaryMap, type PublicInventorySummary } from "@/lib/inventory-client";
 
 const MOROCCO_BG="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=2400&q=92";
 const S26_IMG="/api/product-image/galaxy-s26-ultra";
@@ -57,6 +58,22 @@ function SpecIcon({type}:{type:string}){
 
 export default function Home(){
   const productTrackRef=useRef<HTMLDivElement>(null);
+  const [stock,setStock]=useState<Record<string,PublicInventorySummary>>({});
+  const [stockReady,setStockReady]=useState(false);
+  const stockSlugs=useMemo(
+    ()=>[...new Set([...products.map(product=>product.slug),...promotionProducts.map(product=>product.productSlug)])],
+    []
+  );
+
+  useEffect(()=>{
+    let active=true;
+    void loadInventorySummaryMap(stockSlugs).then(map=>{
+      if(!active) return;
+      setStock(map);
+      setStockReady(true);
+    });
+    return ()=>{active=false;};
+  },[stockSlugs]);
   const scrollProducts=(direction:-1|1)=>{
     const track=productTrackRef.current;
     if(!track) return;
@@ -112,7 +129,11 @@ export default function Home(){
         </div>
 
         <div className="exact-product-grid" ref={productTrackRef}>
-          {products.map((p)=>(
+          {products.map((p)=>{
+            const stockState=stock[p.slug];
+            const stockClass=!stockReady?"checking":stockState?.inStock?(stockState.lowStock?"low":"ok"):"out";
+            const stockText=!stockReady?"Stock en vérification":stockState?.inStock?(stockState.lowStock?"Stock faible":"En stock"):"Rupture de stock";
+            return (
             <article className="exact-card" key={p.name}>
               <span className={"exact-badge "+p.tone}>{p.badge}</span>
               <FavoriteButton className="exact-heart" slug={p.slug} size={16} label={"Ajouter "+p.name+" aux favoris"}/>
@@ -123,6 +144,7 @@ export default function Home(){
                 <ul>
                   {p.specs.map(([type,label])=><li key={label}><SpecIcon type={type}/><span>{label}</span></li>)}
                 </ul>
+                <div className={"catalog-stock-pill "+stockClass}>{stockText}</div>
                 <strong className="exact-price">{p.price}</strong>
                 <div className="exact-card-actions">
                   <a href={`/products/${p.slug}`}><ShoppingCart size={14}/>Voir le produit</a>
@@ -130,7 +152,8 @@ export default function Home(){
                 </div>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -145,7 +168,11 @@ export default function Home(){
         </div>
 
         <div className="home-deals-grid">
-          {promotionProducts.map(product=>(
+          {promotionProducts.map(product=>{
+            const stockState=stock[product.productSlug];
+            const stockClass=!stockReady?"checking":stockState?.inStock?(stockState.lowStock?"low":"ok"):"out";
+            const stockText=!stockReady?"Stock en vérification":stockState?.inStock?(stockState.lowStock?"Stock faible":"En stock"):"Rupture de stock";
+            return (
             <article className="home-deal-card" key={product.categorySlug+"-"+product.name}>
               <span className="home-deal-badge">PROMO</span>
               <FavoriteButton
@@ -167,13 +194,15 @@ export default function Home(){
                     {product.name}
                   </a>
                 </h3>
+                <div className={"catalog-stock-pill "+stockClass}>{stockText}</div>
                 <div className="home-deal-price">
                   <strong>{product.price}</strong>
                   <del>{product.old}</del>
                 </div>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       </section>
 
