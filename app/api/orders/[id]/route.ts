@@ -6,7 +6,7 @@ import {
   type OrderStatus,
   updateOrderStatus,
 } from "@/lib/order-db";
-import { adminTokenConfigured, isAdminRequest } from "@/lib/admin-auth";
+import { adminTokenConfigured, isAdminRequest, readAdminSession } from "@/lib/admin-auth";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -57,7 +57,9 @@ export async function PATCH(
       return NextResponse.json({ok:false,error:"INVALID_STATUS"},{status:400});
     }
 
-    const order=await updateOrderStatus(id,status);
+    const session=readAdminSession(request);
+    const actorLabel=session?.email||"Admin LHAWTA";
+    const order=await updateOrderStatus(id,status,actorLabel);
     if(!order) return NextResponse.json({ok:false,error:"ORDER_NOT_FOUND"},{status:404});
     return NextResponse.json({ok:true,order});
   }catch(error){
