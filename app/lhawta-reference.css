@@ -130,23 +130,12 @@ body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,
     drop-shadow(0 23px 18px rgba(5,20,43,.28))
     drop-shadow(0 7px 5px rgba(9,34,68,.18));
 }
-.line-s26{left:1.5%;bottom:-1.5%;width:18.5%;height:89%;z-index:5;transform:translateZ(14px) rotateY(5deg) rotateX(-1deg)}
-.line-xiaomi{left:14.5%;bottom:-1%;width:15.5%;height:86%;z-index:6;transform:translateZ(34px) rotateY(-5deg) rotateX(-1deg)}
-.line-honor{left:25.5%;bottom:-.5%;width:14.4%;height:82%;z-index:7;transform:translateZ(48px) rotateY(4deg) rotateX(-1deg)}
-.line-redmi{left:36.5%;bottom:-1%;width:14.8%;height:80%;z-index:8;transform:translateZ(62px) rotateY(-4deg) rotateX(-1deg)}
-.line-tab{left:50%;bottom:-1.5%;width:31%;height:71%;z-index:3;transform:translateZ(-14px) rotateY(-2deg) rotateX(-1deg);filter:drop-shadow(0 25px 20px rgba(5,20,43,.25)) drop-shadow(0 8px 6px rgba(9,34,68,.15))}
-.line-ps5{right:-.4%;bottom:-1.5%;width:17.8%;height:95%;z-index:9;transform:translateZ(72px) rotateY(-7deg) rotateX(-1deg);filter:drop-shadow(0 28px 20px rgba(5,20,43,.34)) drop-shadow(0 9px 7px rgba(9,34,68,.18))}
-/* hero-only asset cleanup: remove secondary devices baked into source renders */
-.hero-clean-s26{
-  clip-path:inset(0 0 0 34%);
-  left:-.5%;
-  width:21%;
-}
-.hero-clean-redmi{
-  clip-path:inset(0 14% 0 0);
-  left:35.5%;
-  width:15.5%;
-}
+.line-s26{left:4%;bottom:-1.2%;width:20%;height:87%;z-index:6;transform:translateZ(18px) rotateY(3deg) rotateX(-1deg)}
+.line-xiaomi{left:19%;bottom:-1%;width:15.5%;height:83%;z-index:7;transform:translateZ(34px) rotateY(-4deg) rotateX(-1deg)}
+.line-honor{left:29%;bottom:-1.4%;width:14.2%;height:79%;z-index:10;transform:translateZ(62px) rotateY(3deg) rotateX(-1deg)}
+.line-redmi{left:39.5%;bottom:-1%;width:15%;height:82%;z-index:8;transform:translateZ(45px) rotateY(-3deg) rotateX(-1deg)}
+.line-tab{left:53%;bottom:-1.7%;width:29.5%;height:72%;z-index:3;transform:translateZ(-18px) rotateY(-1.5deg) rotateX(-1deg);filter:drop-shadow(0 25px 20px rgba(5,20,43,.25)) drop-shadow(0 8px 6px rgba(9,34,68,.15))}
+.line-ps5{right:.8%;bottom:-1.3%;width:15.8%;height:94%;z-index:9;transform:translateZ(70px) rotateY(-5deg) rotateX(-1deg);filter:drop-shadow(0 28px 20px rgba(5,20,43,.34)) drop-shadow(0 9px 7px rgba(9,34,68,.18))}
 .exact-hero-script{position:absolute;z-index:10;right:22.2%;top:21px;color:#112b52;font-family:"Segoe Script","Brush Script MT",cursive;font-size:20px;line-height:1.04;transform:rotate(-7deg);text-align:center}
 .exact-hero-script b{font-weight:600}
 .exact-location-badge{position:absolute;z-index:14;right:12px;bottom:10px;height:58px;padding:0 14px;border-radius:20px;background:#123e73;color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 10px 22px rgba(5,32,67,.2)}
