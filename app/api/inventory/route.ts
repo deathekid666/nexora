@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   adjustInventory,
   getPublicInventoryBySlug,
+  getPublicInventorySummaries,
   listInventory,
   listInventoryMovements,
 } from "@/lib/inventory-db";
@@ -27,6 +28,17 @@ function adminGuard(request:NextRequest){
 export async function GET(request:NextRequest){
   if(!isOrderDatabaseConfigured()){
     return NextResponse.json({ok:false,error:"DATABASE_NOT_CONFIGURED"},{status:503});
+  }
+
+  const slugs=request.nextUrl.searchParams.get("slugs")?.split(",").map(value=>value.trim()).filter(Boolean)||[];
+  if(slugs.length){
+    try{
+      const inventory=await getPublicInventorySummaries(slugs);
+      return NextResponse.json({ok:true,inventory});
+    }catch(error){
+      console.error("[LHAWTA inventory summaries]",error);
+      return NextResponse.json({ok:false,error:"INVENTORY_LOOKUP_FAILED"},{status:500});
+    }
   }
 
   const slug=request.nextUrl.searchParams.get("slug")?.trim()||"";
