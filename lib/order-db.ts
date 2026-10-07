@@ -5,6 +5,18 @@ import { getCatalogProductBySlug } from "@/lib/category-catalogs";
 export const ORDER_STATUSES=["NOUVEAU","CONFIRME","EXPEDIE","LIVRE","ANNULE"] as const;
 export type OrderStatus=typeof ORDER_STATUSES[number];
 
+const ORDER_TRANSITIONS:Record<OrderStatus,readonly OrderStatus[]>={
+  NOUVEAU:["CONFIRME","ANNULE"],
+  CONFIRME:["EXPEDIE","ANNULE"],
+  EXPEDIE:["LIVRE","ANNULE"],
+  LIVRE:[],
+  ANNULE:[],
+};
+
+export function canTransitionOrderStatus(current:OrderStatus,next:OrderStatus){
+  return current===next||ORDER_TRANSITIONS[current].includes(next);
+}
+
 export type OrderItemInput={
   slug:string;
   variant:string;
@@ -280,10 +292,32 @@ export async function getOrderByNumberAndPhone(orderNumber:string,phone:string):
   return getOrderById(rows[0].id);
 }
 
+export async function listCustomerOrdersByVerifiedOrder(orderNumber:string,phone:string):Promise<SavedOrder[]>{
+  const verified=await getOrderByNumberAndPhone(orderNumber,phone);
+  if(!verified) return [];
+
+  await ensureOrderSchema();
+  const sql=db();
+  const normalizedPhone=clean(phone,40).replace(/\D/g,"");
+
+  const rows=await sql.query(
+    "SELECT id::text AS id FROM lhawta_orders WHERE regexp_replace(phone,'[^0-9]','','g')=$1 ORDER BY created_at DESC LIMIT 100",
+    [normalizedPhone]
+  ) as Array<{id:string}>;
+
+  const orders=await Promise.all(rows.map(row=>getOrderById(row.id)));
+  return orders.filter((order):order is SavedOrder=>Boolean(order));
+}
+
 export async function updateOrderStatus(id:string,status:OrderStatus):Promise<SavedOrder|null>{
   if(!ORDER_STATUSES.includes(status)) throw new Error("INVALID_STATUS");
   await ensureOrderSchema();
   const sql=db();
+
+  const current=await getOrderById(id);
+  if(!current) return null;
+  if(!canTransitionOrderStatus(current.status,status)) throw new Error("INVALID_STATUS_TRANSITION");
+  if(current.status===status) return current;
 
   const changed=await sql.query(
     "UPDATE lhawta_orders SET status=$1, updated_at=now() WHERE id=$2::uuid RETURNING id::text AS id",
