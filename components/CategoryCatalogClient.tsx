@@ -11,7 +11,7 @@ import {
 import { useMemo, useState } from "react";
 import FavoriteButton from "@/components/FavoriteButton";
 import { ProductVisual } from "@/components/ProductVisual";
-import { productDetailSlugs, type CategoryProduct } from "@/lib/category-catalogs";
+import { catalogProductSlug, productDetailSlugs, type CategoryProduct } from "@/lib/category-catalogs";
 
 type QuickFilter="all"|"new"|"best"|"stock";
 type PriceFilter="under2000"|"2000to5000"|"over5000";
@@ -198,7 +198,7 @@ export default function CategoryCatalogClient({
             <div className="category-grid">
               {filtered.map(product=>{
                 const detailSlug=productDetailSlugs[product.name];
-                const detailHref=detailSlug?`/products/${detailSlug}`:"#";
+                const detailHref=`/products/${catalogProductSlug({name:product.name,categorySlug:slug,detailSlug})}`;
                 return (
                   <article className="category-product-card" key={product.name}>
                     {product.badge&&<span className="category-badge">{product.badge}</span>}
@@ -206,7 +206,7 @@ export default function CategoryCatalogClient({
                     <a href={detailHref} className="category-product-media"><ProductVisual src={product.image} alt={product.name}/></a>
                     <div className="category-product-body">
                       <small>{product.brand}</small>
-                      {detailSlug?<h2><a href={detailHref} className="product-name-link">{product.name}</a></h2>:<h2>{product.name}</h2>}
+                      <h2><a href={detailHref} className="product-name-link">{product.name}</a></h2>
                       <div className="category-rating"><Star size={13} fill="currentColor"/><b>{product.rating}</b><span>avis</span></div>
                       <ul>{product.specs.map(spec=><li key={spec}>{spec}</li>)}</ul>
                       <div className="category-delivery"><Truck size={14}/> Livraison disponible</div>
