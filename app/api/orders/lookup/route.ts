@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getOrderByNumberAndPhone,
   isOrderDatabaseConfigured,
+  listCustomerOrdersByVerifiedOrder,
 } from "@/lib/order-db";
 
 export const runtime="nodejs";
@@ -35,7 +36,8 @@ export async function POST(request:NextRequest){
       );
     }
 
-    return NextResponse.json({ok:true,order});
+    const orders=await listCustomerOrdersByVerifiedOrder(orderNumber,phone);
+    return NextResponse.json({ok:true,order,orders});
   }catch(error){
     console.error("[LHAWTA customer order lookup]",error);
     return NextResponse.json(
