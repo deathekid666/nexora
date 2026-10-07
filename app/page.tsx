@@ -93,7 +93,7 @@ export default function Home(){
           <div className="exact-product-lineup" aria-hidden="true">
             <HeroProductVisual className="line-s26" src={HERO_S26} alt="Samsung Galaxy S26 Ultra"/>
             <HeroProductVisual className="line-xiaomi" src={HERO_XIAOMI} alt="Xiaomi 17T Pro"/>
-            <img className="line-honor" src={HERO_HONOR} alt="HONOR 600" draggable={false}/>
+            <HeroProductVisual className="line-honor" src={HERO_HONOR} alt="HONOR 600" isolateLargest/>
             <HeroProductVisual className="line-redmi" src={HERO_REDMI} alt="REDMI Note 15 Pro+ 5G"/>
             <HeroProductVisual className="line-tab" src={HERO_TAB} alt="Samsung Galaxy Tab S11 Ultra"/>
             <HeroProductVisual className="line-ps5" src={HERO_PS5} alt="Sony PlayStation 5"/>
