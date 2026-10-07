@@ -84,10 +84,10 @@ export default function Home(){
           </div>
 
           <div className="exact-product-lineup" aria-hidden="true">
-            <HeroProductVisual className="line-s26" src={S26_IMG} alt="Samsung Galaxy S26 Ultra"/>
+            <HeroProductVisual className="line-s26 hero-clean-s26" src={S26_IMG} alt="Samsung Galaxy S26 Ultra"/>
             <HeroProductVisual className="line-xiaomi" src={XIAOMI17T_IMG} alt="Xiaomi 17T Pro"/>
             <HeroProductVisual className="line-honor" src={HONOR_IMG} alt="HONOR 600"/>
-            <HeroProductVisual className="line-redmi" src={REDMI_IMG} alt="REDMI Note 15 Pro+ 5G"/>
+            <HeroProductVisual className="line-redmi hero-clean-redmi" src={REDMI_IMG} alt="REDMI Note 15 Pro+ 5G"/>
             <HeroProductVisual className="line-tab" src={TAB_IMG} alt="Samsung Galaxy Tab S11 Ultra"/>
             <HeroProductVisual className="line-ps5" src={PS5_IMG} alt="Sony PlayStation 5"/>
           </div>
@@ -100,7 +100,6 @@ export default function Home(){
             <span>●</span><div><b>LIVRAISON PARTOUT</b><small>AU MAROC</small></div><em>🇲🇦</em>
           </div>
 
-          <div className="exact-dots"><i/><i/><i/></div>
         </div>
       </section>
 
