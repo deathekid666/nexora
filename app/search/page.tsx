@@ -65,7 +65,7 @@ export default async function SearchPage({
                   <span className="search-result-badge">{product.badge}</span>
                   <FavoriteButton className="search-result-heart" slug={product.slug} size={18} label={"Ajouter "+product.name+" aux favoris"}/>
                   <a href={`/products/${product.slug}`} className="search-result-media">
-                    <ProductVisual src={product.gallery[0]} alt={product.name}/>
+                    <ProductVisual src={product.image} alt={product.name}/>
                   </a>
                   <div className="search-result-body">
                     <small>{product.brand} · {product.category}</small>
@@ -82,7 +82,7 @@ export default async function SearchPage({
                     </div>
                     <div className="search-result-actions">
                       <a href={`/products/${product.slug}`}><ShoppingCart size={15}/> Voir le produit</a>
-                      <a href={`/compare?products=${product.slug}`}><BarChart3 size={15}/> Comparer</a>
+                      {product.compareSlug&&<a href={`/compare?products=${product.compareSlug}`}><BarChart3 size={15}/> Comparer</a>}
                     </div>
                   </div>
                 </article>
