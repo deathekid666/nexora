@@ -1,21 +1,41 @@
+"use client";
+
 import {
   ArrowLeft,
   BadgeCheck,
   ChevronRight,
   PackageCheck,
   ShieldCheck,
+  ShoppingCart,
   Star,
   Truck,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 import FavoriteButton from "@/components/FavoriteButton";
 import { ProductVisual } from "@/components/ProductVisual";
 import type { AllCatalogProduct } from "@/lib/category-catalogs";
+import { addToCart } from "@/lib/cart-client";
 
 export default function CatalogProductDetail({product}:{product:AllCatalogProduct}){
+  const router=useRouter();
   const categoryHref="/category/"+product.categorySlug;
   const favoriteSlug=product.detailSlug||("catalog:"+product.categorySlug+":"+product.brand+":"+product.name);
+
+  const addAndGoToCart=()=>{
+    addToCart({
+      slug:product.productSlug,
+      name:product.name,
+      brand:product.brand,
+      price:product.price,
+      variant:"Standard",
+      color:"Standard",
+      qty:1,
+      image:product.image,
+    });
+    router.push("/cart");
+  };
 
   return (
     <main className="exact-page product-detail-page catalog-product-detail">
@@ -72,8 +92,8 @@ export default function CatalogProductDetail({product}:{product:AllCatalogProduc
           </div>
 
           <div className="catalog-detail-actions">
-            <a className="primary" href={categoryHref}>Voir d’autres {product.categoryTitle}</a>
-            <a className="secondary" href="/products">Tout le catalogue</a>
+            <button className="primary" type="button" onClick={addAndGoToCart}><ShoppingCart size={16}/> Ajouter au panier</button>
+            <a className="secondary" href={categoryHref}>Voir d’autres {product.categoryTitle}</a>
           </div>
         </aside>
       </section>
