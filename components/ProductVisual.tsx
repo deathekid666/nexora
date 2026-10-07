@@ -9,6 +9,60 @@ function colorDistance(r:number,g:number,b:number,br:number,bg:number,bb:number)
   return Math.sqrt((r-br)**2+(g-bg)**2+(b-bb)**2);
 }
 
+function keepLargestOpaqueComponent(source:HTMLCanvasElement){
+  const ctx=source.getContext("2d",{willReadFrequently:true});
+  if(!ctx) return source;
+
+  const {width:w,height:h}=source;
+  const image=ctx.getImageData(0,0,w,h);
+  const d=image.data;
+  const seen=new Uint8Array(w*h);
+  const queue=new Int32Array(w*h);
+  let best:number[]=[];
+  const threshold=22;
+
+  for(let start=0;start<w*h;start++){
+    if(seen[start]||d[start*4+3]<=threshold) continue;
+
+    let head=0,tail=0;
+    const component:number[]=[];
+    seen[start]=1;
+    queue[tail++]=start;
+
+    while(head<tail){
+      const idx=queue[head++];
+      component.push(idx);
+      const x=idx%w;
+      const y=(idx/w)|0;
+
+      const push=(next:number)=>{
+        if(next<0||next>=w*h||seen[next]||d[next*4+3]<=threshold) return;
+        seen[next]=1;
+        queue[tail++]=next;
+      };
+
+      if(x>0) push(idx-1);
+      if(x<w-1) push(idx+1);
+      if(y>0) push(idx-w);
+      if(y<h-1) push(idx+w);
+    }
+
+    if(component.length>best.length) best=component;
+  }
+
+  if(!best.length) return source;
+
+  const keep=new Uint8Array(w*h);
+  for(const idx of best) keep[idx]=1;
+
+  for(let idx=0;idx<w*h;idx++){
+    if(!keep[idx]) d[idx*4+3]=0;
+  }
+
+  ctx.putImageData(image,0,0);
+  return source;
+}
+
 function trimTransparentCanvas(source:HTMLCanvasElement){
   const ctx=source.getContext("2d",{willReadFrequently:true});
   if(!ctx) return source;
@@ -143,18 +197,21 @@ export function HeroProductVisual({
   src,
   alt,
   className="",
+  isolateLargest=false,
 }:{
   src:string;
   alt:string;
   className?:string;
+  isolateLargest?:boolean;
 }){
-  const [resolved,setResolved]=useState(()=>cutoutCache.get(src)??src);
+  const cacheKey=isolateLargest?src+"#largest":src;
+  const [resolved,setResolved]=useState(()=>cutoutCache.get(cacheKey)??src);
   const [failed,setFailed]=useState(false);
   const mounted=useRef(true);
 
   useEffect(()=>{
     mounted.current=true;
-    const cached=cutoutCache.get(src);
+    const cached=cutoutCache.get(cacheKey);
     if(cached){
       setResolved(cached);
       return ()=>{mounted.current=false;};
@@ -178,6 +235,7 @@ export function HeroProductVisual({
         ctx.drawImage(image,0,0,w,h);
         const cleaned=removeConnectedBackdrop(ctx,w,h);
         ctx.putImageData(cleaned,0,0);
+        if(isolateLargest) keepLargestOpaqueComponent(canvas);
         const output=trimTransparentCanvas(canvas);
 
         output.toBlob(blob=>{
@@ -186,7 +244,7 @@ export function HeroProductVisual({
             return;
           }
           const url=URL.createObjectURL(blob);
-          cutoutCache.set(src,url);
+          cutoutCache.set(cacheKey,url);
           if(mounted.current) setResolved(url);
         },"image/webp",0.95);
       }catch{
@@ -200,7 +258,7 @@ export function HeroProductVisual({
 
     image.src=src;
     return()=>{mounted.current=false;};
-  },[src]);
+  },[src,isolateLargest,cacheKey]);
 
   if(failed){
     return <span className={"product-visual-fallback "+className}><ImageOff size={24}/></span>;

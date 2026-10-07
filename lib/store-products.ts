@@ -222,6 +222,60 @@ export const storeProducts:Record<string,StoreProduct>={
     ],
   },
 
+  "galaxy-tab-s11":{
+    slug:"galaxy-tab-s11",
+    brand:"Samsung",
+    name:"Galaxy Tab S11",
+    category:"Tablettes",
+    price:"9 990 DH",
+    badge:"Disponible",
+    shortDescription:"Tablette 11 pouces Dynamic AMOLED 2X avec S Pen, 12 Go de RAM et batterie 8 400 mAh.",
+    longDescription:"La Galaxy Tab S11 propose un format plus compact que la version Ultra tout en conservant un écran Dynamic AMOLED 2X, le S Pen, 12 Go de mémoire, l’extension microSD jusqu’à 2 To et une batterie 8 400 mAh. Elle est pensée pour le travail, la prise de notes et le multimédia.",
+    rating:"4.8",
+    reviewCount:"18 avis",
+    availability:"Disponible",
+    warranty:"Garantie constructeur Samsung",
+    highlights:[
+      {label:"Écran",value:"11″ AMOLED 2X"},
+      {label:"Mémoire",value:"12 Go"},
+      {label:"Batterie",value:"8 400 mAh"},
+      {label:"Stylet",value:"S Pen"},
+    ],
+    variants:["12 Go + 128 Go","12 Go + 512 Go"],
+    colors:["Gris","Argent"],
+    gallery:gallery("galaxy-tab-s11"),
+    specs:[
+      {title:"Écran",rows:[
+        {label:"Taille",value:"11,0 pouces"},
+        {label:"Résolution",value:"2560 × 1600 (WQXGA)"},
+        {label:"Technologie",value:"Dynamic AMOLED 2X"},
+        {label:"S Pen",value:"Pris en charge"},
+      ]},
+      {title:"Performances & mémoire",rows:[
+        {label:"CPU",value:"Octa-Core · jusqu’à 3,73 GHz"},
+        {label:"RAM",value:"12 Go"},
+        {label:"Stockage",value:"128 Go / 512 Go selon version"},
+        {label:"Extension",value:"microSD jusqu’à 2 To"},
+      ]},
+      {title:"Appareil photo",rows:[
+        {label:"Caméra arrière",value:"13 MP avec autofocus"},
+        {label:"Caméra avant",value:"12 MP"},
+        {label:"Vidéo",value:"UHD 4K à 30 i/s"},
+      ]},
+      {title:"Connectivité",rows:[
+        {label:"Wi‑Fi",value:"Wi‑Fi 6E · 2,4 / 5 / 6 GHz"},
+        {label:"Bluetooth",value:"5.4"},
+        {label:"USB",value:"USB 3.2 Gen 1 Type-C"},
+      ]},
+      {title:"Batterie & dimensions",rows:[
+        {label:"Batterie",value:"8 400 mAh"},
+        {label:"Lecture vidéo",value:"Jusqu’à 18 h"},
+        {label:"Dimensions",value:"165,3 × 253,8 × 5,5 mm"},
+        {label:"Poids",value:"469 g (Wi‑Fi) / 471 g (5G)"},
+      ]},
+    ],
+  },
+
   "galaxy-tab-s11-ultra":{
     slug:"galaxy-tab-s11-ultra",
     brand:"Samsung",

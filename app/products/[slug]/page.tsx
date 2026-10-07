@@ -1,16 +1,24 @@
 import { notFound } from "next/navigation";
 import StoreProductDetail from "@/components/StoreProductDetail";
+import CatalogProductDetail from "@/components/CatalogProductDetail";
 import { featuredProductSlugs, getStoreProduct } from "@/lib/store-products";
+import {
+  allCatalogProductSlugs,
+  getCatalogProductBySlug,
+} from "@/lib/category-catalogs";
 
 export function generateStaticParams(){
-  return featuredProductSlugs.map(slug=>({slug}));
+  return [...new Set([...featuredProductSlugs,...allCatalogProductSlugs])].map(slug=>({slug}));
 }
 
 export default async function ProductPage({params}:{params:Promise<{slug:string}>}){
   const {slug}=await params;
-  const product=getStoreProduct(slug);
+  const storeProduct=getStoreProduct(slug);
 
-  if(!product) notFound();
+  if(storeProduct) return <StoreProductDetail product={storeProduct}/>;
 
-  return <StoreProductDetail product={product}/>;
+  const catalogProduct=getCatalogProductBySlug(slug);
+  if(!catalogProduct) notFound();
+
+  return <CatalogProductDetail product={catalogProduct}/>;
 }

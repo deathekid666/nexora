@@ -9,17 +9,21 @@ import {
   ChevronLeft,
   ChevronRight,
   Headphones,
-  Heart,
+  HelpCircle,
   Monitor,
   PackageCheck,
   ShieldCheck,
   ShoppingCart,
   Tablet,
+  Tag,
   Truck,
 } from "lucide-react";
+import { useRef } from "react";
 import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
-import { HeroProductVisual, ProductVisual } from "@/components/ProductVisual";
+import { ProductVisual } from "@/components/ProductVisual";
+import FavoriteButton from "@/components/FavoriteButton";
+import { allCatalogProducts } from "@/lib/category-catalogs";
 
 const MOROCCO_BG="https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=2400&q=92";
 const S26_IMG="/api/product-image/galaxy-s26-ultra";
@@ -28,6 +32,10 @@ const HONOR_IMG="/api/product-image/honor-600";
 const REDMI_IMG="/api/product-image/redmi-note-15-pro-plus-5g";
 const TAB_IMG="/api/product-image/galaxy-tab-s11-ultra";
 const PS5_IMG="/api/product-image/playstation-5";
+
+const promotionProducts=allCatalogProducts
+  .filter(product=>product.old)
+  .slice(0,4);
 
 const products=[
   {slug:"galaxy-s26-ultra",badge:"Nouveau",tone:"blue",brand:"SAMSUNG",name:"Galaxy S26 Ultra",img:S26_IMG,specs:[["display","6.9″ Display"],["camera","200 MP main camera"],["battery","5000 mAh battery"]],price:"13 999 DH"},
@@ -48,6 +56,13 @@ function SpecIcon({type}:{type:string}){
 }
 
 export default function Home(){
+  const productTrackRef=useRef<HTMLDivElement>(null);
+  const scrollProducts=(direction:-1|1)=>{
+    const track=productTrackRef.current;
+    if(!track) return;
+    track.scrollBy({left:direction*Math.max(280,track.clientWidth*.72),behavior:"smooth"});
+  };
+
   return (
     <main className="exact-page">
       <SiteMotion/>
@@ -63,18 +78,13 @@ export default function Home(){
             <h2>Octobre 2026</h2>
             <p>Les derniers smartphones, tablettes, consoles et accessoires sont disponibles chez LHAWTA. Comparez les specs, les prix et profitez de la livraison partout au Maroc.</p>
             <div className="exact-hero-buttons">
-              <a href="#products">Découvrir les nouveautés <ArrowRight size={16}/></a>
-              <a href="/category/smartphones">Voir tous les produits</a>
+              <a href="/new-arrivals">Découvrir les nouveautés <ArrowRight size={16}/></a>
+              <a href="/products">Voir tous les produits</a>
             </div>
           </div>
 
           <div className="exact-product-lineup" aria-hidden="true">
-            <HeroProductVisual className="line-s26" src={S26_IMG} alt="Samsung Galaxy S26 Ultra"/>
-            <HeroProductVisual className="line-xiaomi" src={XIAOMI17T_IMG} alt="Xiaomi 17T Pro"/>
-            <HeroProductVisual className="line-honor" src={HONOR_IMG} alt="HONOR 600"/>
-            <HeroProductVisual className="line-redmi" src={REDMI_IMG} alt="REDMI Note 15 Pro+ 5G"/>
-            <HeroProductVisual className="line-tab" src={TAB_IMG} alt="Samsung Galaxy Tab S11 Ultra"/>
-            <HeroProductVisual className="line-ps5" src={PS5_IMG} alt="Sony PlayStation 5"/>
+            <img className="hero-lineup-image" src="/hero-lineup.webp" alt="" draggable={false}/>
           </div>
 
           <div className="exact-hero-script">
@@ -85,7 +95,6 @@ export default function Home(){
             <span>●</span><div><b>LIVRAISON PARTOUT</b><small>AU MAROC</small></div><em>🇲🇦</em>
           </div>
 
-          <div className="exact-dots"><i/><i/><i/></div>
         </div>
       </section>
 
@@ -99,30 +108,82 @@ export default function Home(){
       <section className="exact-shell exact-products" id="products">
         <div className="exact-products-head">
           <div><h2>Nos dernières nouveautés</h2><i/></div>
-          <div className="exact-slider-controls"><a href="#">Voir tout <ArrowRight size={14}/></a><button><ChevronLeft size={15}/></button><button><ChevronRight size={15}/></button></div>
+          <div className="exact-slider-controls"><a href="/new-arrivals">Voir tout <ArrowRight size={14}/></a><button type="button" aria-label="Produits précédents" onClick={()=>scrollProducts(-1)}><ChevronLeft size={15}/></button><button type="button" aria-label="Produits suivants" onClick={()=>scrollProducts(1)}><ChevronRight size={15}/></button></div>
         </div>
 
-        <div className="exact-product-grid">
+        <div className="exact-product-grid" ref={productTrackRef}>
           {products.map((p)=>(
             <article className="exact-card" key={p.name}>
               <span className={"exact-badge "+p.tone}>{p.badge}</span>
-              <button className="exact-heart"><Heart size={16}/></button>
+              <FavoriteButton className="exact-heart" slug={p.slug} size={16} label={"Ajouter "+p.name+" aux favoris"}/>
               <div className="exact-card-media"><ProductVisual src={p.img} alt={p.name}/></div>
               <div className="exact-card-body">
                 <small>{p.brand}</small>
-                <h3>{p.name}</h3>
+                <h3><a href={`/products/${p.slug}`} className="product-name-link">{p.name}</a></h3>
                 <ul>
                   {p.specs.map(([type,label])=><li key={label}><SpecIcon type={type}/><span>{label}</span></li>)}
                 </ul>
                 <strong className="exact-price">{p.price}</strong>
                 <div className="exact-card-actions">
                   <a href={`/products/${p.slug}`}><ShoppingCart size={14}/>Voir le produit</a>
-                  <button><BarChart3 size={14}/>Comparer</button>
+                  <a className="compare-card-link" href={`/compare?products=${p.slug}`}><BarChart3 size={14}/>Comparer</a>
                 </div>
               </div>
             </article>
           ))}
         </div>
+      </section>
+
+      <section className="exact-shell home-deals" id="deals">
+        <div className="home-deals-head">
+          <div>
+            <span><Tag size={15}/> BONS PLANS</span>
+            <h2>Promotions du moment</h2>
+            <p>Uniquement les produits qui ont actuellement un prix barré dans le catalogue.</p>
+          </div>
+          <a href="/promotions">Voir toutes les promotions <ArrowRight size={14}/></a>
+        </div>
+
+        <div className="home-deals-grid">
+          {promotionProducts.map(product=>(
+            <article className="home-deal-card" key={product.categorySlug+"-"+product.name}>
+              <span className="home-deal-badge">PROMO</span>
+              <FavoriteButton
+                className="home-deal-heart"
+                slug={product.detailSlug||("catalog:"+product.categorySlug+":"+product.brand+":"+product.name)}
+                size={17}
+                label={"Ajouter "+product.name+" aux favoris"}
+              />
+              <a href={"/products/"+product.productSlug} className="home-deal-media">
+                <ProductVisual src={product.image} alt={product.name}/>
+              </a>
+              <div className="home-deal-copy">
+                <small>{product.brand} · {product.categoryTitle}</small>
+                <h3>
+                  <a
+                    href={"/products/"+product.productSlug}
+                    className="product-name-link"
+                  >
+                    {product.name}
+                  </a>
+                </h3>
+                <div className="home-deal-price">
+                  <strong>{product.price}</strong>
+                  <del>{product.old}</del>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="exact-shell home-faq-cta">
+        <div>
+          <span><HelpCircle size={17}/> BESOIN D’AIDE ?</span>
+          <h2>Une question avant de commander ?</h2>
+          <p>Livraison, paiement, garantie, retours, suivi de commande et fonctionnement du site.</p>
+        </div>
+        <a href="/faq">Consulter la FAQ <ArrowRight size={14}/></a>
       </section>
 
       <section className="exact-shell exact-afterfold">

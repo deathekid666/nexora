@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   BadgeCheck,
   Check,
   ChevronRight,
-  Heart,
   PackageCheck,
   ShieldCheck,
   ShoppingCart,
@@ -16,12 +16,29 @@ import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 import { ProductVisual } from "@/components/ProductVisual";
 import type { StoreProduct } from "@/lib/store-products";
+import { addToCart } from "@/lib/cart-client";
+import FavoriteButton from "@/components/FavoriteButton";
 
 export default function StoreProductDetail({product}:{product:StoreProduct}){
+  const router=useRouter();
   const [imageIndex,setImageIndex]=useState(0);
   const [variant,setVariant]=useState(product.variants[0]||"Standard");
   const [color,setColor]=useState(product.colors[0]||"Standard");
   const selectedImage=product.gallery[imageIndex]||product.gallery[0];
+
+  const addAndGoToCart=()=>{
+    addToCart({
+      slug:product.slug,
+      name:product.name,
+      brand:product.brand,
+      price:product.price,
+      variant,
+      color,
+      qty:1,
+      image:product.gallery[0],
+    });
+    router.push("/cart");
+  };
 
   const categoryHref=useMemo(()=>{
     if(product.category==="Smartphones") return "/category/smartphones";
@@ -47,7 +64,7 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
         <div className="pdetail-gallery">
           <div className="pdetail-main-image">
             <span className="pdetail-badge">{product.badge}</span>
-            <button className="pdetail-heart" aria-label="Ajouter aux favoris"><Heart size={19}/></button>
+            <FavoriteButton className="pdetail-heart" slug={product.slug} size={19} label={"Ajouter "+product.name+" aux favoris"}/>
             <ProductVisual src={selectedImage} alt={product.name}/>
           </div>
 
@@ -111,8 +128,8 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
           </div>
 
           <div className="pdetail-actions">
-            <button className="primary"><ShoppingCart size={17}/>Ajouter au panier</button>
-            <button className="secondary"><Heart size={17}/>Favoris</button>
+            <button className="primary" onClick={addAndGoToCart}><ShoppingCart size={17}/>Ajouter au panier</button>
+            <a className="secondary compare-action" href={"/compare?products="+product.slug}>Comparer</a>
           </div>
         </aside>
       </section>
@@ -157,6 +174,7 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
           <h2>Vérifiez les caractéristiques avant de choisir.</h2>
         </div>
         <div className="pdetail-bottom-actions">
+          <a href={"/compare?products="+product.slug}>Comparer ce produit</a>
           <a href={categoryHref}>Voir d’autres {product.category.toLowerCase()}</a>
           <a href="/" className="dark">Retour à LHAWTA</a>
         </div>

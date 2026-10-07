@@ -16,7 +16,8 @@
     "next": "^15.5.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "three": "^0.180.0"
+    "three": "^0.180.0",
+    "@neondatabase/serverless": "^1.0.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
