@@ -238,7 +238,7 @@ export default function AllProductsClient({products}:{products:AllCatalogProduct
             <div className="all-products-grid">
               {filtered.map(product=>{
                 const favoriteSlug=product.detailSlug||("catalog:"+product.categorySlug+":"+product.brand+":"+product.name);
-                const productHref=product.detailSlug?"/products/"+product.detailSlug:"/category/"+product.categorySlug;
+                const productHref="/products/"+product.productSlug;
                 return (
                   <article className="all-product-card" key={product.categorySlug+"-"+product.name}>
                     {product.badge&&<span className="all-product-badge">{product.badge}</span>}
@@ -276,7 +276,7 @@ export default function AllProductsClient({products}:{products:AllCatalogProduct
                       <div className="all-product-actions">
                         <a className="primary" href={productHref}>
                           <ShoppingCart size={15}/>
-                          {product.detailSlug?"Voir le produit":"Voir la catégorie"}
+                          Voir le produit
                         </a>
                         {product.detailSlug?(
                           <a className="secondary" href={"/compare?products="+product.detailSlug}><BarChart3 size={15}/> Comparer</a>
