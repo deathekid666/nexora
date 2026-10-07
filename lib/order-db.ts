@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { storeProducts } from "@/lib/store-products";
 import { getCatalogProductBySlug } from "@/lib/category-catalogs";
+import { ensureInventorySchema } from "@/lib/inventory-db";
 
 export const ORDER_STATUSES=["NOUVEAU","CONFIRME","EXPEDIE","EN_LIVRAISON","LIVRE","ANNULE"] as const;
 export type OrderStatus=typeof ORDER_STATUSES[number];
@@ -152,6 +153,7 @@ export async function ensureOrderSchema(){
     await sql.query("CREATE TABLE IF NOT EXISTS lhawta_orders (id uuid PRIMARY KEY, order_number text NOT NULL UNIQUE, status text NOT NULL DEFAULT 'NOUVEAU' CHECK (status IN ('NOUVEAU','CONFIRME','EXPEDIE','EN_LIVRAISON','LIVRE','ANNULE')), customer_name text NOT NULL, phone text NOT NULL, city text NOT NULL, address text NOT NULL, note text, subtotal_mad integer NOT NULL CHECK (subtotal_mad >= 0), shipping_mad integer NOT NULL DEFAULT 0 CHECK (shipping_mad >= 0), total_mad integer NOT NULL CHECK (total_mad >= 0), courier_name text, tracking_number text, tracking_url text, shipped_at timestamptz, estimated_delivery_date date, delivery_note text, payment_method text NOT NULL DEFAULT 'COD', source text NOT NULL DEFAULT 'WHATSAPP', created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now())");
     await sql.query("CREATE TABLE IF NOT EXISTS lhawta_order_items (id uuid PRIMARY KEY, order_id uuid NOT NULL REFERENCES lhawta_orders(id) ON DELETE CASCADE, slug text NOT NULL, brand text NOT NULL, product_name text NOT NULL, variant text NOT NULL, color text NOT NULL, quantity integer NOT NULL CHECK (quantity > 0), unit_price_mad integer NOT NULL CHECK (unit_price_mad >= 0), line_total_mad integer NOT NULL CHECK (line_total_mad >= 0), created_at timestamptz NOT NULL DEFAULT now())");
     await sql.query("CREATE TABLE IF NOT EXISTS lhawta_order_events (id uuid PRIMARY KEY, order_id uuid NOT NULL REFERENCES lhawta_orders(id) ON DELETE CASCADE, status text NOT NULL CHECK (status IN ('NOUVEAU','CONFIRME','EXPEDIE','EN_LIVRAISON','LIVRE','ANNULE')), previous_status text CHECK (previous_status IS NULL OR previous_status IN ('NOUVEAU','CONFIRME','EXPEDIE','EN_LIVRAISON','LIVRE','ANNULE')), actor_type text NOT NULL DEFAULT 'SYSTEM' CHECK (actor_type IN ('SYSTEM','ADMIN')), actor_label text, created_at timestamptz NOT NULL DEFAULT now())");
+    await ensureInventorySchema();
     await sql.query("CREATE INDEX IF NOT EXISTS lhawta_orders_created_at_idx ON lhawta_orders (created_at DESC)");
     await sql.query("CREATE INDEX IF NOT EXISTS lhawta_orders_phone_idx ON lhawta_orders (phone)");
     await sql.query("CREATE INDEX IF NOT EXISTS lhawta_order_items_order_id_idx ON lhawta_order_items (order_id)");
@@ -259,9 +261,11 @@ export async function createOrder(input:CreateOrderInput):Promise<SavedOrder>{
     " RETURNING id::text AS id, order_number AS \"orderNumber\""+
     "), item_data AS ("+
     " SELECT * FROM jsonb_to_recordset($10::jsonb) AS x(id uuid, slug text, brand text, name text, variant text, color text, quantity integer, \"unitPriceMad\" integer, \"lineTotalMad\" integer)"+
+    "), inventory_reservation AS ("+
+    " SELECT lhawta_reserve_inventory(n.id::uuid,$10::jsonb) AS ok FROM new_order n"+
     "), inserted_items AS ("+
     " INSERT INTO lhawta_order_items (id, order_id, slug, brand, product_name, variant, color, quantity, unit_price_mad, line_total_mad)"+
-    " SELECT x.id, n.id::uuid, x.slug, x.brand, x.name, x.variant, x.color, x.quantity, x.\"unitPriceMad\", x.\"lineTotalMad\" FROM item_data x CROSS JOIN new_order n"+
+    " SELECT x.id, n.id::uuid, x.slug, x.brand, x.name, x.variant, x.color, x.quantity, x.\"unitPriceMad\", x.\"lineTotalMad\" FROM item_data x CROSS JOIN new_order n CROSS JOIN inventory_reservation r"+
     " RETURNING id"+
     "), inserted_event AS ("+
     " INSERT INTO lhawta_order_events (id,order_id,status,previous_status,actor_type,actor_label)"+
@@ -401,9 +405,11 @@ export async function updateOrderStatus(
     " SELECT status FROM lhawta_orders WHERE id=$2::uuid FOR UPDATE"+
     "), updated AS ("+
     " UPDATE lhawta_orders SET status=$1, shipped_at=CASE WHEN $1='EXPEDIE' AND shipped_at IS NULL THEN now() ELSE shipped_at END, updated_at=now() WHERE id=$2::uuid AND EXISTS (SELECT 1 FROM current) RETURNING id"+
+    "), inventory_change AS ("+
+    " SELECT lhawta_apply_inventory_status($2::uuid,current.status,$1,$4) AS ok FROM current CROSS JOIN updated"+
     "), event AS ("+
     " INSERT INTO lhawta_order_events (id,order_id,status,previous_status,actor_type,actor_label)"+
-    " SELECT $3::uuid,$2::uuid,$1,current.status,'ADMIN',$4 FROM current CROSS JOIN updated RETURNING id"+
+    " SELECT $3::uuid,$2::uuid,$1,current.status,'ADMIN',$4 FROM current CROSS JOIN updated CROSS JOIN inventory_change RETURNING id"+
     ") SELECT updated.id::text AS id FROM updated CROSS JOIN event",
     [status,id,eventId,actor]
   ) as Array<{id:string}>;
