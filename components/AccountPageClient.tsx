@@ -26,7 +26,7 @@ import {
   type CustomerProfile,
 } from "@/lib/customer-profile";
 
-type OrderStatus="NOUVEAU"|"CONFIRME"|"EXPEDIE"|"LIVRE"|"ANNULE";
+type OrderStatus="NOUVEAU"|"CONFIRME"|"EXPEDIE"|"EN_LIVRAISON"|"LIVRE"|"ANNULE";
 type CustomerOrder={
   id:string;
   orderNumber:string;
@@ -39,6 +39,11 @@ type CustomerOrder={
   subtotalMad:number;
   shippingMad:number;
   totalMad:number;
+  courierName:string|null;
+  trackingNumber:string|null;
+  trackingUrl:string|null;
+  shippedAt:string|null;
+  estimatedDeliveryDate:string|null;
   paymentMethod:string;
   source:string;
   createdAt:string;
@@ -68,6 +73,7 @@ const statusSteps=[
   {key:"NOUVEAU",label:"Reçue"},
   {key:"CONFIRME",label:"Confirmée"},
   {key:"EXPEDIE",label:"Expédiée"},
+  {key:"EN_LIVRAISON",label:"En livraison"},
   {key:"LIVRE",label:"Livrée"},
 ] as const;
 
@@ -85,6 +91,7 @@ function statusLabel(status:OrderStatus){
     NOUVEAU:"Commande reçue",
     CONFIRME:"Commande confirmée",
     EXPEDIE:"Commande expédiée",
+    EN_LIVRAISON:"Commande en livraison",
     LIVRE:"Commande livrée",
     ANNULE:"Commande annulée",
   };
@@ -165,7 +172,7 @@ export default function AccountPageClient(){
 
   const currentStep=order?statusIndex(order.status):-1;
   const activeOrders=useMemo(
-    ()=>orders.filter(item=>item.status==="NOUVEAU"||item.status==="CONFIRME"||item.status==="EXPEDIE"),
+    ()=>orders.filter(item=>item.status==="NOUVEAU"||item.status==="CONFIRME"||item.status==="EXPEDIE"||item.status==="EN_LIVRAISON"),
     [orders]
   );
   const historyOrders=useMemo(
@@ -309,6 +316,30 @@ export default function AccountPageClient(){
                   </div>
                 )}
 
+                {(order.courierName||order.trackingNumber||order.trackingUrl||order.shippedAt||order.estimatedDeliveryDate||order.shippingMad>0)&&(
+                  <div className="account-shipping-card">
+                    <div className="account-shipping-head">
+                      <div>
+                        <span>LIVRAISON</span>
+                        <h3>Suivi de l’expédition</h3>
+                      </div>
+                      <Truck size={20}/>
+                    </div>
+                    <div className="account-shipping-grid">
+                      {order.courierName&&<p><span>Transporteur</span><b>{order.courierName}</b></p>}
+                      {order.trackingNumber&&<p><span>N° de suivi</span><b>{order.trackingNumber}</b></p>}
+                      {order.shippedAt&&<p><span>Expédiée le</span><b>{new Date(order.shippedAt).toLocaleString("fr-MA",{dateStyle:"medium",timeStyle:"short"})}</b></p>}
+                      {order.estimatedDeliveryDate&&<p><span>Livraison estimée</span><b>{new Date(order.estimatedDeliveryDate+"T12:00:00").toLocaleDateString("fr-MA",{day:"2-digit",month:"long",year:"numeric"})}</b></p>}
+                      <p><span>Frais de livraison</span><b>{order.shippingMad>0?money(order.shippingMad):"Gratuite"}</b></p>
+                    </div>
+                    {order.trackingUrl&&(
+                      <a href={order.trackingUrl} target="_blank" rel="noreferrer">
+                        <Truck size={15}/> Suivre le colis
+                      </a>
+                    )}
+                  </div>
+                )}
+
                 {order.events?.length>0&&(
                   <div className="account-order-timeline">
                     <div className="account-order-timeline-head">
@@ -423,8 +454,8 @@ export default function AccountPageClient(){
           <section className="account-help">
             <Truck size={21}/>
             <h3>Commande & livraison</h3>
-            <p>Le statut affiché ici vient directement de la commande enregistrée par LHAWTA.</p>
-            <small>Le suivi transporteur détaillé pourra être ajouté lorsque l’intégration logistique sera connectée.</small>
+            <p>Le statut et les informations transporteur affichés ici viennent directement de la commande enregistrée par LHAWTA.</p>
+            <small>Lorsqu’un lien de suivi est disponible, vous pouvez ouvrir le suivi transporteur directement depuis votre commande.</small>
           </section>
         </aside>
       </section>
