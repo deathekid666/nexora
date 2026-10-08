@@ -7,7 +7,7 @@ export async function catalogSchema(){
  const sql=db();
  await sql.query("CREATE TABLE IF NOT EXISTS lhawta_catalog_overrides (slug text PRIMARY KEY, price_mad integer NOT NULL CHECK(price_mad > 0), stock integer NOT NULL CHECK(stock >= 0), enabled boolean NOT NULL DEFAULT true, updated_at timestamptz NOT NULL DEFAULT now())");
 }
-export async function listCatalogOverrides():Promise<CatalogOverride[]>(){
+export async function listCatalogOverrides():Promise<CatalogOverride[]>{
  await catalogSchema();const sql=db();
  return await sql.query('SELECT slug,price_mad AS "priceMad",stock,enabled,updated_at::text AS "updatedAt" FROM lhawta_catalog_overrides ORDER BY slug') as CatalogOverride[];
 }
