@@ -107,7 +107,7 @@ export default function StoreHeader(){
                 autoComplete="off"
                 aria-label="Rechercher un produit"
               />
-              <button type="submit"><Search size={16}/>Rechercher</button>
+              <button type="submit" aria-label="Lancer la recherche"><Search size={16}/>Rechercher</button>
             </div>
 
             {searchOpen&&query.trim()&&(
@@ -116,7 +116,7 @@ export default function StoreHeader(){
                   <>
                     {suggestions.map(product=>(
                       <a href={`/products/${product.slug}`} className="exact-search-suggestion" key={product.slug}>
-                        <span className="exact-search-suggestion-media"><img src={product.image} alt=""/></span>
+                        <span className="exact-search-suggestion-media"><img src={product.image} alt="" loading="lazy" decoding="async"/></span>
                         <span className="exact-search-suggestion-copy">
                           <small>{product.brand} · {product.category}</small>
                           <b>{product.name}</b>
@@ -150,10 +150,10 @@ export default function StoreHeader(){
 
       <nav className={open?"exact-nav open":"exact-nav"}>
         <div className="exact-shell exact-nav-inner">
-          <a href="/products" className="exact-all"><Menu size={17}/>Toutes les catégories</a>
+          <a href="/products" className="exact-all" onClick={()=>setOpen(false)}><Menu size={17}/>Toutes les catégories</a>
           <div className="exact-nav-cats">
             {categories.map(({label,href,icon:Icon})=>(
-              <a href={href} key={label}><Icon size={17}/>{label}</a>
+              <a href={href} key={label} onClick={()=>setOpen(false)}><Icon size={17}/>{label}</a>
             ))}
           </div>
           <div className="exact-nav-special">
