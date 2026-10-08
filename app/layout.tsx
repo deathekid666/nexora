@@ -3,6 +3,7 @@ import "./globals.css";
 import "./source-redesign.css";
 import "./lhawta.css";
 import "./lhawta-reference.css";
+import "./phase5.css";
 
 export const metadata: Metadata = {
   title: "LHAWTA — New tech. Clear choices.",
