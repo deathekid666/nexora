@@ -36,3 +36,14 @@
 .account-signout-button:hover{background:#fff1f1;border-color:#f2c9c9;color:#ad3636;transform:translateY(-1px)}
 .account-signout-button:focus-visible{outline:3px solid #96baf7;outline-offset:3px}
 @media(max-width:900px){.account-signout-panel{margin-top:12px}}
+
+
+/* Admin: explicit order progress editor */
+.admin-progress-editor{display:flex;flex-direction:column;gap:7px;min-width:205px}
+.admin-progress-caption{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#607582}
+.admin-progress-controls{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.admin-progress-controls select{min-height:39px;min-width:112px;flex:1;padding:8px 10px;border:1px solid #d5e2dc;border-radius:9px;background:#fff;color:#183d32;font-size:13px;font-weight:650}
+.admin-progress-controls button{min-height:39px;padding:8px 12px;border:0;border-radius:9px;background:#168254;color:#fff;font-size:12px;font-weight:750;cursor:pointer}
+.admin-progress-controls button:disabled{opacity:.45;cursor:not-allowed}
+.admin-progress-editor>small{font-size:11px;color:#15804f}
+@media(max-width:700px){.admin-progress-editor{width:100%}.admin-progress-controls select{min-width:140px}}
