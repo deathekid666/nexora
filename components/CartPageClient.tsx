@@ -38,6 +38,7 @@ export default function CartPageClient(){
   const [error,setError]=useState("");
   const [submitting,setSubmitting]=useState(false);
   const [createdOrder,setCreatedOrder]=useState<string>("");
+  const [whatsappLink,setWhatsappLink]=useState("");
 
   useEffect(()=>{
     setItems(readCart());
@@ -74,6 +75,7 @@ export default function CartPageClient(){
     event.preventDefault();
     setError("");
     setCreatedOrder("");
+    setWhatsappLink("");
 
     if(!items.length){
       setError("Votre panier est vide.");
@@ -153,6 +155,7 @@ export default function CartPageClient(){
 
       const url="https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(lines.join("\n"));
       setCreatedOrder(order.orderNumber);
+      setWhatsappLink(url);
       update([]);
       if(whatsappWindow){
         whatsappWindow.location.href=url;
@@ -239,7 +242,7 @@ export default function CartPageClient(){
             <label>Adresse de livraison <span className="required-star" aria-hidden="true">*</span><textarea required value={customer.address} onChange={e=>setCustomer({...customer,address:e.target.value})} placeholder="Quartier, rue, immeuble, appartement..."/></label>
             <label>Note <small>(optionnel)</small><textarea value={customer.note} onChange={e=>setCustomer({...customer,note:e.target.value})} placeholder="Précision sur la livraison..."/></label>
 
-            {createdOrder&&<div className="cart-order-success"><CheckCircle2 size={17}/><span><b>Commande enregistrée</b><small>{createdOrder}</small></span></div>}
+            {createdOrder&&<div className="cart-order-success"><CheckCircle2 size={17}/><span><b>Commande enregistrée : {createdOrder}</b><small>Conservez cette référence pour suivre votre commande.</small><a href={"/account?order="+encodeURIComponent(createdOrder)}>Suivre ma commande</a>{whatsappLink&&<a href={whatsappLink} target="_blank" rel="noopener noreferrer">Ouvrir WhatsApp pour confirmer</a>}</span></div>}
             {error&&<div className="cart-error">{error}</div>}
 
             <button className="cart-whatsapp" type="submit" disabled={!items.length || !WHATSAPP_READY || submitting}>
