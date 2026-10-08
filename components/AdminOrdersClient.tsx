@@ -57,7 +57,7 @@ function whatsappPhone(phone:string){
   return digits;
 }
 
-export default function AdminOrdersClient(){
+export default function AdminOrdersClient({sessionAdmin=false}:{sessionAdmin?:boolean}){
   const [token,setToken]=useState("");
   const [tokenInput,setTokenInput]=useState("");
   const [orders,setOrders]=useState<SavedOrder[]>([]);
@@ -77,7 +77,7 @@ export default function AdminOrdersClient(){
   },[]);
 
   const fetchOrders=async(nextToken=token,nextSearch=activeSearch,nextStatus=status)=>{
-    if(!nextToken) return;
+    if(!nextToken&&!sessionAdmin) return;
     setLoading(true);
     setError("");
     try{
@@ -112,7 +112,7 @@ export default function AdminOrdersClient(){
   };
 
   useEffect(()=>{
-    if(token) void fetchOrders(token,activeSearch,status);
+    if(token||sessionAdmin) void fetchOrders(token,activeSearch,status);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[token,status]);
 
@@ -125,6 +125,7 @@ export default function AdminOrdersClient(){
   };
 
   const logout=()=>{
+    if(sessionAdmin){void fetch("/api/customer-auth",{method:"DELETE"}).finally(()=>window.location.assign("/login"));return;}
     window.sessionStorage.removeItem("lhawta-admin-token");
     setToken("");
     setTokenInput("");
@@ -169,7 +170,7 @@ export default function AdminOrdersClient(){
     return {totalValue,delivered,newCount,itemCount};
   },[orders]);
 
-  if(!token){
+  if(!token&&!sessionAdmin){
     return (
       <main className="exact-page admin-orders-page">
         <SiteMotion/>
