@@ -43,18 +43,24 @@ export default function StoreHeader(){
   const [favoriteCount,setFavoriteCount]=useState(0);
   const [query,setQuery]=useState("");
   const [searchOpen,setSearchOpen]=useState(false);
+  const [compactSearch,setCompactSearch]=useState(false);
 
   useEffect(()=>{
     const syncCart=()=>setCart(readCart());
     const syncFavorites=()=>setFavoriteCount(readFavorites().length);
     const syncAll=()=>{syncCart();syncFavorites();};
     syncAll();
+    const compactMedia=window.matchMedia("(max-width: 900px)");
+    const syncCompact=()=>setCompactSearch(compactMedia.matches);
+    syncCompact();
+    compactMedia.addEventListener("change",syncCompact);
     const initialQuery=new URLSearchParams(window.location.search).get("q");
     if(initialQuery) setQuery(initialQuery);
     window.addEventListener("storage",syncAll);
     window.addEventListener(CART_EVENT,syncCart as EventListener);
     window.addEventListener(FAVORITES_EVENT,syncFavorites as EventListener);
     return()=>{
+      compactMedia.removeEventListener("change",syncCompact);
       window.removeEventListener("storage",syncAll);
       window.removeEventListener(CART_EVENT,syncCart as EventListener);
       window.removeEventListener(FAVORITES_EVENT,syncFavorites as EventListener);
@@ -103,7 +109,7 @@ export default function StoreHeader(){
                 value={query}
                 onChange={event=>{setQuery(event.target.value);setSearchOpen(true);}}
                 onKeyDown={event=>{if(event.key==="Escape") setSearchOpen(false);}}
-                placeholder="Rechercher un smartphone, une tablette, une PS5, une marque..."
+                placeholder={compactSearch?"Rechercher un produit…":"Rechercher un smartphone, une tablette, une PS5, une marque..."}
                 autoComplete="off"
                 aria-label="Rechercher un produit"
               />
