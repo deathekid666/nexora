@@ -71,7 +71,7 @@ export default function CartPageClient(){
     update(items.filter((_,i)=>i!==index));
   };
 
-  const orderOnWhatsApp=async(event:FormEvent)=>{
+  const placeOrder=async(event:FormEvent)=>{
     event.preventDefault();
     setError("");
     setCreatedOrder("");
@@ -79,11 +79,6 @@ export default function CartPageClient(){
 
     if(!items.length){
       setError("Votre panier est vide.");
-      return;
-    }
-
-    if(!WHATSAPP_READY){
-      setError("Le numéro WhatsApp de la boutique doit être configuré avant de pouvoir envoyer une commande.");
       return;
     }
 
@@ -98,7 +93,6 @@ export default function CartPageClient(){
     }
 
     setSubmitting(true);
-    const whatsappWindow=window.open("about:blank","_blank");
 
     try{
       const response=await fetch("/api/orders",{
@@ -117,7 +111,6 @@ export default function CartPageClient(){
 
       const payload=await response.json().catch(()=>({}));
       if(!response.ok||!payload?.order){
-        if(whatsappWindow) whatsappWindow.close();
         if(payload?.error==="DATABASE_NOT_CONFIGURED"){
           setError("La base de commandes n’est pas encore connectée à ce preview.");
         }else{
@@ -160,15 +153,10 @@ export default function CartPageClient(){
 
       const url="https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(lines.join("\n"));
       setCreatedOrder(order.orderNumber);
-      setWhatsappLink(url);
+      // The order is already saved; WhatsApp is only an optional follow-up.
+      setWhatsappLink(WHATSAPP_READY?url:"");
       update([]);
-      if(whatsappWindow){
-        whatsappWindow.location.href=url;
-      }else{
-        window.location.href=url;
-      }
     }catch(error){
-      if(whatsappWindow) whatsappWindow.close();
       console.error(error);
       setError("Impossible d’enregistrer la commande. Réessayez.");
     }finally{
@@ -228,16 +216,16 @@ export default function CartPageClient(){
             <span>RÉCAPITULATIF</span>
             <h2>Total de la commande</h2>
             <p><span>Sous-total</span><strong>{formatDh(total)}</strong></p>
-            <p><span>Livraison</span><strong>Confirmée sur WhatsApp</strong></p>
+            <p><span>Livraison</span><strong>Confirmée par LHAWTA</strong></p>
             <div className="cart-total"><span>Total produits</span><strong>{formatDh(total)}</strong></div>
             <div className="cart-cod"><CheckCircle2 size={17}/><div><b>Paiement à la livraison</b><small>Vous payez après confirmation de la commande.</small></div></div>
           </div>
 
-          <form className="cart-form" onSubmit={orderOnWhatsApp}>
+          <form className="cart-form" onSubmit={placeOrder}>
             <div className="cart-form-head">
-              <span>COMMANDE WHATSAPP</span>
+              <span>COMMANDE</span>
               <h2>Informations de livraison</h2>
-              <p>Remplissez vos coordonnées, puis envoyez automatiquement le récapitulatif à LHAWTA sur WhatsApp.</p>
+              <p>Remplissez vos coordonnées et validez : nous vous contactons pour confirmer la livraison. WhatsApp n’est pas obligatoire.</p>
               <small className="cart-required-note"><span>*</span> Champs obligatoires</small>
             </div>
 
@@ -247,13 +235,12 @@ export default function CartPageClient(){
             <label>Adresse de livraison <span className="required-star" aria-hidden="true">*</span><textarea required value={customer.address} onChange={e=>setCustomer({...customer,address:e.target.value})} placeholder="Quartier, rue, immeuble, appartement..."/></label>
             <label>Note <small>(optionnel)</small><textarea value={customer.note} onChange={e=>setCustomer({...customer,note:e.target.value})} placeholder="Précision sur la livraison..."/></label>
 
-            {createdOrder&&<div className="cart-order-success"><CheckCircle2 size={17}/><span><b>Commande enregistrée : {createdOrder}</b><small>Conservez cette référence pour suivre votre commande.</small><a href={"/account?order="+encodeURIComponent(createdOrder)}>Suivre ma commande</a>{whatsappLink&&<a href={whatsappLink} target="_blank" rel="noopener noreferrer">Ouvrir WhatsApp pour confirmer</a>}</span></div>}
+            {createdOrder&&<div className="cart-order-success"><CheckCircle2 size={17}/><span><b>Commande enregistrée : {createdOrder}</b><small>Merci ! Nous vous contactons bientôt pour confirmer la livraison. Conservez cette référence pour suivre votre commande.</small><a href={"/account?order="+encodeURIComponent(createdOrder)}>Suivre ma commande</a>{whatsappLink&&<a href={whatsappLink} target="_blank" rel="noopener noreferrer">Confirmer aussi sur WhatsApp (optionnel)</a>}</span></div>}
             {error&&<div className="cart-error" role="alert">{error}</div>}
 
-            <button className="cart-whatsapp" type="submit" disabled={!items.length || !WHATSAPP_READY || submitting} aria-busy={submitting}>
-              {submitting?"Enregistrement...":"Commander sur WhatsApp"}
+            <button className="cart-whatsapp" type="submit" disabled={!items.length || submitting} aria-busy={submitting}>
+              {submitting?"Enregistrement...":"Passer la commande"}
             </button>
-            {!WHATSAPP_READY && <div className="cart-error" role="status">Le WhatsApp officiel de LHAWTA n’est pas encore renseigné. Votre panier reste enregistré ; aucune commande ne sera envoyée à un numéro de démonstration.</div>}
 
             <div className="cart-trust">
               <p><Truck size={16}/><span><b>Livraison partout au Maroc</b><small>Délai confirmé avant expédition.</small></span></p>
