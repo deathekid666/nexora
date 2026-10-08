@@ -83,7 +83,8 @@ export default function AccountPageClient(){
   useEffect(()=>{
     const stored=readCustomerProfile();
     setProfile(stored);
-    if(stored.phone) setLookup(current=>({...current,phone:stored.phone}));
+    const reference=new URLSearchParams(window.location.search).get("order")||"";
+    setLookup(current=>({...current,phone:stored.phone||current.phone,orderNumber:reference||current.orderNumber}));
   },[]);
 
   const profileComplete=useMemo(
