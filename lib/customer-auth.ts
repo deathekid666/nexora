@@ -5,6 +5,7 @@ const key="lhawta_session";
 function sql(){if(!process.env.DATABASE_URL)throw Error("DATABASE_NOT_CONFIGURED");return neon(process.env.DATABASE_URL)}
 function secret(){const s=process.env.LHAWTA_AUTH_SECRET||process.env.LHAWTA_ADMIN_TOKEN;if(!s||s.length<24)throw Error("AUTH_SECRET_NOT_CONFIGURED");return s}
 export async function schema(){await sql().query("CREATE TABLE IF NOT EXISTS lhawta_customers (id uuid PRIMARY KEY, name text NOT NULL, email text NOT NULL UNIQUE, password_hash text NOT NULL, created_at timestamptz NOT NULL DEFAULT now())")}
+export async function ensureCustomerRoles(){await schema();await sql().query("ALTER TABLE lhawta_customers ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false")}
 export function hashPassword(p:string){const salt=randomBytes(16).toString("hex");return salt+":"+scryptSync(p,salt,64).toString("hex")}
 export function verifyPassword(p:string,h:string){const [salt,hex]=h.split(":");if(!salt||!hex||hex.length!==128)return false;return timingSafeEqual(scryptSync(p,salt,64),Buffer.from(hex,"hex"))}
 function signature(data:string){return createHmac("sha256",secret()).update(data).digest("hex")}
