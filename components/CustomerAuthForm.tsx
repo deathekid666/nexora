@@ -15,5 +15,6 @@ export default function CustomerAuthForm({mode}:{mode:"login"|"signup"}){
  {error&&<p role="alert" style={{color:"#b42318",fontSize:13}}>{error}</p>}
  <button disabled={busy} type="submit" style={{height:50,border:0,borderRadius:11,background:"#168254",color:"white",fontWeight:750,fontSize:15,cursor:"pointer",display:"flex",justifyContent:"center",alignItems:"center",gap:9}}>{busy?"Veuillez patienter…":mode==="login"?"Se connecter":"Créer mon compte"}<ArrowRight size={18}/></button>
  </form><p style={{textAlign:"center",marginTop:24,fontSize:14,color:"#647580"}}>{mode==="login"?"Pas encore de compte ? ":"Déjà un compte ? "}<a style={{color:"#117a51",fontWeight:750}} href={mode==="login"?"/signup":"/login"}>{mode==="login"?"Créer un compte":"Se connecter"}</a></p>
+ {mode==="login"&&<p style={{textAlign:"center",marginTop:15,fontSize:13}}><a href="/admin/orders" style={{color:"#546a78",textDecoration:"underline",textUnderlineOffset:3}}>Accès administrateur — Gestion des commandes</a></p>}
  </div></section></main>
 }
