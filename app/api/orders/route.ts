@@ -7,7 +7,7 @@ import {
   type CreateOrderInput,
   type OrderStatus,
 } from "@/lib/order-db";
-import { adminTokenConfigured, isAdminRequest } from "@/lib/admin-auth";
+import { isAuthorizedAdmin } from "@/lib/admin-auth";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -47,10 +47,7 @@ export async function POST(request:NextRequest){
 }
 
 export async function GET(request:NextRequest){
-  if(!adminTokenConfigured()){
-    return NextResponse.json({ok:false,error:"ADMIN_AUTH_NOT_CONFIGURED"},{status:503});
-  }
-  if(!isAdminRequest(request)){
+  if(!(await isAuthorizedAdmin(request))){
     return NextResponse.json({ok:false,error:"UNAUTHORIZED"},{status:401});
   }
   if(!isOrderDatabaseConfigured()) return databaseUnavailable();
