@@ -23,3 +23,9 @@ export function isAdminRequest(request:NextRequest){
 export function adminTokenConfigured(){
   return Boolean(process.env.LHAWTA_ADMIN_TOKEN);
 }
+
+import {currentAdminCustomer} from "@/lib/customer-auth";
+export async function isAuthorizedAdmin(request:NextRequest){
+ if(isAdminRequest(request))return true;
+ return Boolean(await currentAdminCustomer());
+}
