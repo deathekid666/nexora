@@ -23,7 +23,7 @@ import {
 } from "@/lib/cart-client";
 import { readCustomerProfile, writeCustomerProfile } from "@/lib/customer-profile";
 
-const WHATSAPP_NUMBER=(process.env.NEXT_PUBLIC_LHAWTA_WHATSAPP || "").replace(/\D/g,"");
+const WHATSAPP_NUMBER=(process.env.NEXT_PUBLIC_LHAWTA_WHATSAPP || "212703730086").replace(/\D/g,"");
 const WHATSAPP_READY=/^\d{10,15}$/.test(WHATSAPP_NUMBER);
 
 export default function CartPageClient(){
@@ -63,7 +63,7 @@ export default function CartPageClient(){
   };
 
   const quantity=(index:number,delta:number)=>{
-    const next=items.map((item,i)=>i===index?{...item,qty:Math.max(1,item.qty+delta)}:item);
+    const next=items.map((item,i)=>i===index?{...item,qty:Math.max(1,Math.min(20,item.qty+delta))}:item);
     update(next);
   };
 
@@ -89,6 +89,11 @@ export default function CartPageClient(){
 
     if(!customer.name.trim()||!customer.phone.trim()||!customer.city.trim()||!customer.address.trim()){
       setError("Nom, téléphone, ville et adresse sont obligatoires pour une commande à la livraison.");
+      return;
+    }
+
+    if(!/^(?:\+?212|0)[5-7]\d{8}$/.test(customer.phone.replace(/[\s.()-]/g,""))){
+      setError("Saisissez un numéro marocain valide (ex. 06 XX XX XX XX).");
       return;
     }
 
@@ -133,12 +138,12 @@ export default function CartPageClient(){
         "",
         "Commande : "+order.orderNumber,
         "",
-        ...items.flatMap((item,index)=>[
+        ...order.items.flatMap((item:{brand:string;name:string;variant:string;color:string;quantity:number;unitPriceMad:number},index:number)=>[
           (index+1)+". "+item.brand+" "+item.name,
           "   Configuration : "+item.variant,
           "   Couleur : "+item.color,
-          "   Quantité : "+item.qty,
-          "   Prix : "+item.price,
+          "   Quantité : "+item.quantity,
+          "   Prix : "+formatDh(item.unitPriceMad),
         ]),
         "",
         "Total : "+formatDh(order.totalMad),
@@ -243,9 +248,9 @@ export default function CartPageClient(){
             <label>Note <small>(optionnel)</small><textarea value={customer.note} onChange={e=>setCustomer({...customer,note:e.target.value})} placeholder="Précision sur la livraison..."/></label>
 
             {createdOrder&&<div className="cart-order-success"><CheckCircle2 size={17}/><span><b>Commande enregistrée : {createdOrder}</b><small>Conservez cette référence pour suivre votre commande.</small><a href={"/account?order="+encodeURIComponent(createdOrder)}>Suivre ma commande</a>{whatsappLink&&<a href={whatsappLink} target="_blank" rel="noopener noreferrer">Ouvrir WhatsApp pour confirmer</a>}</span></div>}
-            {error&&<div className="cart-error">{error}</div>}
+            {error&&<div className="cart-error" role="alert">{error}</div>}
 
-            <button className="cart-whatsapp" type="submit" disabled={!items.length || !WHATSAPP_READY || submitting}>
+            <button className="cart-whatsapp" type="submit" disabled={!items.length || !WHATSAPP_READY || submitting} aria-busy={submitting}>
               {submitting?"Enregistrement...":"Commander sur WhatsApp"}
             </button>
             {!WHATSAPP_READY && <div className="cart-error" role="status">Le WhatsApp officiel de LHAWTA n’est pas encore renseigné. Votre panier reste enregistré ; aucune commande ne sera envoyée à un numéro de démonstration.</div>}
