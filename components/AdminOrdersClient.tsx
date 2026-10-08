@@ -140,6 +140,7 @@ export default function AdminOrdersClient(){
 
   const updateStatus=async(order:SavedOrder,nextStatus:OrderStatus)=>{
     setError("");
+    if(nextStatus!==order.status&&!window.confirm("Changer la commande "+order.orderNumber+" vers "+STATUS_LABEL[nextStatus]+" ?")) return;
     try{
       const response=await fetch("/api/orders/"+order.id,{
         method:"PATCH",
@@ -268,7 +269,7 @@ export default function AdminOrdersClient(){
 
                 <label className={"admin-status status-"+order.status.toLowerCase()}>
                   <select value={order.status} onChange={e=>void updateStatus(order,e.target.value as OrderStatus)}>
-                    {STATUS_OPTIONS.filter(option=>option.value!=="ALL").map(option=>(
+                    {STATUS_OPTIONS.filter(option=>option.value!=="ALL" && (option.value===order.status || (order.status==="NOUVEAU" && ["CONFIRME","ANNULE"].includes(option.value)) || (order.status==="CONFIRME" && ["EXPEDIE","ANNULE"].includes(option.value)) || (order.status==="EXPEDIE" && option.value==="LIVRE"))).map(option=>(
                       <option value={option.value} key={option.value}>{option.label}</option>
                     ))}
                   </select>
