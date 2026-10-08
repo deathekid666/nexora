@@ -1,0 +1,33 @@
+/* Dedicated mobile storefront composition, not a scaled desktop banner */
+@media(max-width:720px){
+ .exact-page{background:#f5f8fc!important}
+ .exact-mainbar{box-shadow:0 3px 14px rgba(7,27,56,.06)}
+ .exact-hero{padding:0!important;margin:12px 0 0!important;overflow:visible!important}
+ .exact-hero-inner{height:auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;width:calc(100% - 24px)!important;margin:0 auto!important;padding:0!important;background:#fff!important;border-radius:20px!important;overflow:hidden!important;box-shadow:0 10px 26px rgba(17,45,81,.11)!important}
+ .exact-hero-inner:before{border-color:#e5ebf4!important}
+ .exact-hero-bg,.exact-hero-overlay{display:none!important}
+ .exact-hero-copy{position:relative!important;z-index:3!important;order:1!important;width:100%!important;padding:25px 22px 22px!important;color:#112b4d!important;background:linear-gradient(145deg,#f7fbff 0%,#edf5ff 100%)!important}
+ .exact-hero-copy>span{color:#0a5dd0!important;background:#dcecff!important;font-size:10px!important}
+ .exact-hero-copy h1{color:#102b50!important;font-size:clamp(30px,8.5vw,39px)!important;line-height:1.07!important;margin-top:12px!important;max-width:100%!important;text-shadow:none!important}
+ .exact-hero-copy h2{color:#086cff!important;font-size:clamp(34px,9.5vw,44px)!important;line-height:1.08!important;text-shadow:none!important}
+ .exact-hero-copy p{color:#51647d!important;font-size:13px!important;line-height:1.55!important;max-width:100%!important;margin-top:13px!important}
+ .exact-hero-buttons{display:grid!important;grid-template-columns:1fr!important;gap:9px!important;margin-top:18px!important}
+ .exact-hero-buttons a{width:100%!important;min-height:48px!important;display:flex!important;justify-content:center!important;align-items:center!important;font-size:12px!important;border-radius:12px!important}
+ .exact-hero-buttons a:first-child{background:#086cff!important;color:#fff!important;border-color:#086cff!important}
+ .exact-hero-buttons a:not(:first-child){background:#fff!important;color:#1b467c!important;border:1px solid #d8e3f0!important}
+ .exact-product-lineup{position:relative!important;z-index:2!important;order:2!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:100%!important;height:205px!important;min-height:205px!important;display:flex!important;justify-content:center!important;align-items:flex-end!important;background:linear-gradient(180deg,#edf5ff 0%,#e1ecfa 100%)!important;transform:none!important;overflow:hidden!important}
+ .hero-lineup-image{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;top:auto!important;width:94%!important;height:205px!important;max-height:205px!important;object-fit:contain!important;object-position:center bottom!important;transform:none!important;filter:drop-shadow(0 10px 10px rgba(18,40,70,.14))!important}
+ .exact-hero-script,.exact-location-badge{display:none!important}
+ .exact-trust{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important;margin-top:13px!important}
+ .exact-trust>div{min-height:95px!important;padding:14px 11px!important;flex-direction:column!important;gap:7px!important;align-items:flex-start!important}
+ .exact-trust b{font-size:11px!important}
+ .exact-trust small{font-size:10px!important}
+ .exact-products{padding-top:28px!important}
+ .exact-products-head{gap:8px}
+ .exact-products-head h2{font-size:22px!important}
+}
+@media(max-width:390px){
+ .exact-hero-copy{padding:23px 18px 19px!important}
+ .exact-product-lineup{height:185px!important;min-height:185px!important}
+ .hero-lineup-image{height:185px!important;max-height:185px!important}
+}
