@@ -7,7 +7,7 @@ import {
   MapPin,
   PackageCheck,
   Phone,
-  RotateCcw,
+  LogOut,
   Save,
   Search,
   ShieldCheck,
@@ -103,8 +103,10 @@ export default function AccountPageClient(){
   const resetProfile=()=>{
     clearCustomerProfile();
     setProfile(emptyCustomerProfile);
-    setLookup(current=>({...current,phone:""}));
+    setLookup({orderNumber:"",phone:""});
     setSaved(false);
+    setOrder(null);
+    setLookupError("");
   };
 
   const trackOrder=async(event:FormEvent)=>{
@@ -211,7 +213,7 @@ export default function AccountPageClient(){
               <div className="account-profile-actions">
                 <button type="submit"><Save size={15}/>{saved?"Enregistré":"Enregistrer"}</button>
                 {(profile.name||profile.phone||profile.city||profile.address)&&(
-                  <button type="button" className="secondary" onClick={resetProfile}><RotateCcw size={14}/> Effacer</button>
+                  <button type="button" className="secondary" onClick={resetProfile}><LogOut size={14}/> Se déconnecter</button>
                 )}
               </div>
             </form>
