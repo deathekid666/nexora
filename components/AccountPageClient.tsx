@@ -100,13 +100,16 @@ export default function AccountPageClient(){
     window.setTimeout(()=>setSaved(false),1800);
   };
 
-  const resetProfile=()=>{
+  const resetProfile=async()=>{
+    try{await fetch("/api/customer-auth",{method:"DELETE"});}catch{}
+
     clearCustomerProfile();
     setProfile(emptyCustomerProfile);
     setLookup({orderNumber:"",phone:""});
     setSaved(false);
     setOrder(null);
     setLookupError("");
+    window.location.assign("/login");
   };
 
   const trackOrder=async(event:FormEvent)=>{
@@ -301,7 +304,7 @@ export default function AccountPageClient(){
             <a href="/#products"><PackageCheck size={18}/><div><b>Nouveautés</b><small>Voir les derniers produits</small></div><ChevronRight size={16}/></a>
           </section>
 
-          {(profile.name||profile.phone||profile.city||profile.address)&&(
+          {(
             <section className="account-signout-panel">
               <div className="account-signout-copy">
                 <LogOut size={19}/>
