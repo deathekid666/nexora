@@ -67,6 +67,9 @@ export default function AdminOrdersClient({sessionAdmin=false}:{sessionAdmin?:bo
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState("");
   const [expanded,setExpanded]=useState<string>("");
+  const [draftStatuses,setDraftStatuses]=useState<Record<string,OrderStatus>>({});
+  const [savingId,setSavingId]=useState("");
+  const [successId,setSuccessId]=useState("");
 
   useEffect(()=>{
     const saved=window.sessionStorage.getItem("lhawta-admin-token")||"";
@@ -142,6 +145,7 @@ export default function AdminOrdersClient({sessionAdmin=false}:{sessionAdmin?:bo
   const updateStatus=async(order:SavedOrder,nextStatus:OrderStatus)=>{
     setError("");
     if(nextStatus!==order.status&&!window.confirm("Changer la commande "+order.orderNumber+" vers "+STATUS_LABEL[nextStatus]+" ?")) return;
+    setSavingId(order.id);
     try{
       const response=await fetch("/api/orders/"+order.id,{
         method:"PATCH",
@@ -157,9 +161,11 @@ export default function AdminOrdersClient({sessionAdmin=false}:{sessionAdmin?:bo
         return;
       }
       setOrders(current=>current.map(item=>item.id===order.id?payload.order:item));
+      setDraftStatuses(current=>({...current,[order.id]:payload.order.status}));
+      setSuccessId(order.id);
     }catch{
       setError("Impossible de modifier cette commande.");
-    }
+    }finally{setSavingId("");}
   };
 
   const metrics=useMemo(()=>{
@@ -268,14 +274,20 @@ export default function AdminOrdersClient({sessionAdmin=false}:{sessionAdmin?:bo
                   <span>{order.items.reduce((sum,item)=>sum+item.quantity,0)} article(s)</span>
                 </div>
 
-                <label className={"admin-status status-"+order.status.toLowerCase()}>
-                  <select value={order.status} onChange={e=>void updateStatus(order,e.target.value as OrderStatus)}>
-                    {STATUS_OPTIONS.filter(option=>option.value!=="ALL" && (option.value===order.status || (order.status==="NOUVEAU" && ["CONFIRME","ANNULE"].includes(option.value)) || (order.status==="CONFIRME" && ["EXPEDIE","ANNULE"].includes(option.value)) || (order.status==="EXPEDIE" && option.value==="LIVRE"))).map(option=>(
-                      <option value={option.value} key={option.value}>{option.label}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={14}/>
-                </label>
+                <div className="admin-progress-editor">
+                  <span className="admin-progress-caption">Suivi de commande</span>
+                  <div className="admin-progress-controls">
+                    <select aria-label={"Statut de "+order.orderNumber} value={draftStatuses[order.id]||order.status} onChange={e=>{setDraftStatuses(current=>({...current,[order.id]:e.target.value as OrderStatus}));setSuccessId("");}}>
+                      {STATUS_OPTIONS.filter(option=>option.value!=="ALL" && (option.value===order.status || (order.status==="NOUVEAU" && ["CONFIRME","ANNULE"].includes(option.value)) || (order.status==="CONFIRME" && ["EXPEDIE","ANNULE"].includes(option.value)) || (order.status==="EXPEDIE" && option.value==="LIVRE"))).map(option=>(
+                        <option value={option.value} key={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                    <button type="button" disabled={savingId===order.id||(draftStatuses[order.id]||order.status)===order.status} onClick={()=>void updateStatus(order,draftStatuses[order.id]||order.status)}>
+                      {savingId===order.id?"Enregistrement…":"Enregistrer"}
+                    </button>
+                  </div>
+                  {successId===order.id&&<small role="status">Statut enregistré — suivi client mis à jour</small>}
+                </div>
 
                 <a className="admin-whatsapp" href={"https://wa.me/"+phone+"?text="+message} target="_blank" rel="noreferrer">
                   <MessageCircle size={16}/>WhatsApp
