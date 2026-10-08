@@ -35,6 +35,7 @@ export async function POST(request:NextRequest){
       "INVALID_VARIANT",
       "INVALID_COLOR",
       "INVALID_PRODUCT_PRICE",
+      "PRODUCT_OUT_OF_STOCK",
     ]);
     const status=clientErrors.has(code)?400:500;
     console.error("[LHAWTA order create]",error);
