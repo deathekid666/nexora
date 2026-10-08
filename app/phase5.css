@@ -1,0 +1,22 @@
+/* Phase 5: responsive conversion and readability polish */
+@media(max-width:720px){
+ .cart-layout{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:18px!important}
+ .cart-items,.cart-checkout,.cart-form,.cart-summary{min-width:0;max-width:100%}
+ .cart-checkout{position:static!important;top:auto!important;width:100%!important}
+ .cart-item{min-width:0;gap:12px}
+ .cart-item-copy{min-width:0;overflow-wrap:anywhere}
+ .cart-form input,.cart-form textarea{font-size:16px!important;max-width:100%}
+ .cart-whatsapp{min-height:52px;font-size:14px!important}
+ .exact-search input{font-size:16px!important}
+ .exact-search-suggestions{max-height:60vh;overflow-y:auto;overscroll-behavior:contain}
+ .exact-actions>a[aria-label="Contacter LHAWTA sur WhatsApp"]{min-width:40px;min-height:40px;display:flex;align-items:center;justify-content:center}
+ .exact-actions>a[aria-label="Contacter LHAWTA sur WhatsApp"] span{display:none}
+}
+.exact-card-media img,.category-product-media img,.search-result-media img,.all-product-media img,.favorite-product-media img{transition:transform .25s ease;will-change:auto}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+ .exact-card:hover .exact-card-media img,.category-product-card:hover .category-product-media img{transform:scale(1.035)}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+:where(a,button,input,select,textarea):focus-visible{outline:3px solid #1369e8;outline-offset:3px}
