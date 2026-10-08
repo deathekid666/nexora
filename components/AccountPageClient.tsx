@@ -212,9 +212,6 @@ export default function AccountPageClient(){
 
               <div className="account-profile-actions">
                 <button type="submit"><Save size={15}/>{saved?"Enregistré":"Enregistrer"}</button>
-                {(profile.name||profile.phone||profile.city||profile.address)&&(
-                  
-                )}
               </div>
             </form>
           </section>
