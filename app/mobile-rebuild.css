@@ -1,0 +1,50 @@
+/* Mobile-first storefront repair — overrides legacy desktop grids */
+@media(max-width:900px){
+ .exact-page{overflow-x:clip}
+ .exact-shell{width:calc(100% - 28px)!important;max-width:100%}
+ .exact-topbar{height:30px}.exact-topbar-inner{height:30px;justify-content:center;gap:8px}
+ .exact-topbar-inner>*:not(.exact-flag):not(b){display:none!important}
+ .exact-topbar-inner b{font-size:10px}
+ .exact-mainbar{height:auto!important;position:relative;z-index:100}
+ .exact-mainbar-inner{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:52px 48px!important;gap:8px 10px!important;min-height:0!important;padding:7px 0 10px!important}
+ .exact-logo{grid-column:1;grid-row:1;min-width:0;gap:8px}
+ .exact-logo strong{font-size:24px!important}.exact-logo>svg{width:30px!important;height:30px!important;flex:none}
+ .exact-logo small{display:none}
+ .exact-actions{grid-column:2;grid-row:1;display:flex;gap:12px!important;align-items:center}
+ .exact-actions>a{display:flex;min-height:40px;min-width:32px;align-items:center;justify-content:center}
+ .exact-actions>a span{display:none!important}
+ .exact-actions .exact-cart em{top:-3px;left:16px}
+ .exact-mobile-toggle{display:flex!important;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid #e2e8f0!important;border-radius:10px;background:#f8fafc!important}
+ .exact-search-wrap{grid-column:1/-1;grid-row:2;min-width:0;width:100%;z-index:120}
+ .exact-search-wrap .exact-search{height:46px!important;display:flex!important;gap:8px;border-radius:12px!important}
+ .exact-search>svg{margin-left:13px!important;flex:none}
+ .exact-search input{flex:1;min-width:0;font-size:16px!important}
+ .exact-search button{height:46px!important;min-width:46px;padding:0 12px!important;font-size:0!important;justify-content:center}
+ .exact-search button svg{width:19px;height:19px}
+ .exact-search-suggestions{top:50px;max-height:65vh;overflow-y:auto}
+ .exact-nav{height:auto!important;min-height:0!important;z-index:90}
+ .exact-nav-inner{display:block!important;height:auto!important;min-height:0!important;padding:0!important}
+ .exact-all{display:none!important}
+ .exact-nav-cats,.exact-nav-special{display:none!important}
+ .exact-nav.open .exact-nav-cats{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px;padding:12px 0}
+ .exact-nav.open .exact-nav-special{display:flex!important;gap:8px;padding:0 0 12px;flex-wrap:wrap}
+ .exact-nav.open .exact-nav-cats a{min-height:46px;display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #e5eaf1;border-radius:10px;background:#fff;font-size:12px}
+ .exact-product-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+ .exact-card{min-width:0;border-radius:14px}
+ .exact-card-media{height:clamp(135px,38vw,210px)!important;padding:14px!important}
+ .exact-card-body{padding:12px 10px!important}
+ .exact-card-body h3{font-size:13px!important;line-height:1.35;min-height:36px;margin:5px 0 8px}
+ .exact-card-body li{font-size:10px!important}
+ .exact-price{font-size:17px!important}
+ .exact-card-actions{grid-template-columns:1fr!important}
+ .exact-card-actions button{min-height:42px;height:auto}
+ .exact-badge{min-width:0;padding:0 9px;font-size:9px}
+ .exact-hero,.premium-hero{max-width:100%;overflow:hidden}
+ .exact-hero-copy h1,.premium-hero h1{overflow-wrap:anywhere}
+}
+@media(max-width:390px){
+ .exact-actions{gap:7px!important}
+ .exact-logo strong{font-size:21px!important}
+ .exact-card-media{height:140px!important}
+ .exact-card-body li:nth-child(n+3){display:none}
+}
