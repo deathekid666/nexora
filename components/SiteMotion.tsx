@@ -8,7 +8,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function SiteMotion(){
   useLayoutEffect(()=>{
-    if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if(window.matchMedia("(prefers-reduced-motion: reduce)").matches || window.matchMedia("(max-width: 900px)").matches) return;
 
     const ctx=gsap.context(()=>{
       const intro=gsap.timeline({defaults:{ease:"power3.out"}});
