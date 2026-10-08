@@ -23,3 +23,16 @@
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 :where(a,button,input,select,textarea):focus-visible{outline:3px solid #1369e8;outline-offset:3px}
+
+
+/* Customer sign-out belongs to account navigation, never the address form. */
+.account-signout-panel{display:flex;flex-direction:column;gap:15px;padding:20px!important;border:1px solid #dce5ef;border-radius:17px;background:#fff;box-shadow:0 6px 22px rgba(13,38,71,.045)}
+.account-signout-copy{display:flex;align-items:flex-start;gap:12px;color:#15345a}
+.account-signout-copy>svg{flex-shrink:0;margin-top:3px;color:#71849a}
+.account-signout-copy span{display:flex;flex-direction:column;gap:4px}
+.account-signout-copy b{font-size:14px;font-weight:750}
+.account-signout-copy small{font-size:12px;line-height:1.5;color:#708198}
+.account-signout-button{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:44px;padding:11px 15px;border:1px solid #d7e1eb;border-radius:11px;background:#f8fafc;color:#314762;font-size:13px;font-weight:700;cursor:pointer;transition:background .2s,border-color .2s,transform .2s}
+.account-signout-button:hover{background:#fff1f1;border-color:#f2c9c9;color:#ad3636;transform:translateY(-1px)}
+.account-signout-button:focus-visible{outline:3px solid #96baf7;outline-offset:3px}
+@media(max-width:900px){.account-signout-panel{margin-top:12px}}
