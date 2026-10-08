@@ -1,6 +1,6 @@
 import {NextRequest,NextResponse} from "next/server";
 import {randomUUID} from "node:crypto";
-import {schema,customerDb,hashPassword,verifyPassword,setSession,clearSession,currentCustomer} from "@/lib/customer-auth";
+import {schema,customerDb,hashPassword,verifyPassword,setSession,clearSession,currentCustomer,currentAdminCustomer} from "@/lib/customer-auth";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 export async function GET(){return NextResponse.json({user:await currentCustomer()})}
@@ -25,6 +25,6 @@ export async function POST(request:NextRequest){
    if(!rows.length||!verifyPassword(password,String(rows[0].password_hash)))return NextResponse.json({message:"Email ou mot de passe incorrect."},{status:401});
    await setSession(String(rows[0].id));
   }else return NextResponse.json({message:"Action inconnue."},{status:400});
-  return NextResponse.json({ok:true});
+  return NextResponse.json({ok:true,admin:Boolean(await currentAdminCustomer())});
  }catch(error){console.error("[customer auth]",error);return NextResponse.json({message:"Connexion indisponible. Vérifiez la configuration du serveur."},{status:503})}
 }
