@@ -102,7 +102,7 @@ export default function Home(){
         <div><ShieldCheck size={27}/><span><b>Produits 100% neufs</b><small>Garantie officielle constructeur</small></span></div>
         <div><Truck size={27}/><span><b>Livraison partout au Maroc</b><small>Rapide et sécurisée</small></span></div>
         <div><PackageCheck size={27}/><span><b>Paiement à la livraison</b><small>Espèces ou carte</small></span></div>
-        <div><Headphones size={27}/><span><b>Service client réactif</b><small>06 12 34 56 78 · 7j/7</small></span></div>
+        <div><Headphones size={27}/><span><b>Service client réactif</b><small>+212 703 730 086 · WhatsApp</small></span></div>
       </section>
 
       <section className="exact-shell exact-products" id="products">
