@@ -47,3 +47,11 @@
 .admin-progress-controls button:disabled{opacity:.45;cursor:not-allowed}
 .admin-progress-editor>small{font-size:11px;color:#15804f}
 @media(max-width:700px){.admin-progress-editor{width:100%}.admin-progress-controls select{min-width:140px}}
+
+
+/* Red logout action and visible admin shortcut */
+.account-signout-button{background:#dc2626!important;border-color:#dc2626!important;color:#fff!important;box-shadow:0 5px 14px #dc262626}
+.account-signout-button:hover{background:#b91c1c!important;border-color:#b91c1c!important;color:#fff!important;transform:translateY(-1px)}
+.account-signout-button:focus-visible{outline:3px solid #fca5a5;outline-offset:3px}
+.account-admin-shortcut{background:#edf8f1!important;border-left:3px solid #168254!important}
+.account-admin-shortcut b{color:#146b46}
