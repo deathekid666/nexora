@@ -72,7 +72,7 @@ function statusIndex(status:OrderStatus){
   return statusSteps.findIndex(step=>step.key===status);
 }
 
-export default function AccountPageClient(){
+export default function AccountPageClient({isAdmin=false}:{isAdmin?:boolean}){
   const [profile,setProfile]=useState<CustomerProfile>(emptyCustomerProfile);
   const [saved,setSaved]=useState(false);
   const [lookup,setLookup]=useState({orderNumber:"",phone:""});
@@ -299,6 +299,7 @@ export default function AccountPageClient(){
         <aside className="account-side">
           <section>
             <span>ACCÈS RAPIDES</span>
+            {isAdmin&&<a href="/admin/orders" className="account-admin-shortcut"><ShieldCheck size={18}/><div><b>Tableau de bord administrateur</b><small>Commandes, statuts et suivi des livraisons</small></div><ChevronRight size={16}/></a>}
             <a href="/favorites"><Heart size={18}/><div><b>Mes favoris</b><small>Retrouver les produits enregistrés</small></div><ChevronRight size={16}/></a>
             <a href="/cart"><ShoppingCart size={18}/><div><b>Mon panier</b><small>Continuer ma commande</small></div><ChevronRight size={16}/></a>
             <a href="/#products"><PackageCheck size={18}/><div><b>Nouveautés</b><small>Voir les derniers produits</small></div><ChevronRight size={16}/></a>
