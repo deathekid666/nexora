@@ -35,14 +35,14 @@
  .exact-nav.open .exact-nav-special a{min-height:44px;display:flex;align-items:center;gap:6px;font-size:13px}
  .exact-hero,.premium-hero{max-width:100%}
  .exact-hero{height:auto;margin-top:12px;overflow:visible}
- .exact-hero-inner{height:auto;min-height:0;display:flex;flex-direction:column;background:#fff;border-radius:20px;box-shadow:0 10px 26px rgba(17,45,81,.11)}
+ .exact-hero-inner{overflow:hidden;height:auto;min-height:0;display:flex;flex-direction:column;background:#fff;border-radius:20px;box-shadow:0 10px 26px rgba(17,45,81,.11)}
  .exact-hero-inner:before{border-color:#e5ebf4}
  .exact-hero-bg,.exact-hero-overlay,.exact-hero-script,.exact-location-badge{display:none}
  .exact-hero-copy{order:1;width:100%;padding:22px 20px 18px;color:#112b4d;background:linear-gradient(145deg,#f7fbff 0%,#edf5ff 100%)}
  .exact-hero-copy>span{padding:6px 12px;background:#dcecff;color:#0a5dd0;font-size:11px;letter-spacing:.02em}
  .exact-hero-copy h1{margin:12px 0 0;max-width:100%;color:#102b50;font-size:clamp(28px,8vw,38px);line-height:1.08;letter-spacing:-.04em}
  .exact-hero-dash{display:none}
- .exact-hero-copy h2{margin:2px 0 0;font-size:clamp(30px,9vw,40px);line-height:1.08;letter-spacing:-.04em}
+ .exact-hero-copy h2{color:#086cff;margin:2px 0 0;font-size:clamp(30px,9vw,40px);line-height:1.08;letter-spacing:-.04em}
  .exact-hero-copy p{max-width:100%;margin:12px 0 0;color:#51647d;font-size:14px;line-height:1.55}
  .exact-hero-buttons{display:grid;grid-template-columns:1fr;gap:10px;margin-top:16px}
  .exact-hero-buttons a{width:100%;height:auto;min-height:48px;padding:0 16px;justify-content:center;border:1px solid #d8e3f0;border-radius:12px;background:#fff;color:#1b467c!important;font-size:14px}
@@ -61,7 +61,7 @@
  .exact-slider-controls{margin-left:auto;align-items:center;gap:8px}
  .exact-slider-controls a{white-space:nowrap;font-size:13px}
  .exact-slider-controls button{width:38px;height:38px}
- .exact-product-grid{grid-auto-columns:calc((100% - 20px)/3);gap:10px}
+ .exact-product-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-columns:auto;gap:10px}
  .exact-card{min-width:0;border-radius:14px}
  .exact-card-media{height:clamp(135px,28vw,200px);padding:14px}
  .exact-card-body{padding:12px 10px}
@@ -73,7 +73,7 @@
  .exact-badge{min-width:0;padding:0 9px;font-size:10px}
 }
 @media(max-width:600px){
- .exact-product-grid{grid-auto-columns:calc((100% - 10px)/2)}
+ .exact-product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-columns:auto;gap:10px}
  .exact-card-body li:nth-child(n+3){display:none}
 }
 @media(min-width:601px) and (max-width:900px){
