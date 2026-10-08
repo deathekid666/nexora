@@ -1,4 +1,7 @@
 /* Phase 5: responsive conversion and readability polish */
+@media(max-width:900px){
+ .cart-form input,.cart-form textarea,.cart-form select{font-size:16px!important}
+}
 @media(max-width:720px){
  .cart-layout{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:18px!important}
  .cart-items,.cart-checkout,.cart-form,.cart-summary{min-width:0;max-width:100%}
