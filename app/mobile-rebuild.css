@@ -61,7 +61,7 @@
  .exact-slider-controls{margin-left:auto;align-items:center;gap:8px}
  .exact-slider-controls a{white-space:nowrap;font-size:13px}
  .exact-slider-controls button{width:38px;height:38px}
- .exact-product-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-columns:auto;gap:10px}
+ .exact-products .exact-product-grid{display:grid;grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:calc((100% - 20px)/3)!important;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory}
  .exact-card{min-width:0;border-radius:14px}
  .exact-card-media{height:clamp(135px,28vw,200px);padding:14px}
  .exact-card-body{padding:12px 10px}
@@ -73,7 +73,7 @@
  .exact-badge{min-width:0;padding:0 9px;font-size:10px}
 }
 @media(max-width:600px){
- .exact-product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-columns:auto;gap:10px}
+ .exact-products .exact-product-grid{grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:calc((100% - 10px)/2)!important;gap:10px}
  .exact-card-body li:nth-child(n+3){display:none}
 }
 @media(min-width:601px) and (max-width:900px){
@@ -89,43 +89,40 @@
  .exact-hero-copy{padding:20px 16px 16px}
 }
 
-/* Product cards: enforce usable widths on real mobile screens.
-   The home product list is a grid, not a horizontal carousel. */
+
+/* Correct fix from Claude's supplied patch: the product rail is a
+   horizontally scrolling grid, not a wrapped 2-column grid.
+   Earlier overrides left implicit columns alongside explicit columns,
+   squeezing four cards into the visible viewport. */
 @media(max-width:900px){
  .exact-products .exact-product-grid{
-   display:grid!important;
-   grid-template-columns:repeat(2,minmax(0,1fr))!important;
-   grid-auto-columns:auto!important;
-   width:100%!important;
-   max-width:100%!important;
-   gap:12px!important;
-   overflow:visible!important;
-   scroll-snap-type:none!important;
+  display:grid!important;
+  grid-template-columns:none!important;
+  grid-auto-flow:column!important;
+  grid-auto-columns:calc((100% - 20px)/3)!important;
+  gap:10px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  scroll-snap-type:x mandatory!important;
+  scroll-behavior:smooth;
+  overscroll-behavior-inline:contain;
+  scrollbar-width:none;
+  padding-bottom:8px;
  }
  .exact-products .exact-product-grid>.exact-card{
-   box-sizing:border-box;
-   width:auto!important;
-   min-width:0!important;
-   max-width:100%!important;
-   height:auto!important;
-   flex:none!important;
+  width:100%!important;min-width:0!important;max-width:none!important;
+  scroll-snap-align:start;
  }
- .exact-products .exact-card-media{height:160px!important;padding:14px!important}
- .exact-products .exact-card-body{padding:12px!important}
- .exact-products .exact-card-body h3{
-   font-size:14px!important;
-   line-height:1.35!important;
-   min-height:38px;
-   overflow-wrap:anywhere;
+ .exact-products .exact-card-body h3{overflow-wrap:normal}
+ .exact-products .exact-card-actions a{min-height:42px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px}
+}
+@media(max-width:600px){
+ .exact-products .exact-product-grid{
+  grid-template-columns:none!important;
+  grid-auto-flow:column!important;
+  grid-auto-columns:calc((100% - 10px)/2)!important;
  }
- .exact-products .exact-card-body li{font-size:11px!important;overflow-wrap:anywhere}
- .exact-products .exact-price{font-size:19px!important;line-height:1.15!important;overflow-wrap:normal}
- .exact-products .exact-card-actions{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px}
- .exact-products .exact-card-actions a{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:42px;padding:8px 5px;font-size:11px;line-height:1.2;text-align:center}
- .exact-products .exact-badge{min-width:0!important;max-width:calc(100% - 46px);padding:0 9px!important}
- .exact-products .exact-slider-controls button{display:none!important}
 }
 @media(max-width:340px){
- .exact-products .exact-product-grid{grid-template-columns:minmax(0,1fr)!important}
- .exact-products .exact-card-media{height:190px!important}
+ .exact-products .exact-product-grid{grid-auto-columns:82%!important}
 }
