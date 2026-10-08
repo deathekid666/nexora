@@ -12,4 +12,13 @@ function signature(data:string){return createHmac("sha256",secret()).update(data
 export async function setSession(id:string){const expires=Date.now()+7*86400000;const data=id+"."+expires;const jar=await cookies();jar.set(key,data+"."+signature(data),{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",path:"/",maxAge:604800})}
 export async function clearSession(){(await cookies()).delete(key)}
 export async function currentCustomer(){try{const token=(await cookies()).get(key)?.value||"";const parts=token.split(".");if(parts.length!==3)return null;const [id,expiry,sig]=parts;const data=id+"."+expiry;const expected=signature(data);if(sig.length!==expected.length||!timingSafeEqual(Buffer.from(sig),Buffer.from(expected))||Number(expiry)<Date.now())return null;const rows=await sql().query("SELECT id,name,email FROM lhawta_customers WHERE id=$1",[id]);return rows[0]||null}catch{return null}}
+export async function currentAdminCustomer(){
+ const user=await currentCustomer();
+ if(!user)return null;
+ try{
+  await ensureCustomerRoles();
+  const rows=await sql().query("SELECT is_admin FROM lhawta_customers WHERE id=$1",[user.id]);
+  return rows[0]?.is_admin===true?user:null;
+ }catch{return null}
+}
 export function customerDb(){return sql()}
