@@ -6,16 +6,13 @@ import {
   type OrderStatus,
   updateOrderStatus,
 } from "@/lib/order-db";
-import { adminTokenConfigured, isAdminRequest } from "@/lib/admin-auth";
+import { isAuthorizedAdmin } from "@/lib/admin-auth";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 
-function authorized(request:NextRequest){
-  if(!adminTokenConfigured()){
-    return NextResponse.json({ok:false,error:"ADMIN_AUTH_NOT_CONFIGURED"},{status:503});
-  }
-  if(!isAdminRequest(request)){
+async function authorized(request:NextRequest){
+  if(!(await isAuthorizedAdmin(request))){
     return NextResponse.json({ok:false,error:"UNAUTHORIZED"},{status:401});
   }
   if(!isOrderDatabaseConfigured()){
@@ -28,7 +25,7 @@ export async function GET(
   request:NextRequest,
   {params}:{params:Promise<{id:string}>}
 ){
-  const authError=authorized(request);
+  const authError=await authorized(request);
   if(authError) return authError;
 
   try{
@@ -46,7 +43,7 @@ export async function PATCH(
   request:NextRequest,
   {params}:{params:Promise<{id:string}>}
 ){
-  const authError=authorized(request);
+  const authError=await authorized(request);
   if(authError) return authError;
 
   try{
