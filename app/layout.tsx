@@ -5,6 +5,7 @@ import "./lhawta.css";
 import "./lhawta-reference.css";
 import "./phase5.css";
 import "./mobile-rebuild.css";
+import "./mobile-hero-redesign.css";
 
 export const metadata: Metadata = {
   title: "LHAWTA — New tech. Clear choices.",
