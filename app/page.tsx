@@ -69,12 +69,15 @@ export default function Home(){
       <StoreHeader/>
 
       <section className="exact-hero">
-        <img className="exact-hero-bg" src={MOROCCO_BG} alt="" loading="eager" decoding="async"/>
+        <picture>
+          <source media="(max-width: 900px)" srcSet="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="/>
+          <img className="exact-hero-bg" src={MOROCCO_BG} alt="" loading="eager" decoding="async"/>
+        </picture>
         <div className="exact-hero-overlay"/>
         <div className="exact-shell exact-hero-inner">
           <div className="exact-hero-copy">
             <span>NOUVEAUTÉS</span>
-            <h1>Nouveautés au Maroc —</h1>
+            <h1>Nouveautés au Maroc<span className="exact-hero-dash"> —</span></h1>
             <h2>Octobre 2026</h2>
             <p>Les derniers smartphones, tablettes, consoles et accessoires sont disponibles chez LHAWTA. Comparez les specs, les prix et profitez de la livraison partout au Maroc.</p>
             <div className="exact-hero-buttons">
