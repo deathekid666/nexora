@@ -69,7 +69,7 @@ export default function Home(){
       <StoreHeader/>
 
       <section className="exact-hero">
-        <img className="exact-hero-bg" src={MOROCCO_BG} alt="Marrakech"/>
+        <img className="exact-hero-bg" src={MOROCCO_BG} alt="" loading="eager" decoding="async"/>
         <div className="exact-hero-overlay"/>
         <div className="exact-shell exact-hero-inner">
           <div className="exact-hero-copy">
