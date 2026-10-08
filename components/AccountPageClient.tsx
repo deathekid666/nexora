@@ -213,7 +213,7 @@ export default function AccountPageClient(){
               <div className="account-profile-actions">
                 <button type="submit"><Save size={15}/>{saved?"Enregistré":"Enregistrer"}</button>
                 {(profile.name||profile.phone||profile.city||profile.address)&&(
-                  <button type="button" className="secondary" onClick={resetProfile}><LogOut size={14}/> Se déconnecter</button>
+                  
                 )}
               </div>
             </form>
@@ -303,6 +303,16 @@ export default function AccountPageClient(){
             <a href="/cart"><ShoppingCart size={18}/><div><b>Mon panier</b><small>Continuer ma commande</small></div><ChevronRight size={16}/></a>
             <a href="/#products"><PackageCheck size={18}/><div><b>Nouveautés</b><small>Voir les derniers produits</small></div><ChevronRight size={16}/></a>
           </section>
+
+          {(profile.name||profile.phone||profile.city||profile.address)&&(
+            <section className="account-signout-panel">
+              <div className="account-signout-copy">
+                <LogOut size={19}/>
+                <span><b>Quitter cet espace</b><small>Effacer vos coordonnées enregistrées sur cet appareil.</small></span>
+              </div>
+              <button type="button" className="account-signout-button" onClick={resetProfile}><LogOut size={16}/> Se déconnecter</button>
+            </section>
+          )}
 
           <section className="account-help">
             <Truck size={21}/>
