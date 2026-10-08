@@ -1,3 +1,4 @@
+import {currentAdminCustomer} from "@/lib/customer-auth";
 import AdminOrdersClient from "@/components/AdminOrdersClient";
 
 export const metadata={
@@ -5,6 +6,7 @@ export const metadata={
   robots:{index:false,follow:false},
 };
 
-export default function AdminOrdersPage(){
-  return <AdminOrdersClient/>;
+export default async function AdminOrdersPage(){
+  const admin=await currentAdminCustomer();
+  return <AdminOrdersClient sessionAdmin={Boolean(admin)}/>;
 }
