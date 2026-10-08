@@ -286,7 +286,7 @@ export async function updateOrderStatus(id:string,status:OrderStatus):Promise<Sa
   const sql=db();
 
   const changed=await sql.query(
-    "UPDATE lhawta_orders SET status=$1, updated_at=now() WHERE id=$2::uuid RETURNING id::text AS id",
+    "UPDATE lhawta_orders SET status=$1, updated_at=now() WHERE id=$2::uuid AND (status=$1 OR (status=\u0027NOUVEAU\u0027 AND $1 IN (\u0027CONFIRME\u0027,\u0027ANNULE\u0027)) OR (status=\u0027CONFIRME\u0027 AND $1 IN (\u0027EXPEDIE\u0027,\u0027ANNULE\u0027)) OR (status=\u0027EXPEDIE\u0027 AND $1=\u0027LIVRE\u0027)) RETURNING id::text AS id",
     [status,id]
   ) as Array<{id:string}>;
 
