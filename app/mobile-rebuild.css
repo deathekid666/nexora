@@ -88,3 +88,44 @@
  .exact-logo strong{font-size:21px}
  .exact-hero-copy{padding:20px 16px 16px}
 }
+
+/* Product cards: enforce usable widths on real mobile screens.
+   The home product list is a grid, not a horizontal carousel. */
+@media(max-width:900px){
+ .exact-products .exact-product-grid{
+   display:grid!important;
+   grid-template-columns:repeat(2,minmax(0,1fr))!important;
+   grid-auto-columns:auto!important;
+   width:100%!important;
+   max-width:100%!important;
+   gap:12px!important;
+   overflow:visible!important;
+   scroll-snap-type:none!important;
+ }
+ .exact-products .exact-product-grid>.exact-card{
+   box-sizing:border-box;
+   width:auto!important;
+   min-width:0!important;
+   max-width:100%!important;
+   height:auto!important;
+   flex:none!important;
+ }
+ .exact-products .exact-card-media{height:160px!important;padding:14px!important}
+ .exact-products .exact-card-body{padding:12px!important}
+ .exact-products .exact-card-body h3{
+   font-size:14px!important;
+   line-height:1.35!important;
+   min-height:38px;
+   overflow-wrap:anywhere;
+ }
+ .exact-products .exact-card-body li{font-size:11px!important;overflow-wrap:anywhere}
+ .exact-products .exact-price{font-size:19px!important;line-height:1.15!important;overflow-wrap:normal}
+ .exact-products .exact-card-actions{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px}
+ .exact-products .exact-card-actions a{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:42px;padding:8px 5px;font-size:11px;line-height:1.2;text-align:center}
+ .exact-products .exact-badge{min-width:0!important;max-width:calc(100% - 46px);padding:0 9px!important}
+ .exact-products .exact-slider-controls button{display:none!important}
+}
+@media(max-width:340px){
+ .exact-products .exact-product-grid{grid-template-columns:minmax(0,1fr)!important}
+ .exact-products .exact-card-media{height:190px!important}
+}
