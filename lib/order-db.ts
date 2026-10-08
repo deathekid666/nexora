@@ -175,6 +175,16 @@ export async function createOrder(input:CreateOrderInput):Promise<SavedOrder>{
   await ensureOrderSchema();
   const sql=db();
   const validated=validateOrderInput(input);
+  await sql.query("CREATE TABLE IF NOT EXISTS lhawta_catalog_overrides (slug text PRIMARY KEY, price_mad integer NOT NULL CHECK(price_mad > 0), stock integer NOT NULL CHECK(stock >= 0), enabled boolean NOT NULL DEFAULT true, updated_at timestamptz NOT NULL DEFAULT now())");
+  for(const item of validated.items){
+    const overrides=await sql.query("SELECT price_mad,stock,enabled FROM lhawta_catalog_overrides WHERE slug=$1 LIMIT 1",[item.slug]) as Array<{price_mad:number;stock:number;enabled:boolean}>;
+    const override=overrides[0];
+    if(override){
+      if(!override.enabled||override.stock<item.quantity)throw new Error("PRODUCT_OUT_OF_STOCK");
+      item.unitPriceMad=override.price_mad;
+      item.lineTotalMad=override.price_mad*item.quantity;
+    }
+  }
 
   const orderId=crypto.randomUUID();
   const subtotalMad=validated.items.reduce((sum,item)=>sum+item.lineTotalMad,0);
