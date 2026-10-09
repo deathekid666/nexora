@@ -55,3 +55,6 @@
 .account-signout-button:focus-visible{outline:3px solid #fca5a5;outline-offset:3px}
 .account-admin-shortcut{background:#edf8f1!important;border-left:3px solid #168254!important}
 .account-admin-shortcut b{color:#146b46}
+
+.exact-admin-link{border:1px solid #b8dfcc!important;background:#eef9f2!important;border-radius:12px;padding:7px 10px!important;color:#126b44!important}
+.exact-admin-link:hover{background:#ddf4e5!important}
