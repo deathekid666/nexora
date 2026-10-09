@@ -3,7 +3,7 @@ import {randomUUID} from "node:crypto";
 import {schema,customerDb,hashPassword,verifyPassword,setSession,clearSession,currentCustomer,currentAdminCustomer} from "@/lib/customer-auth";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
-export async function GET(){return NextResponse.json({user:await currentCustomer()})}
+export async function GET(){const user=await currentCustomer();const admin=user?Boolean(await currentAdminCustomer()):false;return NextResponse.json({user,admin},{headers:{"Cache-Control":"private, no-store"}})}
 export async function DELETE(){await clearSession();return NextResponse.json({ok:true})}
 export async function POST(request:NextRequest){
  try{
