@@ -121,7 +121,9 @@ export default function Home(){
           <a href="/category/audio"><Headphones size={21}/><span>Audio</span><ArrowRight size={15}/></a>
           <a href="/category/wearables"><Watch size={21}/><span>Montres</span><ArrowRight size={15}/></a>
         </div>
-      </section>\n\n      <section className="exact-shell exact-products" id="products">
+      </section>
+
+      <section className="exact-shell exact-products" id="products">
         <div className="exact-products-head">
           <div><h2>Nos dernières nouveautés</h2><i/></div>
           <div className="exact-slider-controls"><a href="/new-arrivals">Voir tout <ArrowRight size={14}/></a><button type="button" aria-label="Produits précédents" onClick={()=>scrollProducts(-1)}><ChevronLeft size={15}/></button><button type="button" aria-label="Produits suivants" onClick={()=>scrollProducts(1)}><ChevronRight size={15}/></button></div>
