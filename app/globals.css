@@ -1651,3 +1651,5 @@ img{display:block;max-width:100%}
   .product-visual-story-side{grid-template-columns:1fr}
   .product-story-card{min-height:280px;border-radius:18px}
 }
+
+.catalog-variant-picker{display:grid;gap:8px;margin:18px 0;padding:16px;border:1px solid #dce6f2;border-radius:14px;background:#f8fbff}.catalog-variant-picker label{font-size:14px;font-weight:750;color:#29486b}.catalog-variant-picker select{width:100%;min-height:46px;padding:10px 12px;border:1px solid #cbd8e8;border-radius:10px;background:#fff;color:#102b4d;font:inherit}.catalog-variant-picker small{color:#667991}.catalog-sale-pill{display:inline-flex;align-items:center;margin-left:9px;padding:5px 9px;border-radius:999px;background:#fff0ed;color:#c53c26;font-size:12px;font-weight:800}.pdetail-price del{margin-left:8px;color:#8794a5}.catalog-detail-actions button:disabled{opacity:.5;cursor:not-allowed}

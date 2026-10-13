@@ -1,3 +1,5 @@
+export type CatalogVariant={storage:string;color:string;priceMad:number;compareAtPriceMad?:number|null;stock:number};
+
 export type CategoryProduct={
   brand:string;
   name:string;
@@ -8,6 +10,7 @@ export type CategoryProduct={
   specs:string[];
   badge?:string;
   stock?:boolean;
+  variants?:CatalogVariant[];
 };
 
 export type CatalogDefinition={

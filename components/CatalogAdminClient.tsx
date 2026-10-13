@@ -1,15 +1,19 @@
 "use client";
 import {useEffect,useState,type FormEvent} from "react";
-import {catalogs} from "@/lib/category-catalogs";
+import {catalogs,type CatalogVariant} from "@/lib/category-catalogs";
 import StoreHeader from "@/components/StoreHeader";
+import styles from "@/app/admin/catalog/catalog-admin.module.css";
 type Base={slug:string;name:string;price:string};
-type Custom={productSlug:string;categorySlug:string;categoryTitle:string;brand:string;name:string;price:string;image:string;stockCount:number};
+type Custom={productSlug:string;categorySlug:string;categoryTitle:string;brand:string;name:string;price:string;image:string;stockCount:number;variants:CatalogVariant[]};
 type Entry={slug:string;priceMad:number;stock:number;enabled:boolean};
+type DraftVariant={storage:string;color:string;priceMad:string;compareAtPriceMad:string;stock:string};
 const money=(v:string)=>Number(v.replace(/[^0-9]/g,""))||0;
+const emptyVariant=():DraftVariant=>({storage:"128 Go",color:"Noir",priceMad:"",compareAtPriceMad:"",stock:"1"});
 export default function CatalogAdminClient(){
  const [products,setProducts]=useState<Base[]>([]),[custom,setCustom]=useState<Custom[]>([]),[entries,setEntries]=useState<Record<string,Entry>>({});
  const [notice,setNotice]=useState(""),[busy,setBusy]=useState(false);
- const [form,setForm]=useState({name:"",brand:"",categorySlug:"smartphones",priceMad:"",image:"",badge:"",specs:"",stock:"1"});
+ const [form,setForm]=useState({name:"",brand:"",categorySlug:"smartphones",image:"",badge:"",specs:""});
+ const [variants,setVariants]=useState<DraftVariant[]>([emptyVariant()]);
  async function load(){setBusy(true);setNotice("");try{
   const r=await fetch("/api/catalog-management",{cache:"no-store"}),d=await r.json();
   if(!r.ok)throw Error(d.error||"Impossible de charger le catalogue.");
@@ -19,31 +23,42 @@ export default function CatalogAdminClient(){
  }catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
  useEffect(()=>{void load()},[]);
  async function save(e:FormEvent){e.preventDefault();setBusy(true);setNotice("");try{
-  const r=await fetch("/api/catalog-management",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...form,priceMad:Number(form.priceMad),stock:Number(form.stock),specs:form.specs.split("\n").map(s=>s.trim()).filter(Boolean)})});
+  const r=await fetch("/api/catalog-management",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...form,variants:variants.map(v=>({storage:v.storage,color:v.color,priceMad:Number(v.priceMad),compareAtPriceMad:v.compareAtPriceMad?Number(v.compareAtPriceMad):null,stock:Number(v.stock)})),specs:form.specs.split("\n").map(s=>s.trim()).filter(Boolean)})});
   const d=await r.json();if(!r.ok)throw Error(d.error||"Création impossible.");
-  setNotice("Produit ajouté au catalogue.");setForm({...form,name:"",brand:"",priceMad:"",image:"",badge:"",specs:""});
+  setNotice("Produit publié sur le site.");setForm({...form,name:"",brand:"",image:"",badge:"",specs:""});setVariants([emptyVariant()]);
   await load();
  }catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
  async function remove(slug:string,name:string){if(!window.confirm("Supprimer « "+name+" » du catalogue du site ?"))return;setBusy(true);setNotice("");try{const r=await fetch("/api/catalog-management?slug="+encodeURIComponent(slug),{method:"DELETE"});const d=await r.json();if(!r.ok)throw Error(d.error||"Suppression impossible.");setNotice("Produit supprimé.");await load()}catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
  async function saveEntry(entry:Entry){setBusy(true);try{const r=await fetch("/api/catalog-management",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify(entry)});if(!r.ok)throw Error("Mise à jour impossible");setNotice("Prix et stock enregistrés.")}catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
- return <main className="exact-page"><StoreHeader/><section className="exact-shell" style={{maxWidth:1100,padding:"36px 16px"}}>
- <nav style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:24}}><a className="admin-analytics-link" href="/admin/orders">Commandes</a><a className="admin-analytics-link" href="/admin/analytics">Historique & analyses</a><a className="admin-analytics-link" href="/admin/catalog" aria-current="page">Catalogue</a></nav>
- <h1>Gestion du catalogue</h1><p>Ajoutez un produit au site ou gérez les références existantes.</p>{notice&&<p role="status">{notice}</p>}
- <section style={{padding:20,border:"1px solid #dbe4f0",borderRadius:14,background:"#fff",marginTop:24}}>
- <h2>Ajouter un produit</h2><form onSubmit={save} style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:14}}>
- <label>Nom du produit<input required minLength={2} maxLength={120} value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></label>
- <label>Marque<input required maxLength={80} value={form.brand} onChange={e=>setForm({...form,brand:e.target.value})}/></label>
- <label>Catégorie<select value={form.categorySlug} onChange={e=>setForm({...form,categorySlug:e.target.value})}>{Object.entries(catalogs).map(([slug,c])=><option key={slug} value={slug}>{c.title}</option>)}</select></label>
- <label>Prix (DH)<input required type="number" min="1" step="1" value={form.priceMad} onChange={e=>setForm({...form,priceMad:e.target.value})}/></label>
- <label>Stock<input required type="number" min="0" step="1" value={form.stock} onChange={e=>setForm({...form,stock:e.target.value})}/></label>
- <label>URL de l’image (https)<input required type="url" placeholder="https://…" value={form.image} onChange={e=>setForm({...form,image:e.target.value})}/></label>
- <label>Badge (facultatif)<input maxLength={40} placeholder="Nouveau" value={form.badge} onChange={e=>setForm({...form,badge:e.target.value})}/></label>
- <label style={{gridColumn:"1/-1"}}>Caractéristiques (une par ligne)<textarea rows={3} value={form.specs} onChange={e=>setForm({...form,specs:e.target.value})}/></label>
- <button disabled={busy} type="submit">Publier sur le site</button></form></section>
- <section style={{marginTop:32}}><h2>Mes produits ajoutés ({custom.length})</h2>{custom.map(p=><article key={p.productSlug} style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap",padding:16,margin:"12px 0",background:"#fff",border:"1px solid #dbe4f0",borderRadius:12}}>
- <img src={p.image} alt="" width="64" height="64" style={{objectFit:"cover",borderRadius:8}}/><div style={{flex:"1 1 220px"}}><b>{p.brand} {p.name}</b><p>{p.categoryTitle} · {p.price} · Stock {p.stockCount}</p><a href={"/products/"+p.productSlug}>Voir sur le site</a></div><button type="button" disabled={busy} onClick={()=>void remove(p.productSlug,p.name)}>Supprimer</button></article>)}</section>
- <section style={{marginTop:32}}><h2>Produits déjà intégrés ({products.length})</h2><p>Les références d’origine ne peuvent pas être supprimées ici. Vous pouvez modifier leur prix, leur stock et leur visibilité.</p>
- <div style={{display:"grid",gap:10}}>{products.map(p=>{const v=entries[p.slug];if(!v)return null;return <article key={p.slug} style={{display:"flex",gap:12,alignItems:"end",flexWrap:"wrap",padding:14,background:"#fff",border:"1px solid #dbe4f0",borderRadius:12}}>
- <strong style={{flex:"1 1 220px"}}>{p.name}</strong><label>Prix DH<input type="number" min="1" value={v.priceMad} onChange={e=>setEntries({...entries,[p.slug]:{...v,priceMad:Number(e.target.value)}})}/></label><label>Stock<input type="number" min="0" value={v.stock} onChange={e=>setEntries({...entries,[p.slug]:{...v,stock:Number(e.target.value)}})}/></label><label>Visible<input type="checkbox" checked={v.enabled} onChange={e=>setEntries({...entries,[p.slug]:{...v,enabled:e.target.checked}})}/></label><button disabled={busy} onClick={()=>void saveEntry(v)}>Enregistrer</button></article>})}</div>
- </section></section></main>
+ const setVariant=(index:number,key:keyof DraftVariant,value:string)=>setVariants(current=>current.map((v,i)=>i===index?{...v,[key]:value}:v));
+ return <main className={styles.page}><StoreHeader/><section className={styles.wrap}>
+ <nav className={styles.nav}><a href="/admin">Admin Panel</a><a href="/admin/orders">Commandes</a><a href="/admin/analytics">Historique & analyses</a><a href="/admin/catalog" aria-current="page">Produits</a></nav>
+ <div className={styles.heading}><span className={styles.kicker}>ADMIN PANEL · PRODUITS</span><h1>Gestion des produits</h1><p>Publiez des produits et gérez leurs options, leurs stocks et leurs promotions.</p></div>
+ {notice&&<p className={styles.notice} role="status">{notice}</p>}
+ <section className={styles.panel}><div className={styles.panelHead}><div><span className={styles.sectionTag}>NOUVELLE FICHE</span><h2>Ajouter un produit</h2><p>Ajoutez une ligne par combinaison de stockage et de couleur.</p></div></div>
+ <form onSubmit={save} className={styles.form}>
+ <div className={styles.field}><label htmlFor="product-name">Nom du produit</label><input id="product-name" required minLength={2} maxLength={120} placeholder="Ex. Galaxy S26 Ultra" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></div>
+ <div className={styles.field}><label htmlFor="product-brand">Marque</label><input id="product-brand" required maxLength={80} placeholder="Samsung" value={form.brand} onChange={e=>setForm({...form,brand:e.target.value})}/></div>
+ <div className={styles.field}><label htmlFor="product-category">Catégorie</label><select id="product-category" value={form.categorySlug} onChange={e=>setForm({...form,categorySlug:e.target.value})}>{Object.entries(catalogs).map(([slug,c])=><option key={slug} value={slug}>{c.title}</option>)}</select></div>
+ <div className={styles.field}><label htmlFor="product-image">Image du produit</label><input id="product-image" required type="url" placeholder="https://…" value={form.image} onChange={e=>setForm({...form,image:e.target.value})}/></div>
+ <div className={styles.field}><label htmlFor="product-badge">Badge (facultatif)</label><input id="product-badge" maxLength={40} placeholder="Nouveau, Promo…" value={form.badge} onChange={e=>setForm({...form,badge:e.target.value})}/></div>
+ <div className={styles.field+" "+styles.wide}><label htmlFor="product-specs">Caractéristiques (une par ligne)</label><textarea id="product-specs" rows={3} placeholder={"Écran AMOLED\n256 Go de stockage"} value={form.specs} onChange={e=>setForm({...form,specs:e.target.value})}/></div>
+ <div className={styles.variantsHead}><div><h3>Options et prix</h3><p>Chaque combinaison peut avoir son propre prix et son stock.</p></div><button className={styles.secondaryButton} type="button" onClick={()=>setVariants(v=>[...v,emptyVariant()])}>+ Ajouter une option</button></div>
+ <div className={styles.variantList}>{variants.map((v,i)=><div className={styles.variantRow} key={i}>
+ <div className={styles.field}><label>Stockage / taille</label><input required maxLength={50} placeholder="256 Go" value={v.storage} onChange={e=>setVariant(i,"storage",e.target.value)}/></div>
+ <div className={styles.field}><label>Couleur</label><input required maxLength={50} placeholder="Noir" value={v.color} onChange={e=>setVariant(i,"color",e.target.value)}/></div>
+ <div className={styles.field}><label>Prix de vente (DH)</label><input required type="number" min="1" step="1" placeholder="8999" value={v.priceMad} onChange={e=>setVariant(i,"priceMad",e.target.value)}/></div>
+ <div className={styles.field}><label>Prix avant promo (DH)</label><input type="number" min="1" step="1" placeholder="Facultatif" value={v.compareAtPriceMad} onChange={e=>setVariant(i,"compareAtPriceMad",e.target.value)}/></div>
+ <div className={styles.field}><label>Stock</label><input required type="number" min="0" step="1" value={v.stock} onChange={e=>setVariant(i,"stock",e.target.value)}/></div>
+ <button className={styles.removeOption} type="button" aria-label="Supprimer cette option" disabled={variants.length===1} onClick={()=>setVariants(v=>v.filter((_,n)=>n!==i))}>×</button>
+ </div>)}</div>
+ <div className={styles.formActions}><button className={styles.primaryButton} disabled={busy} type="submit">{busy?"Publication…":"Publier le produit"}</button><span>Les prix de promotion sont affichés sur la fiche produit.</span></div>
+ </form></section>
+ <section className={styles.listSection}><div className={styles.listHeading}><div><span className={styles.sectionTag}>VOTRE CATALOGUE</span><h2>Produits publiés <small>{custom.length}</small></h2></div><button className={styles.secondaryButton} type="button" disabled={busy} onClick={()=>void load()}>Actualiser</button></div>
+ {custom.length===0?<div className={styles.empty}><strong>Aucun produit ajouté pour le moment</strong><span>Les produits que vous publiez apparaîtront ici et sur le site.</span></div>:<div className={styles.productList}>{custom.map(p=><article key={p.productSlug} className={styles.productCard}>
+ <img src={p.image} alt="" width="72" height="72"/><div className={styles.productInfo}><strong>{p.brand} {p.name}</strong><span>{p.categoryTitle} · Dès {p.price} · Stock {p.stockCount}</span><small>{p.variants.length} option{p.variants.length===1?"":"s"} · {p.variants.filter(v=>v.compareAtPriceMad).length} en promotion</small><a href={"/products/"+p.productSlug}>Voir sur le site</a></div><button className={styles.deleteButton} type="button" disabled={busy} onClick={()=>void remove(p.productSlug,p.name)}>Supprimer</button></article>)}</div>}
+ </section>
+ <section className={styles.listSection}><div className={styles.listHeading}><div><span className={styles.sectionTag}>RÉFÉRENCES DU SITE</span><h2>Produits déjà intégrés <small>{products.length}</small></h2><p>Modifiez le prix, le stock ou la visibilité des références existantes.</p></div></div>
+ <div className={styles.builtInList}>{products.map(p=>{const v=entries[p.slug];if(!v)return null;return <article key={p.slug} className={styles.builtInCard}><strong>{p.name}</strong><label>Prix (DH)<input type="number" min="1" value={v.priceMad} onChange={e=>setEntries({...entries,[p.slug]:{...v,priceMad:Number(e.target.value)}})}/></label><label>Stock<input type="number" min="0" value={v.stock} onChange={e=>setEntries({...entries,[p.slug]:{...v,stock:Number(e.target.value)}})}/></label><label className={styles.toggle}>Visible<input type="checkbox" checked={v.enabled} onChange={e=>setEntries({...entries,[p.slug]:{...v,enabled:e.target.checked}})}/></label><button className={styles.secondaryButton} disabled={busy} onClick={()=>void saveEntry(v)}>Enregistrer</button></article>})}</div>
+ </section></section></main>;
 }
