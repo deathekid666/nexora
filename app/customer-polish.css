@@ -166,7 +166,7 @@
 
 /* Keep homepage carousel cards on uniform, usable tracks. */
 .exact-product-grid{
-  grid-auto-columns:calc((100% - 30px)/4);
+  grid-auto-columns:max(260px,calc((100% - 30px)/4));
 }
 .exact-product-grid>.exact-card{
   width:100%;
@@ -174,7 +174,7 @@
   flex:none;
 }
 @media(max-width:1100px){
- .exact-product-grid{grid-auto-columns:calc((100% - 20px)/3)}
+ .exact-product-grid{grid-auto-columns:max(260px,calc((100% - 20px)/3))}
 }
 @media(max-width:720px){
  .exact-product-grid{grid-auto-columns:82%}
