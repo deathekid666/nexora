@@ -149,8 +149,19 @@ async function validateOrderInput(input:CreateOrderInput){
     }
 
     if(!catalogProduct){
-      if(!customProduct||!customProduct.enabled||customProduct.stock<qty)throw new Error(customProduct?"PRODUCT_OUT_OF_STOCK":"UNKNOWN_PRODUCT");
-      return {id:crypto.randomUUID(),slug:customProduct.slug,brand:customProduct.brand,name:customProduct.name,variant:"Standard",color:"Standard",quantity:qty,unitPriceMad:customProduct.priceMad,lineTotalMad:customProduct.priceMad*qty};
+      if(!customProduct||!customProduct.enabled)throw new Error(customProduct?"PRODUCT_OUT_OF_STOCK":"UNKNOWN_PRODUCT");
+      const selected=Array.isArray(customProduct.variants)?customProduct.variants.find(v=>v.storage===variant&&v.color===color):null;
+      if(!selected){
+        if(Array.isArray(customProduct.variants)&&customProduct.variants.length)throw new Error("INVALID_VARIANT");
+        if(variant!=="Standard"||color!=="Standard")throw new Error("INVALID_VARIANT");
+        if(customProduct.stock<qty)throw new Error("PRODUCT_OUT_OF_STOCK");
+        const unitPriceMad=Number(customProduct.priceMad);
+        return {id:crypto.randomUUID(),slug:customProduct.slug,brand:customProduct.brand,name:customProduct.name,variant:"Standard",color:"Standard",quantity:qty,unitPriceMad,lineTotalMad:unitPriceMad*qty};
+      }
+      if(selected.stock<qty)throw new Error("PRODUCT_OUT_OF_STOCK");
+      const unitPriceMad=Number(selected.priceMad);
+      if(!Number.isSafeInteger(unitPriceMad)||unitPriceMad<1)throw new Error("INVALID_PRODUCT_PRICE");
+      return {id:crypto.randomUUID(),slug:customProduct.slug,brand:customProduct.brand,name:customProduct.name,variant:selected.storage,color:selected.color,quantity:qty,unitPriceMad,lineTotalMad:unitPriceMad*qty};
     }
     const safeVariant=variant||"Standard";
     const safeColor=color||"Standard";

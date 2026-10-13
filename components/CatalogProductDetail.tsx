@@ -11,6 +11,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import {useState} from "react";
 import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 import FavoriteButton from "@/components/FavoriteButton";
@@ -21,6 +22,12 @@ import { addToCart } from "@/lib/cart-client";
 export default function CatalogProductDetail({product}:{product:AllCatalogProduct}){
   const router=useRouter();
   const categoryHref="/category/"+product.categorySlug;
+  const options=product.variants||[];
+  const [selectedIndex,setSelectedIndex]=useState(0);
+  const selected=options[selectedIndex];
+  const displayPrice=selected?new Intl.NumberFormat("fr-MA").format(selected.priceMad)+" DH":product.price;
+  const compareAt=selected?.compareAtPriceMad;
+  const discount=compareAt&&compareAt>selected.priceMad?Math.round((1-selected.priceMad/compareAt)*100):0;
   const favoriteSlug=product.detailSlug||("catalog:"+product.categorySlug+":"+product.brand+":"+product.name);
 
   const addAndGoToCart=()=>{
@@ -28,9 +35,9 @@ export default function CatalogProductDetail({product}:{product:AllCatalogProduc
       slug:product.productSlug,
       name:product.name,
       brand:product.brand,
-      price:product.price,
-      variant:"Standard",
-      color:"Standard",
+      price:displayPrice,
+      variant:selected?.storage||"Standard",
+      color:selected?.color||"Standard",
       qty:1,
       image:product.image,
     });
@@ -74,12 +81,13 @@ export default function CatalogProductDetail({product}:{product:AllCatalogProduc
           </div>
 
           <div className="pdetail-price">
-            <strong>{product.price}</strong>
-            {product.old&&<del>{product.old}</del>}
+            <strong>{displayPrice}</strong>
+            {(selected&&compareAt&&compareAt>selected.priceMad?new Intl.NumberFormat("fr-MA").format(compareAt)+" DH":product.old)&&<del>{selected&&compareAt&&compareAt>selected.priceMad?new Intl.NumberFormat("fr-MA").format(compareAt)+" DH":product.old}</del>}
+            {discount>0&&<span className="catalog-sale-pill">-{discount}%</span>}
             <small>Prix actuellement affiché dans le catalogue LHAWTA.</small>
           </div>
 
-          <div className="pdetail-highlight-grid">
+          {options.length>0&&<div className="catalog-variant-picker">\n            <label htmlFor="catalog-variant">Stockage et couleur</label>\n            <select id="catalog-variant" value={selectedIndex} onChange={e=>setSelectedIndex(Number(e.target.value))}>{options.map((v,index)=><option key={v.storage+"-"+v.color} value={index} disabled={v.stock<1}>{v.storage} · {v.color}{v.stock<1?" · Épuisé":""} — {new Intl.NumberFormat("fr-MA").format(v.priceMad)} DH</option>)}</select>\n            {selected&&<small>{selected.stock>0?selected.stock+" en stock":"Indisponible"}</small>}\n          </div>}\n\n          <div className="pdetail-highlight-grid">
             {product.specs.slice(0,4).map((spec,index)=>(
               <div key={spec}><small>Caractéristique {index+1}</small><strong>{spec}</strong></div>
             ))}
@@ -92,7 +100,7 @@ export default function CatalogProductDetail({product}:{product:AllCatalogProduc
           </div>
 
           <div className="catalog-detail-actions">
-            <button className="primary" type="button" onClick={addAndGoToCart}><ShoppingCart size={16}/> Ajouter au panier</button>
+            <button className="primary" type="button" disabled={Boolean(selected&&selected.stock<1)} onClick={addAndGoToCart}><ShoppingCart size={16}/> Ajouter au panier</button>
             <a className="secondary" href={categoryHref}>Voir d’autres {product.categoryTitle}</a>
           </div>
         </aside>
