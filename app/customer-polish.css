@@ -162,3 +162,21 @@
 @media(prefers-reduced-motion:reduce){
  .home-category-links a,.exact-card,.exact-card-media img,.category-product-card,.all-product-card{transition:none}
 }
+
+
+/* Keep homepage carousel cards on uniform, usable tracks. */
+.exact-product-grid{
+  grid-auto-columns:calc((100% - 30px)/4);
+}
+.exact-product-grid>.exact-card{
+  width:100%;
+  min-width:260px;
+  flex:none;
+}
+@media(max-width:1100px){
+ .exact-product-grid{grid-auto-columns:calc((100% - 20px)/3)}
+}
+@media(max-width:720px){
+ .exact-product-grid{grid-auto-columns:82%}
+ .exact-product-grid>.exact-card{min-width:0}
+}
