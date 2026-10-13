@@ -33,8 +33,18 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
   const optionCompareAt=selectedOption?.compareAtPriceMad?new Intl.NumberFormat("fr-MA").format(selectedOption.compareAtPriceMad)+" DH":product.oldPrice;
   useEffect(()=>{if(!managed?.length)return;const current=managed.find(v=>v.storage===variant&&v.color===color);if(!current){setVariant(managed[0].storage);setColor(managed[0].color)}},[managed,variant,color]);
   const selectedImage=product.gallery[imageIndex]||product.gallery[0];
+  const selectedUnavailable=Boolean(selectedOption&&selectedOption.stock<1);
+  const formatMad=(amount:number)=>new Intl.NumberFormat("fr-MA").format(amount)+" DH";
+  const chooseStorage=(item:string)=>{
+    setVariant(item);
+    if(managed?.length){
+      const next=managed.find(v=>v.storage===item&&v.stock>0)||managed.find(v=>v.storage===item);
+      if(next)setColor(next.color);
+    }
+  };
 
   const addAndGoToCart=()=>{
+    if(selectedUnavailable)return;
     addToCart({
       slug:product.slug,
       name:product.name,
@@ -83,6 +93,7 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
                 className={index===imageIndex?"active":""}
                 onClick={()=>setImageIndex(index)}
                 aria-label={`Vue ${index+1}`}
+                aria-pressed={index===imageIndex}
               >
                 <ProductVisual src={src} alt={`${product.name} vue ${index+1}`}/>
               </button>
@@ -99,10 +110,10 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
             <div className="pdetail-rating"><strong>{product.rating}/5</strong><span>{product.reviewCount}</span><span>·</span><span>{product.category}</span></div>
           </div>
 
-          <div className="pdetail-price">
+          <div className="pdetail-price" aria-live="polite">
             <strong>{optionPrice}</strong>
             {optionCompareAt&&<del>{optionCompareAt}</del>}
-            {selectedOption&&<small className="catalog-option-stock">{selectedOption.stock>0?selectedOption.stock+" en stock":"Indisponible"}</small>}
+            {selectedOption&&<small className={selectedUnavailable?"catalog-option-stock unavailable":"catalog-option-stock"}>{selectedUnavailable?"Rupture de stock pour cette option":selectedOption.stock+" en stock pour cette option"}</small>}
             <small>Prix affiché à titre de référence pour la boutique LHAWTA.</small>
           </div>
 
@@ -114,19 +125,27 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
 
           <div className="pdetail-choice">
             <div className="pdetail-choice-head"><span>Configuration</span><strong>{variant}</strong></div>
-            <div className="pdetail-choice-options">
-              {storageOptions.map(item=>(
-                <button key={item} className={item===variant?"active":""} onClick={()=>{setVariant(item);if(managed?.length){const next=managed.find(v=>v.storage===item);if(next)setColor(next.color)}}}>{item}</button>
-              ))}
+            <div className="pdetail-choice-options" role="group" aria-label="Choisir une configuration">
+              {storageOptions.map(item=>{
+                const option=managed?.find(candidate=>candidate.storage===item&&candidate.stock>0)||managed?.find(candidate=>candidate.storage===item);
+                const outOfStock=Boolean(managed?.length&&!managed.some(candidate=>candidate.storage===item&&candidate.stock>0));
+                return <button key={item} type="button" className={item===variant?"active":""} aria-pressed={item===variant} aria-label={`${item}${option?", dès "+formatMad(option.priceMad):""}${outOfStock?", indisponible":""}`} onClick={()=>chooseStorage(item)}>
+                  <span>{item}</span>{option&&<small>{formatMad(option.priceMad)}</small>}{outOfStock&&<em>Épuisé</em>}
+                </button>;
+              })}
             </div>
           </div>
 
           <div className="pdetail-choice">
             <div className="pdetail-choice-head"><span>Couleur</span><strong>{color}</strong></div>
-            <div className="pdetail-choice-options color-options">
-              {colorOptions.map(item=>(
-                <button key={item} className={item===color?"active":""} onClick={()=>setColor(item)}>{item}</button>
-              ))}
+            <div className="pdetail-choice-options color-options" role="group" aria-label="Choisir une couleur">
+              {colorOptions.map(item=>{
+                const option=managed?.find(candidate=>candidate.storage===variant&&candidate.color===item);
+                const outOfStock=Boolean(option&&option.stock<1);
+                return <button key={item} type="button" className={item===color?"active":""} aria-pressed={item===color} aria-label={`${item}${option?", "+formatMad(option.priceMad):""}${outOfStock?", indisponible":""}`} onClick={()=>setColor(item)}>
+                  <span>{item}</span>{option&&<small>{formatMad(option.priceMad)}</small>}{outOfStock&&<em>Épuisé</em>}
+                </button>;
+              })}
             </div>
           </div>
 
@@ -137,7 +156,7 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
           </div>
 
           <div className="pdetail-actions">
-            <button className="primary" disabled={Boolean(selectedOption&&selectedOption.stock<1)} onClick={addAndGoToCart}><ShoppingCart size={17}/>Ajouter au panier</button>
+            <button className="primary" disabled={selectedUnavailable} onClick={addAndGoToCart}><ShoppingCart size={17}/>{selectedUnavailable?"Option indisponible":"Ajouter au panier"}</button>
             <a className="secondary compare-action" href={"/compare?products="+product.slug}>Comparer</a>
           </div>
         </aside>
@@ -188,6 +207,11 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
           <a href="/" className="dark">Retour à LHAWTA</a>
         </div>
       </section>
+
+      {selectedOption&&<div className="pdetail-mobile-buy" aria-live="polite">
+        <div><span>{variant} · {color}</span><strong>{optionPrice}</strong></div>
+        <button type="button" disabled={selectedUnavailable} onClick={addAndGoToCart}><ShoppingCart size={16}/>{selectedUnavailable?"Indisponible":"Ajouter"}</button>
+      </div>}
     </main>
   );
 }

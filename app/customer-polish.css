@@ -162,3 +162,24 @@
 @media(prefers-reduced-motion:reduce){
  .home-category-links a,.exact-card,.exact-card-media img,.category-product-card,.all-product-card{transition:none}
 }
+
+/* Product configuration clarity and mobile purchase access. */
+.pdetail-choice-options button{min-width:104px;min-height:54px;height:auto;padding:8px 12px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;position:relative}
+.pdetail-choice-options button small{font-size:11px;font-weight:700;color:#62748a;white-space:nowrap}
+.pdetail-choice-options button.active small{color:inherit;opacity:.78}
+.pdetail-choice-options button em{font-size:9px;font-style:normal;font-weight:800;color:#bd3b2f}
+.pdetail-choice-options button[aria-pressed="true"]{outline:2px solid #1457ff;outline-offset:1px}
+.pdetail-choice-options button:focus-visible,.pdetail-thumbs button:focus-visible{outline:3px solid #1457ff;outline-offset:3px}
+.catalog-option-stock.unavailable{color:#b42318}
+.pdetail-mobile-buy{display:none}
+@media(max-width:620px){
+ .pdetail-choice-options button{min-width:0;min-height:54px;padding:8px 10px}
+ .pdetail-mobile-buy{position:fixed;left:10px;right:10px;bottom:10px;z-index:80;min-height:66px;padding:8px 9px 8px 14px;border:1px solid #d8e2ee;border-radius:16px;background:rgba(255,255,255,.96);box-shadow:0 12px 34px rgba(11,39,77,.2);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-between;gap:12px}
+ .pdetail-mobile-buy>div{min-width:0;display:flex;flex-direction:column;gap:3px}
+ .pdetail-mobile-buy span{max-width:54vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#65758a;font-size:11px;font-weight:700}
+ .pdetail-mobile-buy strong{font-size:17px;line-height:1}
+ .pdetail-mobile-buy button{min-height:46px;padding:0 14px;border:0;border-radius:11px;background:#111318;color:#fff;display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;white-space:nowrap}
+ .pdetail-mobile-buy button:disabled{background:#8b929d;cursor:not-allowed}
+ .product-detail-page{padding-bottom:88px}
+}
+@media(prefers-reduced-motion:reduce){.pdetail-choice-options button{transition:none}}
