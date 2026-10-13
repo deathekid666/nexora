@@ -219,6 +219,7 @@ export default function AdminOrdersClient({sessionAdmin=false}:{sessionAdmin?:bo
           <p>Suivez les commandes, contactez les clients et mettez à jour leur statut.</p>
         </div>
         <div className="admin-head-actions">
+          <a href="/admin/analytics" className="admin-analytics-link"><CircleDollarSign size={16}/>Historique & analyses</a>
           <button onClick={()=>void fetchOrders()} disabled={loading}><RefreshCw size={15}/>{loading?"Actualisation...":"Actualiser"}</button>
           <button onClick={logout}><LogOut size={15}/>Quitter</button>
         </div>
