@@ -9,6 +9,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import {useManagedProductPrices} from "@/lib/use-managed-product-prices";
 import FavoriteButton from "@/components/FavoriteButton";
 import { ProductVisual } from "@/components/ProductVisual";
 import { catalogProductSlug, productDetailSlugs, type CategoryProduct } from "@/lib/category-catalogs";
@@ -33,6 +34,8 @@ export default function CategoryCatalogClient({
   const [prices,setPrices]=useState<PriceFilter[]>([]);
   const [sort,setSort]=useState<SortMode>("relevance");
   const [showFilters,setShowFilters]=useState(false);
+  const managedPrices=useManagedProductPrices();
+  const priceFor=(product:CategoryProduct)=>managedPrices[productDetailSlugs[product.name]||catalogProductSlug({name:product.name,categorySlug:slug})];
 
   const availableBrands=useMemo(
     ()=>[...new Set(products.map(product=>product.brand))].sort((a,b)=>a.localeCompare(b)),
@@ -42,7 +45,7 @@ export default function CategoryCatalogClient({
   const filtered=useMemo(()=>{
     const result=products.filter(product=>{
       const badge=(product.badge||"").toLowerCase();
-      const price=numericPrice(product.price);
+      const price=numericPrice(priceFor(product)?.price||product.price);
       const stock=product.stock!==false;
 
       if(quick==="new"&&!badge.includes("nouveau")) return false;
@@ -63,12 +66,12 @@ export default function CategoryCatalogClient({
       return true;
     });
 
-    if(sort==="price-asc") return [...result].sort((a,b)=>numericPrice(a.price)-numericPrice(b.price));
-    if(sort==="price-desc") return [...result].sort((a,b)=>numericPrice(b.price)-numericPrice(a.price));
+    if(sort==="price-asc") return [...result].sort((a,b)=>numericPrice(priceFor(a)?.price||a.price)-numericPrice(priceFor(b)?.price||b.price));
+    if(sort==="price-desc") return [...result].sort((a,b)=>numericPrice(priceFor(b)?.price||b.price)-numericPrice(priceFor(a)?.price||a.price));
     if(sort==="rating-desc") return [...result].sort((a,b)=>Number(b.rating)-Number(a.rating));
     if(sort==="name") return [...result].sort((a,b)=>a.name.localeCompare(b.name));
     return result;
-  },[products,quick,brands,prices,sort]);
+  },[products,quick,brands,prices,sort,managedPrices,slug]);
 
   const toggleBrand=(brand:string)=>{
     setBrands(current=>current.includes(brand)?current.filter(item=>item!==brand):[...current,brand]);
@@ -198,6 +201,7 @@ export default function CategoryCatalogClient({
             <div className="category-grid">
               {filtered.map(product=>{
                 const detailSlug=productDetailSlugs[product.name];
+                const managed=priceFor(product);
                 const detailHref=`/products/${catalogProductSlug({name:product.name,categorySlug:slug,detailSlug})}`;
                 return (
                   <article className="category-product-card" key={product.name}>
@@ -210,7 +214,7 @@ export default function CategoryCatalogClient({
                       <div className="category-rating"><Star size={13} fill="currentColor"/><b>{product.rating}</b><span>avis</span></div>
                       <ul>{product.specs.map(spec=><li key={spec}>{spec}</li>)}</ul>
                       <div className="category-delivery"><Truck size={14}/> Livraison disponible</div>
-                      <div className="category-price"><strong>{product.price}</strong>{product.old&&<del>{product.old}</del>}</div>
+                      <div className="category-price"><strong>{managed?.price||product.price}</strong>{(managed?.oldPrice||product.old)&&<del>{managed?.oldPrice||product.old}</del>}</div>
                       <div className="category-actions">
                         <a href={detailHref}><ShoppingCart size={15}/> Voir le produit</a>
                         {detailSlug?<a className="category-compare-link" href={`/compare?products=${detailSlug}`}>Comparer</a>:<button disabled title="Fiche technique complète requise">Comparer</button>}
