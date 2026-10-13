@@ -27,6 +27,9 @@ const STATUS_OPTIONS:Array<{value:"ALL"|OrderStatus;label:string}>=[
   {value:"ANNULE",label:"Annulé"},
 ];
 
+const PROGRESS:OrderStatus[]=["NOUVEAU","CONFIRME","EXPEDIE","LIVRE"];
+const NEXT:Partial<Record<OrderStatus,OrderStatus>>={NOUVEAU:"CONFIRME",CONFIRME:"EXPEDIE",EXPEDIE:"LIVRE"};
+const ACTION:Partial<Record<OrderStatus,string>>={NOUVEAU:"Marquer confirmé",CONFIRME:"Marquer expédié",EXPEDIE:"Marquer livré"};
 const STATUS_LABEL:Record<OrderStatus,string>={
   NOUVEAU:"Nouveau",
   CONFIRME:"Confirmé",
@@ -67,7 +70,6 @@ export default function AdminOrdersClient({sessionAdmin=false}:{sessionAdmin?:bo
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState("");
   const [expanded,setExpanded]=useState<string>("");
-  const [draftStatuses,setDraftStatuses]=useState<Record<string,OrderStatus>>({});
   const [savingId,setSavingId]=useState("");
   const [successId,setSuccessId]=useState("");
 
@@ -143,6 +145,8 @@ export default function AdminOrdersClient({sessionAdmin=false}:{sessionAdmin?:bo
   };
 
   const updateStatus=async(order:SavedOrder,nextStatus:OrderStatus)=>{
+    if(savingId) return;
+    setSuccessId("");
     setError("");
     if(nextStatus!==order.status&&!window.confirm("Changer la commande "+order.orderNumber+" vers "+STATUS_LABEL[nextStatus]+" ?")) return;
     setSavingId(order.id);
@@ -161,7 +165,6 @@ export default function AdminOrdersClient({sessionAdmin=false}:{sessionAdmin?:bo
         return;
       }
       setOrders(current=>current.map(item=>item.id===order.id?payload.order:item));
-      setDraftStatuses(current=>({...current,[order.id]:payload.order.status}));
       setSuccessId(order.id);
     }catch{
       setError("Impossible de modifier cette commande.");
@@ -247,7 +250,7 @@ export default function AdminOrdersClient({sessionAdmin=false}:{sessionAdmin?:bo
         </label>
       </section>
 
-      {error&&<div className="admin-error exact-shell">{error}</div>}
+      {error&&<div role="alert" className="admin-error exact-shell">{error}</div>}
 
       <section className="admin-orders-list exact-shell">
         {loading&&!orders.length ? (
@@ -274,18 +277,17 @@ export default function AdminOrdersClient({sessionAdmin=false}:{sessionAdmin?:bo
                   <span>{order.items.reduce((sum,item)=>sum+item.quantity,0)} article(s)</span>
                 </div>
 
-                <div className="admin-progress-editor">
-                  <span className="admin-progress-caption">Suivi de commande</span>
-                  <div className="admin-progress-controls">
-                    <select aria-label={"Statut de "+order.orderNumber} value={draftStatuses[order.id]||order.status} onChange={e=>{setDraftStatuses(current=>({...current,[order.id]:e.target.value as OrderStatus}));setSuccessId("");}}>
-                      {STATUS_OPTIONS.filter(option=>option.value!=="ALL" && (option.value===order.status || (order.status==="NOUVEAU" && ["CONFIRME","ANNULE"].includes(option.value)) || (order.status==="CONFIRME" && ["EXPEDIE","ANNULE"].includes(option.value)) || (order.status==="EXPEDIE" && option.value==="LIVRE"))).map(option=>(
-                        <option value={option.value} key={option.value}>{option.label}</option>
-                      ))}
-                    </select>
-                    <button type="button" disabled={savingId===order.id||(draftStatuses[order.id]||order.status)===order.status} onClick={()=>void updateStatus(order,draftStatuses[order.id]||order.status)}>
-                      {savingId===order.id?"Enregistrement…":"Enregistrer"}
-                    </button>
+                <div className="order-workflow">
+                  <strong>Suivi de commande · {STATUS_LABEL[order.status]}</strong>
+                  {order.status==="ANNULE"?<p className="order-cancelled">Commande annulée</p>:<ol className="order-steps" aria-label={"Progression de "+order.orderNumber}>
+                    {PROGRESS.map((step,index)=><li key={step} className={index<=PROGRESS.indexOf(order.status)?"complete":""} aria-current={step===order.status?"step":undefined}><span aria-hidden="true">{index<PROGRESS.indexOf(order.status)?"✓":index+1}</span>{STATUS_LABEL[step]}</li>)}
+                  </ol>}
+                  <div className="order-workflow-actions">
+                    {NEXT[order.status]&&<button type="button" disabled={Boolean(savingId)||loading} onClick={()=>void updateStatus(order,NEXT[order.status]!)}>{savingId===order.id?"Enregistrement…":ACTION[order.status]}</button>}
+                    {["NOUVEAU","CONFIRME"].includes(order.status)&&<button type="button" className="order-cancel" disabled={Boolean(savingId)||loading} onClick={()=>void updateStatus(order,"ANNULE")}>Annuler la commande</button>}
                   </div>
+                  <small>Dernière mise à jour : {dateTime(order.updatedAt)}</small>
+                  {order.status==="LIVRE"&&<p className="order-delivered">✓ Livraison terminée</p>}
                   {successId===order.id&&<small role="status">Statut enregistré — suivi client mis à jour</small>}
                 </div>
 

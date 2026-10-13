@@ -155,3 +155,30 @@
  .exact-logo strong{font-size:18px}
  .header-auth>a{padding:0 6px;font-size:11px}
 }
+
+/* Give order progress its own full row so actions never overlap. */
+.admin-orders-page .admin-order-main{display:grid;grid-template-columns:minmax(140px,1fr) minmax(160px,2fr) minmax(120px,1fr) auto;gap:20px;align-items:center}
+.admin-orders-page .admin-order-main>*{min-width:0}
+.admin-orders-page .order-workflow{grid-column:1/-1;grid-row:2;border-top:1px solid #e2e8f0;padding-top:18px;display:grid;gap:12px}
+.admin-orders-page .admin-whatsapp{grid-column:4;grid-row:1;position:static;width:auto;margin:0}
+.order-workflow>strong{font-size:14px;color:#13233b}
+.order-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));list-style:none;padding:0;margin:0;gap:8px;max-width:760px}
+.order-steps li{display:flex;align-items:center;gap:8px;color:#64748b;font-size:13px;padding:10px 0;border-bottom:3px solid #e2e8f0}
+.order-steps li span{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#edf2f7;flex:none}
+.order-steps li.complete{color:#075dcc;border-color:#086cff;font-weight:600}
+.order-steps li.complete span{background:#086cff;color:white}
+.order-workflow-actions{display:flex;flex-wrap:wrap;gap:10px}
+.order-workflow-actions button{min-height:44px;padding:10px 18px;border:1px solid #086cff;border-radius:8px;background:#086cff;color:white;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.order-workflow-actions button.order-cancel{background:white;color:#b42318;border-color:#f5c4c0}
+.order-workflow-actions button:disabled{opacity:.55;cursor:wait}
+.order-workflow-actions button:focus-visible{outline:3px solid #13233b;outline-offset:3px}
+.order-workflow>small{color:#64748b;font-size:12px}
+.order-workflow small[role=status],.order-delivered{color:#087443}
+.order-cancelled{color:#b42318}
+@media(max-width:700px){
+ .admin-orders-page .admin-order-main{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+ .admin-orders-page .admin-whatsapp{grid-column:2;grid-row:2;justify-self:end}
+ .admin-orders-page .order-workflow{grid-row:3}
+ .order-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .order-workflow-actions button{flex:1 1 170px}
+}
