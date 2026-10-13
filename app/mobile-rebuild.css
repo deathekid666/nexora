@@ -182,3 +182,27 @@
  .order-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
  .order-workflow-actions button{flex:1 1 170px}
 }
+
+/* Compact, readable order cards and consistently sized actions. */
+.admin-orders-page .admin-order-card{overflow:hidden}
+.admin-orders-page .admin-order-main{padding:18px;gap:14px 20px}
+.admin-orders-page .admin-order-id span,.admin-orders-page .admin-customer b,.admin-orders-page .admin-order-value b{font-size:14px;line-height:1.4}
+.admin-orders-page .admin-order-id small,.admin-orders-page .admin-customer span,.admin-orders-page .admin-order-value span{font-size:12px;line-height:1.5}
+.admin-orders-page .admin-whatsapp{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:120px;min-height:44px;height:auto;padding:10px 14px;font-size:13px;line-height:1.3;white-space:nowrap;flex-shrink:0}
+.admin-orders-page .admin-whatsapp svg{flex-shrink:0;width:18px;height:18px}
+.admin-orders-page .order-workflow{grid-template-columns:minmax(0,1fr) auto;gap:10px 20px;padding-top:14px}
+.admin-orders-page .order-workflow>strong{grid-column:1/-1}
+.admin-orders-page .order-steps{width:100%;max-width:760px;align-self:center}
+.admin-orders-page .order-workflow-actions{align-items:center;justify-content:flex-end}
+.admin-orders-page .order-workflow>small,.admin-orders-page .order-workflow>p{grid-column:1/-1;margin:0}
+.admin-orders-page .order-workflow-actions button{font-size:13px;padding:10px 14px}
+@media(max-width:1100px){
+ .admin-orders-page .order-workflow{grid-template-columns:minmax(0,1fr)}
+ .admin-orders-page .order-workflow-actions{justify-content:flex-start}
+}
+@media(max-width:700px){
+ .admin-orders-page .admin-order-main{padding:16px;gap:12px}
+ .admin-orders-page .admin-whatsapp{min-width:0;max-width:100%}
+ .admin-orders-page .admin-customer span{overflow-wrap:anywhere}
+ .admin-orders-page .order-steps li{font-size:12px}
+}
