@@ -157,7 +157,7 @@ export default function StoreHeader(){
           </form>
 
           <div className="exact-actions">
-            {isAdmin&&<a href="/admin/orders" className="exact-account exact-admin-link" title="Tableau de bord administrateur"><LayoutDashboard size={20}/><span><b>Tableau de bord</b><small>Administration</small></span></a>}
+            {isAdmin&&<a href="/admin/analytics" className="exact-account exact-admin-link" title="Tableau de bord administrateur"><LayoutDashboard size={20}/><span><b>Tableau de bord</b><small>Administration</small></span></a>}
             <a href="/favorites" className="exact-favorites" title="Voir mes favoris"><Heart size={21} fill={favoriteCount?"currentColor":"none"}/>{favoriteCount>0&&<em>{favoriteCount}</em>}<span><b>Mes favoris</b><small>{favoriteCount} enregistré{favoriteCount>1?"s":""}</small></span></a>
             <a href="https://wa.me/212703730086" target="_blank" rel="noopener noreferrer" aria-label="Contacter LHAWTA sur WhatsApp" title="Commander et poser une question sur WhatsApp"><Headphones size={21}/><span><b>WhatsApp</b><small>+212 703 730 086</small></span></a>
             <a href="/cart" className="exact-cart"><ShoppingCart size={22}/><em>{count}</em><span><b>Mon panier</b><small>{formatDh(total)}</small></span></a>
