@@ -44,7 +44,8 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
   };
 
   const addAndGoToCart=()=>{
-    if(selectedUnavailable)return;\n    addToCart({
+    if(selectedUnavailable)return;
+    addToCart({
       slug:product.slug,
       name:product.name,
       brand:product.brand,
@@ -91,7 +92,8 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
                 key={src}
                 className={index===imageIndex?"active":""}
                 onClick={()=>setImageIndex(index)}
-                aria-label={`Vue ${index+1}`}\n                aria-pressed={index===imageIndex}
+                aria-label={`Vue ${index+1}`}
+                aria-pressed={index===imageIndex}
               >
                 <ProductVisual src={src} alt={`${product.name} vue ${index+1}`}/>
               </button>
