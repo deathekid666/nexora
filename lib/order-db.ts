@@ -1,7 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { storeProducts } from "@/lib/store-products";
 import { getCatalogProductBySlug } from "@/lib/category-catalogs";
-import {findCustomProductForOrder} from "@/lib/catalog-admin";
+import {findCustomProductForOrder,findBuiltInOverride} from "@/lib/catalog-admin";
 
 export const ORDER_STATUSES=["NOUVEAU","CONFIRME","EXPEDIE","LIVRE","ANNULE"] as const;
 export type OrderStatus=typeof ORDER_STATUSES[number];
@@ -121,6 +121,7 @@ async function validateOrderInput(input:CreateOrderInput){
     const product=storeProducts[slug];
     const catalogProduct=product?null:getCatalogProductBySlug(slug);
     const customProduct=!product&&!catalogProduct?await findCustomProductForOrder(slug):null;
+    const builtInOverride=product?await findBuiltInOverride(slug):null;
 
     if(!product&&!catalogProduct&&!customProduct) throw new Error("UNKNOWN_PRODUCT");
 
@@ -132,7 +133,11 @@ async function validateOrderInput(input:CreateOrderInput){
       if(!product.variants.includes(variant)) throw new Error("INVALID_VARIANT");
       if(!product.colors.includes(color)) throw new Error("INVALID_COLOR");
 
-      const unitPriceMad=moneyToMad(product.price);
+      const chosen=builtInOverride?.variants?.find(v=>v.storage===variant&&v.color===color);
+      if(builtInOverride&&!builtInOverride.enabled)throw new Error("PRODUCT_OUT_OF_STOCK");
+      if(builtInOverride?.variants?.length&&!chosen)throw new Error("INVALID_VARIANT");
+      if(chosen&&chosen.stock<qty)throw new Error("PRODUCT_OUT_OF_STOCK");
+      const unitPriceMad=chosen?Number(chosen.priceMad):(builtInOverride?Number(builtInOverride.priceMad):moneyToMad(product.price));
       if(unitPriceMad<=0) throw new Error("INVALID_PRODUCT_PRICE");
 
       return {
@@ -193,6 +198,8 @@ export async function createOrder(input:CreateOrderInput):Promise<SavedOrder>{
   const validated=await validateOrderInput(input);
   await sql.query("CREATE TABLE IF NOT EXISTS lhawta_catalog_overrides (slug text PRIMARY KEY, price_mad integer NOT NULL CHECK(price_mad > 0), stock integer NOT NULL CHECK(stock >= 0), enabled boolean NOT NULL DEFAULT true, updated_at timestamptz NOT NULL DEFAULT now())");
   for(const item of validated.items){
+    const product=storeProducts[item.slug];
+    if(product)continue;
     const overrides=await sql.query("SELECT price_mad,stock,enabled FROM lhawta_catalog_overrides WHERE slug=$1 LIMIT 1",[item.slug]) as Array<{price_mad:number;stock:number;enabled:boolean}>;
     const override=overrides[0];
     if(override){

@@ -5,20 +5,21 @@ import StoreHeader from "@/components/StoreHeader";
 import styles from "@/app/admin/catalog/catalog-admin.module.css";
 type Base={slug:string;name:string;price:string};
 type Custom={productSlug:string;categorySlug:string;categoryTitle:string;brand:string;name:string;price:string;image:string;stockCount:number;variants:CatalogVariant[]};
-type Entry={slug:string;priceMad:number;stock:number;enabled:boolean};
+type Entry={slug:string;priceMad:number;stock:number;enabled:boolean;variants:DraftVariant[]};
 type DraftVariant={storage:string;color:string;priceMad:string;compareAtPriceMad:string;stock:string};
+type Managed={slug:string;name:string;brand:string;category:string;image:string;price:string;oldPrice?:string;variants:{storage:string;color:string;priceMad:number;compareAtPriceMad:number|null;stock:number}[];enabled:boolean};
 const money=(v:string)=>Number(v.replace(/[^0-9]/g,""))||0;
 const emptyVariant=():DraftVariant=>({storage:"128 Go",color:"Noir",priceMad:"",compareAtPriceMad:"",stock:"1"});
 export default function CatalogAdminClient(){
- const [products,setProducts]=useState<Base[]>([]),[custom,setCustom]=useState<Custom[]>([]),[entries,setEntries]=useState<Record<string,Entry>>({});
+ const [products,setProducts]=useState<Base[]>([]),[custom,setCustom]=useState<Custom[]>([]),[entries,setEntries]=useState<Record<string,Entry>>({}),[managed,setManaged]=useState<Managed[]>([]);
  const [notice,setNotice]=useState(""),[busy,setBusy]=useState(false);
  const [form,setForm]=useState({name:"",brand:"",categorySlug:"smartphones",image:"",badge:"",specs:""});
  const [variants,setVariants]=useState<DraftVariant[]>([emptyVariant()]);
  async function load(){setBusy(true);setNotice("");try{
   const r=await fetch("/api/catalog-management",{cache:"no-store"}),d=await r.json();
   if(!r.ok)throw Error(d.error||"Impossible de charger le catalogue.");
-  setProducts(d.products||[]);setCustom(d.customProducts||[]);
-  const next:Record<string,Entry>={};for(const p of d.products||[]){const found=(d.overrides||[]).find((x:Entry)=>x.slug===p.slug);next[p.slug]=found||{slug:p.slug,priceMad:money(p.price),stock:0,enabled:true};}
+  setProducts(d.products||[]);setCustom(d.customProducts||[]);setManaged(d.managedProducts||[]);
+  const next:Record<string,Entry>={};for(const p of d.products||[]){const found=(d.overrides||[]).find((x:Entry)=>x.slug===p.slug);const managedProduct=(d.managedProducts||[]).find((x:Managed)=>x.slug===p.slug);next[p.slug]=found||{slug:p.slug,priceMad:money(p.price),stock:0,enabled:true};if(managedProduct)next[p.slug]={...next[p.slug],enabled:managedProduct.enabled,variants:managedProduct.variants.map((v:{storage:string;color:string;priceMad:number;compareAtPriceMad:number|null;stock:number})=>({storage:v.storage,color:v.color,priceMad:String(v.priceMad),compareAtPriceMad:v.compareAtPriceMad?String(v.compareAtPriceMad):"",stock:String(v.stock)}))};}
   setEntries(next);
  }catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
  useEffect(()=>{void load()},[]);
@@ -29,7 +30,7 @@ export default function CatalogAdminClient(){
   await load();
  }catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
  async function remove(slug:string,name:string){if(!window.confirm("Supprimer « "+name+" » du catalogue du site ?"))return;setBusy(true);setNotice("");try{const r=await fetch("/api/catalog-management?slug="+encodeURIComponent(slug),{method:"DELETE"});const d=await r.json();if(!r.ok)throw Error(d.error||"Suppression impossible.");setNotice("Produit supprimé.");await load()}catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
- async function saveEntry(entry:Entry){setBusy(true);try{const r=await fetch("/api/catalog-management",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify(entry)});if(!r.ok)throw Error("Mise à jour impossible");setNotice("Prix et stock enregistrés.")}catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
+ async function saveEntry(entry:Entry){setBusy(true);try{const r=await fetch("/api/catalog-management",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({...entry,variants:entry.variants.map(v=>({storage:v.storage,color:v.color,priceMad:Number(v.priceMad),compareAtPriceMad:v.compareAtPriceMad?Number(v.compareAtPriceMad):null,stock:Number(v.stock)}))})});const d=await r.json();if(!r.ok)throw Error(d.error||"Mise à jour impossible");setNotice("Options, prix et stocks enregistrés.");await load()}catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
  const setVariant=(index:number,key:keyof DraftVariant,value:string)=>setVariants(current=>current.map((v,i)=>i===index?{...v,[key]:value}:v));
  return <main className={styles.page}><StoreHeader/><section className={styles.wrap}>
  <nav className={styles.nav}><a href="/admin">Admin Panel</a><a href="/admin/orders">Commandes</a><a href="/admin/analytics">Historique & analyses</a><a href="/admin/catalog" aria-current="page">Produits</a></nav>
@@ -58,7 +59,18 @@ export default function CatalogAdminClient(){
  {custom.length===0?<div className={styles.empty}><strong>Aucun produit ajouté pour le moment</strong><span>Les produits que vous publiez apparaîtront ici et sur le site.</span></div>:<div className={styles.productList}>{custom.map(p=><article key={p.productSlug} className={styles.productCard}>
  <img src={p.image} alt="" width="72" height="72"/><div className={styles.productInfo}><strong>{p.brand} {p.name}</strong><span>{p.categoryTitle} · Dès {p.price} · Stock {p.stockCount}</span><small>{p.variants.length} option{p.variants.length===1?"":"s"} · {p.variants.filter(v=>v.compareAtPriceMad).length} en promotion</small><a href={"/products/"+p.productSlug}>Voir sur le site</a></div><button className={styles.deleteButton} type="button" disabled={busy} onClick={()=>void remove(p.productSlug,p.name)}>Supprimer</button></article>)}</div>}
  </section>
- <section className={styles.listSection}><div className={styles.listHeading}><div><span className={styles.sectionTag}>RÉFÉRENCES DU SITE</span><h2>Produits déjà intégrés <small>{products.length}</small></h2><p>Modifiez le prix, le stock ou la visibilité des références existantes.</p></div></div>
- <div className={styles.builtInList}>{products.map(p=>{const v=entries[p.slug];if(!v)return null;return <article key={p.slug} className={styles.builtInCard}><strong>{p.name}</strong><label>Prix (DH)<input type="number" min="1" value={v.priceMad} onChange={e=>setEntries({...entries,[p.slug]:{...v,priceMad:Number(e.target.value)}})}/></label><label>Stock<input type="number" min="0" value={v.stock} onChange={e=>setEntries({...entries,[p.slug]:{...v,stock:Number(e.target.value)}})}/></label><label className={styles.toggle}>Visible<input type="checkbox" checked={v.enabled} onChange={e=>setEntries({...entries,[p.slug]:{...v,enabled:e.target.checked}})}/></label><button className={styles.secondaryButton} disabled={busy} onClick={()=>void saveEntry(v)}>Enregistrer</button></article>})}</div>
- </section></section></main>;
+ <section className={styles.listSection}><div className={styles.listHeading}><div><span className={styles.sectionTag}>RÉFÉRENCES DU SITE</span><h2>Produits déjà intégrés <small>{products.length}</small></h2><p>Modifiez les combinaisons, ajoutez des couleurs ou stockages, puis définissez prix, promotions et stock pour chaque option.</p></div></div>
+ <div className={styles.builtInList}>{managed.map(p=>{const entry=entries[p.slug];if(!entry)return null;return <article key={p.slug} className={styles.builtInEditor}>
+  <div className={styles.builtInTop}><div><strong>{p.brand} {p.name}</strong><span>{p.category} · {p.variants.length} options</span></div><label className={styles.toggle}>Visible sur le site<input type="checkbox" checked={entry.enabled} onChange={e=>setEntries({...entries,[p.slug]:{...entry,enabled:e.target.checked}})}/></label></div>
+  <div className={styles.existingVariants}>{entry.variants.map((v,i)=><div key={i} className={styles.existingVariantRow}>
+   <label>Stockage / version<input value={v.storage} onChange={e=>{const variants=entry.variants.map((x,j)=>j===i?{...x,storage:e.target.value}:x);setEntries({...entries,[p.slug]:{...entry,variants}})}}/></label>
+   <label>Couleur<input value={v.color} onChange={e=>{const variants=entry.variants.map((x,j)=>j===i?{...x,color:e.target.value}:x);setEntries({...entries,[p.slug]:{...entry,variants}})}}/></label>
+   <label>Prix DH<input type="number" min="1" value={v.priceMad} onChange={e=>{const variants=entry.variants.map((x,j)=>j===i?{...x,priceMad:e.target.value}:x);setEntries({...entries,[p.slug]:{...entry,variants}})}}/></label>
+   <label>Prix avant promo<input type="number" min="1" placeholder="Facultatif" value={v.compareAtPriceMad} onChange={e=>{const variants=entry.variants.map((x,j)=>j===i?{...x,compareAtPriceMad:e.target.value}:x);setEntries({...entries,[p.slug]:{...entry,variants}})}}/></label>
+   <label>Stock<input type="number" min="0" value={v.stock} onChange={e=>{const variants=entry.variants.map((x,j)=>j===i?{...x,stock:e.target.value}:x);setEntries({...entries,[p.slug]:{...entry,variants}})}}/></label>
+   <button type="button" className={styles.removeOption} aria-label="Retirer cette option" disabled={entry.variants.length<=1} onClick={()=>setEntries({...entries,[p.slug]:{...entry,variants:entry.variants.filter((_,j)=>j!==i)}})}>×</button>
+  </div>)}</div>
+  <div className={styles.builtInActions}><button type="button" className={styles.secondaryButton} onClick={()=>setEntries({...entries,[p.slug]:{...entry,variants:[...entry.variants,{storage:"Nouvelle option",color:"Noir",priceMad:String(entry.priceMad),compareAtPriceMad:"",stock:"0"}]}})}>+ Ajouter stockage / couleur</button><button type="button" className={styles.primaryButton} disabled={busy} onClick={()=>void saveEntry(entry)}>Enregistrer les modifications</button></div>
+ </article>})}</div>
+ </section></main>;
 }

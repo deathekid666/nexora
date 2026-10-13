@@ -16,6 +16,7 @@ import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 import { ProductVisual } from "@/components/ProductVisual";
 import type { StoreProduct } from "@/lib/store-products";
+import {useEffect} from "react";
 import { addToCart } from "@/lib/cart-client";
 import FavoriteButton from "@/components/FavoriteButton";
 
@@ -24,6 +25,11 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
   const [imageIndex,setImageIndex]=useState(0);
   const [variant,setVariant]=useState(product.variants[0]||"Standard");
   const [color,setColor]=useState(product.colors[0]||"Standard");
+  const [managed,setManaged]=useState<{storage:string;color:string;priceMad:number;compareAtPriceMad:number|null;stock:number}[]|null>(null);
+  useEffect(()=>{let live=true;fetch("/api/catalog-options?slug="+encodeURIComponent(product.slug),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>{if(live&&d?.variants?.length)setManaged(d.variants)}).catch(()=>{});return()=>{live=false}},[product.slug]);
+  const selectedManaged=managed?.find(v=>v.storage===variant&&v.color===color);
+  const currentPrice=selectedManaged?new Intl.NumberFormat("fr-MA").format(selectedManaged.priceMad)+" DH":product.price;
+  const oldPrice=selectedManaged?.compareAtPriceMad?new Intl.NumberFormat("fr-MA").format(selectedManaged.compareAtPriceMad)+" DH":product.oldPrice;
   const selectedImage=product.gallery[imageIndex]||product.gallery[0];
 
   const addAndGoToCart=()=>{
@@ -31,7 +37,7 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
       slug:product.slug,
       name:product.name,
       brand:product.brand,
-      price:product.price,
+      price:currentPrice,
       variant,
       color,
       qty:1,
@@ -92,8 +98,9 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
           </div>
 
           <div className="pdetail-price">
-            <strong>{product.price}</strong>
-            {product.oldPrice&&<del>{product.oldPrice}</del>}
+            <strong>{currentPrice}</strong>
+            {oldPrice&&<del>{oldPrice}</del>}
+            {selectedManaged&&<small className="catalog-option-stock">{selectedManaged.stock>0?selectedManaged.stock+" en stock":"Indisponible"}</small>}
             <small>Prix affiché à titre de référence pour la boutique LHAWTA.</small>
           </div>
 
@@ -128,7 +135,7 @@ export default function StoreProductDetail({product}:{product:StoreProduct}){
           </div>
 
           <div className="pdetail-actions">
-            <button className="primary" onClick={addAndGoToCart}><ShoppingCart size={17}/>Ajouter au panier</button>
+            <button className="primary" disabled={Boolean(selectedManaged&&selectedManaged.stock<1)} onClick={addAndGoToCart}><ShoppingCart size={17}/>Ajouter au panier</button>
             <a className="secondary compare-action" href={"/compare?products="+product.slug}>Comparer</a>
           </div>
         </aside>
