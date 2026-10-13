@@ -12,6 +12,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import {useManagedProductPrices} from "@/lib/use-managed-product-prices";
 import FavoriteButton from "@/components/FavoriteButton";
 import { ProductVisual } from "@/components/ProductVisual";
 import {
@@ -36,6 +37,7 @@ function normalize(value:string){
 }
 
 export default function AllProductsClient({products}:{products:AllCatalogProduct[]}){
+  const managedPrices=useManagedProductPrices();
   const [query,setQuery]=useState("");
   const [category,setCategory]=useState("all");
   const [brands,setBrands]=useState<string[]>([]);
@@ -65,7 +67,7 @@ export default function AllProductsClient({products}:{products:AllCatalogProduct
       if(category!=="all"&&product.categorySlug!==category) return false;
       if(brands.length&&!brands.includes(product.brand)) return false;
 
-      const price=numericPrice(product.price);
+      const price=numericPrice(managedPrices[product.detailSlug||product.productSlug]?.price||product.price);
       if(prices.length){
         const matches=prices.some(filter=>{
           if(filter==="under1000") return price<1000;
@@ -89,12 +91,12 @@ export default function AllProductsClient({products}:{products:AllCatalogProduct
       return true;
     });
 
-    if(sort==="price-asc") return [...result].sort((a,b)=>numericPrice(a.price)-numericPrice(b.price));
-    if(sort==="price-desc") return [...result].sort((a,b)=>numericPrice(b.price)-numericPrice(a.price));
+    if(sort==="price-asc") return [...result].sort((a,b)=>numericPrice(managedPrices[a.detailSlug||a.productSlug]?.price||a.price)-numericPrice(managedPrices[b.detailSlug||b.productSlug]?.price||b.price));
+    if(sort==="price-desc") return [...result].sort((a,b)=>numericPrice(managedPrices[b.detailSlug||b.productSlug]?.price||b.price)-numericPrice(managedPrices[a.detailSlug||a.productSlug]?.price||a.price));
     if(sort==="rating-desc") return [...result].sort((a,b)=>Number(b.rating)-Number(a.rating));
     if(sort==="name") return [...result].sort((a,b)=>a.name.localeCompare(b.name));
     return result;
-  },[products,query,category,brands,prices,sort]);
+  },[products,query,category,brands,prices,sort,managedPrices]);
 
   const toggleBrand=(brand:string)=>{
     setBrands(current=>current.includes(brand)?current.filter(item=>item!==brand):[...current,brand]);
@@ -238,6 +240,7 @@ export default function AllProductsClient({products}:{products:AllCatalogProduct
             <div className="all-products-grid">
               {filtered.map(product=>{
                 const favoriteSlug=product.detailSlug||("catalog:"+product.categorySlug+":"+product.brand+":"+product.name);
+                const managed=managedPrices[product.detailSlug||product.productSlug];
                 const productHref="/products/"+product.productSlug;
                 return (
                   <article className="all-product-card" key={product.categorySlug+"-"+product.name}>
@@ -269,8 +272,8 @@ export default function AllProductsClient({products}:{products:AllCatalogProduct
                       <div className="all-product-delivery"><Truck size={14}/> Livraison disponible au Maroc</div>
 
                       <div className="all-product-price">
-                        <strong>{product.price}</strong>
-                        {product.old&&<del>{product.old}</del>}
+                        <strong>{managed?.price||product.price}</strong>
+                        {(managed?.oldPrice||product.old)&&<del>{managed?.oldPrice||product.old}</del>}
                       </div>
 
                       <div className="all-product-actions">

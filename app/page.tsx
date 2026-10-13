@@ -15,10 +15,15 @@ import {
   ShieldCheck,
   ShoppingCart,
   Tablet,
+  Smartphone,
+  Gamepad2,
+  Tv,
+  Watch,
   Tag,
   Truck,
 } from "lucide-react";
 import { useRef } from "react";
+import {useManagedProductPrices} from "@/lib/use-managed-product-prices";
 import StoreHeader from "@/components/StoreHeader";
 import SiteMotion from "@/components/SiteMotion";
 import { ProductVisual } from "@/components/ProductVisual";
@@ -32,10 +37,6 @@ const HONOR_IMG="/api/product-image/honor-600";
 const REDMI_IMG="/api/product-image/redmi-note-15-pro-plus-5g";
 const TAB_IMG="/api/product-image/galaxy-tab-s11-ultra";
 const PS5_IMG="/api/product-image/playstation-5";
-
-const promotionProducts=allCatalogProducts
-  .filter(product=>product.old)
-  .slice(0,4);
 
 const products=[
   {slug:"galaxy-s26-ultra",badge:"Nouveau",tone:"blue",brand:"SAMSUNG",name:"Galaxy S26 Ultra",img:S26_IMG,specs:[["display","6.9″ Display"],["camera","200 MP main camera"],["battery","5000 mAh battery"]],price:"13 999 DH"},
@@ -57,6 +58,8 @@ function SpecIcon({type}:{type:string}){
 
 export default function Home(){
   const productTrackRef=useRef<HTMLDivElement>(null);
+  const managedPrices=useManagedProductPrices();
+  const promotions=allCatalogProducts.filter(product=>managedPrices[product.detailSlug||product.productSlug]?.enabled!==false&&(managedPrices[product.detailSlug||product.productSlug]?.oldPrice||product.old)).slice(0,4);
   const scrollProducts=(direction:-1|1)=>{
     const track=productTrackRef.current;
     if(!track) return;
@@ -78,7 +81,7 @@ export default function Home(){
           <div className="exact-hero-copy">
             <span>NOUVEAUTÉS</span>
             <h1>Nouveautés au Maroc<span className="exact-hero-dash"> —</span></h1>
-            <h2>Octobre 2026</h2>
+            <h2>Les nouveautés qui font la différence.</h2>
             <p>Les derniers smartphones, tablettes, consoles et accessoires sont disponibles chez LHAWTA. Comparez les specs, les prix et profitez de la livraison partout au Maroc.</p>
             <div className="exact-hero-buttons">
               <a href="/new-arrivals">Découvrir les nouveautés <ArrowRight size={16}/></a>
@@ -108,14 +111,24 @@ export default function Home(){
         <div><Headphones size={27}/><span><b>Service client réactif</b><small>+212 703 730 086 · WhatsApp</small></span></div>
       </section>
 
-      <section className="exact-shell exact-products" id="products">
+      <section className="exact-shell home-category-strip" aria-label="Explorer par catégorie">
+        <div className="home-category-intro"><span>EXPLORER LA BOUTIQUE</span><h2>Qu’est-ce qui vous ferait plaisir ?</h2></div>
+        <div className="home-category-links">
+          <a href="/category/smartphones"><Smartphone size={21}/><span>Smartphones</span><ArrowRight size={15}/></a>
+          <a href="/category/tablettes"><Tablet size={21}/><span>Tablettes</span><ArrowRight size={15}/></a>
+          <a href="/category/gaming"><Gamepad2 size={21}/><span>Gaming</span><ArrowRight size={15}/></a>
+          <a href="/category/tv-home"><Tv size={21}/><span>TV & maison</span><ArrowRight size={15}/></a>
+          <a href="/category/audio"><Headphones size={21}/><span>Audio</span><ArrowRight size={15}/></a>
+          <a href="/category/wearables"><Watch size={21}/><span>Montres</span><ArrowRight size={15}/></a>
+        </div>
+      </section>\n\n      <section className="exact-shell exact-products" id="products">
         <div className="exact-products-head">
           <div><h2>Nos dernières nouveautés</h2><i/></div>
           <div className="exact-slider-controls"><a href="/new-arrivals">Voir tout <ArrowRight size={14}/></a><button type="button" aria-label="Produits précédents" onClick={()=>scrollProducts(-1)}><ChevronLeft size={15}/></button><button type="button" aria-label="Produits suivants" onClick={()=>scrollProducts(1)}><ChevronRight size={15}/></button></div>
         </div>
 
         <div className="exact-product-grid" ref={productTrackRef}>
-          {products.map((p)=>(
+          {products.filter(p=>managedPrices[p.slug]?.enabled!==false).map((p)=>(
             <article className="exact-card" key={p.name}>
               <span className={"exact-badge "+p.tone}>{p.badge}</span>
               <FavoriteButton className="exact-heart" slug={p.slug} size={16} label={"Ajouter "+p.name+" aux favoris"}/>
@@ -126,7 +139,7 @@ export default function Home(){
                 <ul>
                   {p.specs.map(([type,label])=><li key={label}><SpecIcon type={type}/><span>{label}</span></li>)}
                 </ul>
-                <strong className="exact-price">{p.price}</strong>
+                <div className="home-card-price"><strong className="exact-price">{managedPrices[p.slug]?.price||p.price}</strong>{managedPrices[p.slug]?.oldPrice&&<del>{managedPrices[p.slug].oldPrice}</del>}</div>
                 <div className="exact-card-actions">
                   <a href={`/products/${p.slug}`}><ShoppingCart size={14}/>Voir le produit</a>
                   <a className="compare-card-link" href={`/compare?products=${p.slug}`}><BarChart3 size={14}/>Comparer</a>
@@ -148,7 +161,7 @@ export default function Home(){
         </div>
 
         <div className="home-deals-grid">
-          {promotionProducts.map(product=>(
+          {promotions.map(product=>(
             <article className="home-deal-card" key={product.categorySlug+"-"+product.name}>
               <span className="home-deal-badge">PROMO</span>
               <FavoriteButton
@@ -171,8 +184,8 @@ export default function Home(){
                   </a>
                 </h3>
                 <div className="home-deal-price">
-                  <strong>{product.price}</strong>
-                  <del>{product.old}</del>
+                  <strong>{managedPrices[product.detailSlug||product.productSlug]?.price||product.price}</strong>
+                  <del>{managedPrices[product.detailSlug||product.productSlug]?.oldPrice||product.old}</del>
                 </div>
               </div>
             </article>
