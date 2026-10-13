@@ -6,7 +6,8 @@ export type CustomCatalogProduct=AllCatalogProduct&{createdAt:string;stockCount:
 function db(){if(!process.env.DATABASE_URL)throw new Error("DATABASE_URL_NOT_CONFIGURED");return neon(process.env.DATABASE_URL);}
 export async function catalogSchema(){
  const sql=db();
- await sql.query("CREATE TABLE IF NOT EXISTS lhawta_catalog_overrides (slug text PRIMARY KEY,price_mad integer NOT NULL CHECK(price_mad>0),stock integer NOT NULL CHECK(stock>=0),enabled boolean NOT NULL DEFAULT true,updated_at timestamptz NOT NULL DEFAULT now())");
+ await sql.query("CREATE TABLE IF NOT EXISTS lhawta_catalog_overrides (slug text PRIMARY KEY,price_mad integer NOT NULL CHECK(price_mad>0),stock integer NOT NULL CHECK(stock>=0),variants jsonb NOT NULL DEFAULT '[]'::jsonb,enabled boolean NOT NULL DEFAULT true,updated_at timestamptz NOT NULL DEFAULT now())");
+ await sql.query("ALTER TABLE lhawta_catalog_overrides ADD COLUMN IF NOT EXISTS variants jsonb NOT NULL DEFAULT '[]'::jsonb");
  await sql.query("CREATE TABLE IF NOT EXISTS lhawta_custom_products (slug text PRIMARY KEY,category_slug text NOT NULL,brand text NOT NULL,name text NOT NULL,image text NOT NULL,price_mad integer NOT NULL CHECK(price_mad>0),badge text,specs jsonb NOT NULL DEFAULT '[]'::jsonb,stock integer NOT NULL DEFAULT 0 CHECK(stock>=0),enabled boolean NOT NULL DEFAULT true,created_at timestamptz NOT NULL DEFAULT now())");
  await sql.query("ALTER TABLE lhawta_custom_products ADD COLUMN IF NOT EXISTS variants jsonb NOT NULL DEFAULT '[]'::jsonb");
 }
@@ -33,6 +34,48 @@ function parseVariants(value:unknown):CatalogVariant[]{
   return {storage,color,priceMad,compareAtPriceMad,stock};
  });
 }
+
+export type BuiltInVariant={storage:string;color:string;priceMad:number;compareAtPriceMad:number|null;stock:number};
+export type ManagedBuiltInProduct={slug:string;name:string;brand:string;category:string;image:string;price:string;oldPrice?:string;variants:BuiltInVariant[];enabled:boolean};
+function parseBuiltInVariants(value:unknown):BuiltInVariant[]{
+ if(!Array.isArray(value)||value.length<1||value.length>100)throw new Error("INVALID_VARIANTS");
+ const seen=new Set<string>();
+ return value.map(raw=>{
+  if(!raw||typeof raw!=="object")throw new Error("INVALID_VARIANTS");
+  const v=raw as Record<string,unknown>,storage=typeof v.storage==="string"?v.storage.trim().slice(0,80):"",color=typeof v.color==="string"?v.color.trim().slice(0,60):"";
+  const priceMad=Number(v.priceMad),stock=Number(v.stock),compareAtPriceMad=v.compareAtPriceMad==null||v.compareAtPriceMad===""?null:Number(v.compareAtPriceMad);
+  if(!storage||!color||!Number.isSafeInteger(priceMad)||priceMad<1||!Number.isSafeInteger(stock)||stock<0||(compareAtPriceMad!==null&&(!Number.isSafeInteger(compareAtPriceMad)||compareAtPriceMad<=priceMad)))throw new Error("INVALID_VARIANTS");
+  const key=storage.toLowerCase()+"|"+color.toLowerCase();if(seen.has(key))throw new Error("INVALID_VARIANTS");seen.add(key);
+  return {storage,color,priceMad,compareAtPriceMad,stock};
+ });
+}
+function moneyMad(value:number){return new Intl.NumberFormat("fr-MA").format(value)+" DH";}
+function defaultVariants(slug:string):BuiltInVariant[]{
+ const p=storeProducts[slug],priceMad=Number(p.price.replace(/[^0-9]/g,""))||1,compareAt=Number(p.oldPrice?.replace(/[^0-9]/g,""))||null;
+ return p.variants.flatMap(storage=>p.colors.map(color=>({storage,color,priceMad,compareAtPriceMad:compareAt&&compareAt>priceMad?compareAt:null,stock:0})));
+}
+export async function listManagedBuiltIns():Promise<ManagedBuiltInProduct[]>{
+ await catalogSchema();
+ const rows=await db().query('SELECT slug,price_mad AS "priceMad",stock,enabled,variants FROM lhawta_catalog_overrides') as Array<{slug:string;priceMad:number;stock:number;enabled:boolean;variants:BuiltInVariant[]}>;
+ const bySlug=new Map(rows.map(r=>[r.slug,r]));
+ return Object.values(storeProducts).map(p=>{
+  const saved=bySlug.get(p.slug),variants=saved?.variants?.length?saved.variants:defaultVariants(p.slug);
+  const lowest=variants.reduce((a,b)=>a.priceMad<=b.priceMad?a:b);
+  const compareAt=lowest.compareAtPriceMad;
+  return {slug:p.slug,name:p.name,brand:p.brand,category:p.category,image:p.gallery[0],price:moneyMad(lowest.priceMad),oldPrice:compareAt&&compareAt>lowest.priceMad?moneyMad(compareAt):undefined,variants,enabled:saved?.enabled??true};
+ });
+}
+export async function saveBuiltInVariants(slug:string,rawVariants:unknown,enabled:boolean){
+ const p=storeProducts[slug];if(!p||typeof enabled!=="boolean")throw new Error("INVALID_CATALOG_UPDATE");
+ const variants=parseBuiltInVariants(rawVariants),priceMad=Math.min(...variants.map(v=>v.priceMad)),stock=variants.reduce((n,v)=>n+v.stock,0);
+ await catalogSchema();
+ await db().query("INSERT INTO lhawta_catalog_overrides(slug,price_mad,stock,enabled,variants) VALUES($1,$2,$3,$4,$5::jsonb) ON CONFLICT(slug) DO UPDATE SET price_mad=EXCLUDED.price_mad,stock=EXCLUDED.stock,enabled=EXCLUDED.enabled,variants=EXCLUDED.variants,updated_at=now()",[slug,priceMad,stock,enabled,JSON.stringify(variants)]);
+}
+export async function findBuiltInOverride(slug:string){
+ await catalogSchema();const rows=await db().query('SELECT price_mad AS "priceMad",stock,enabled,variants FROM lhawta_catalog_overrides WHERE slug=$1 LIMIT 1',[slug]) as Array<{priceMad:number;stock:number;enabled:boolean;variants:BuiltInVariant[]}>;
+ return rows[0]||null;
+}
+
 export async function listCustomProducts():Promise<CustomCatalogProduct[]>{
  await catalogSchema();
  const rows=await db().query('SELECT slug,category_slug AS "categorySlug",brand,name,image,price_mad AS "priceMad",badge,specs,stock,variants,created_at::text AS "createdAt" FROM lhawta_custom_products WHERE enabled=true ORDER BY created_at DESC') as Array<Record<string,unknown>>;

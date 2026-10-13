@@ -1,18 +1,18 @@
 import {NextRequest,NextResponse} from "next/server";
 import {isAuthorizedAdmin} from "@/lib/admin-auth";
-import {listCatalogOverrides,saveCatalogOverride,listCustomProducts,createCustomProduct,deleteCustomProduct} from "@/lib/catalog-admin";
+import {listCatalogOverrides,saveCatalogOverride,listCustomProducts,createCustomProduct,deleteCustomProduct,listManagedBuiltIns,saveBuiltInVariants} from "@/lib/catalog-admin";
 import {storeProducts} from "@/lib/store-products";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
 async function authorized(request:NextRequest){return await isAuthorizedAdmin(request)}
 export async function GET(request:NextRequest){
  if(!(await authorized(request)))return NextResponse.json({error:"Unauthorized"},{status:401});
- try{return NextResponse.json({products:Object.values(storeProducts).map(p=>({slug:p.slug,name:p.name,price:p.price})),overrides:await listCatalogOverrides(),customProducts:await listCustomProducts()})}
+ try{return NextResponse.json({products:Object.values(storeProducts).map(p=>({slug:p.slug,name:p.name,price:p.price})),overrides:await listCatalogOverrides(),customProducts:await listCustomProducts(),managedProducts:await listManagedBuiltIns()})}
  catch{return NextResponse.json({error:"Database unavailable"},{status:503})}
 }
 export async function PATCH(request:NextRequest){
  if(!(await authorized(request)))return NextResponse.json({error:"Unauthorized"},{status:401});
- try{const input=await request.json();await saveCatalogOverride(input.slug,input.priceMad,input.stock,input.enabled);return NextResponse.json({ok:true})}
+ try{const input=await request.json();if(Array.isArray(input.variants)){await saveBuiltInVariants(input.slug,input.variants,input.enabled);return NextResponse.json({ok:true})}await saveCatalogOverride(input.slug,input.priceMad,input.stock,input.enabled);return NextResponse.json({ok:true})}
  catch{return NextResponse.json({error:"Invalid update"},{status:400})}
 }
 export async function POST(request:NextRequest){
