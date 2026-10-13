@@ -148,7 +148,6 @@ export default function AdminOrdersClient({sessionAdmin=false}:{sessionAdmin?:bo
     if(savingId) return;
     setSuccessId("");
     setError("");
-    if(nextStatus!==order.status&&!window.confirm("Changer la commande "+order.orderNumber+" vers "+STATUS_LABEL[nextStatus]+" ?")) return;
     setSavingId(order.id);
     try{
       const response=await fetch("/api/orders/"+order.id,{
