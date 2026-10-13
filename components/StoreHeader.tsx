@@ -41,6 +41,7 @@ const categories=[
 export default function StoreHeader(){
   const [open,setOpen]=useState(false);
   const [isAdmin,setIsAdmin]=useState(false);
+  const [signedIn,setSignedIn]=useState(false);
   const [cart,setCart]=useState<CartItem[]>([]);
   const [favoriteCount,setFavoriteCount]=useState(0);
   const [query,setQuery]=useState("");
@@ -51,7 +52,7 @@ export default function StoreHeader(){
     let active=true;
     fetch("/api/customer-auth",{cache:"no-store",credentials:"same-origin"})
       .then(response=>response.ok?response.json():null)
-      .then(data=>{if(active)setIsAdmin(data?.admin===true);})
+      .then(data=>{if(active){setIsAdmin(data?.admin===true);setSignedIn(Boolean(data?.user));}})
       .catch(()=>{if(active)setIsAdmin(false);});
     return ()=>{active=false;};
   },[]);
@@ -157,12 +158,14 @@ export default function StoreHeader(){
 
           <div className="exact-actions">
             {isAdmin&&<a href="/admin/orders" className="exact-account exact-admin-link" title="Tableau de bord administrateur"><LayoutDashboard size={20}/><span><b>Tableau de bord</b><small>Administration</small></span></a>}
-            <a href="/account" className="exact-account"><User size={20}/><span><b>Mon espace</b><small>Profil & commandes</small></span></a>
             <a href="/favorites" className="exact-favorites" title="Voir mes favoris"><Heart size={21} fill={favoriteCount?"currentColor":"none"}/>{favoriteCount>0&&<em>{favoriteCount}</em>}<span><b>Mes favoris</b><small>{favoriteCount} enregistré{favoriteCount>1?"s":""}</small></span></a>
             <a href="https://wa.me/212703730086" target="_blank" rel="noopener noreferrer" aria-label="Contacter LHAWTA sur WhatsApp" title="Commander et poser une question sur WhatsApp"><Headphones size={21}/><span><b>WhatsApp</b><small>+212 703 730 086</small></span></a>
             <a href="/cart" className="exact-cart"><ShoppingCart size={22}/><em>{count}</em><span><b>Mon panier</b><small>{formatDh(total)}</small></span></a>
             <button type="button" className="exact-mobile-toggle" aria-label={open?"Fermer le menu":"Ouvrir le menu"} aria-expanded={open} onClick={()=>setOpen(v=>!v)}>{open?<X size={20}/>:<Menu size={20}/>}</button>
           </div>
+            <div className="header-auth" aria-label="Compte client">
+              {signedIn ? <a href="/account" className="exact-account"><User size={20}/><span><b>Mon espace</b><small>Profil & commandes</small></span></a> : <><a href="/login" className="header-login">Connexion</a><a href="/signup" className="header-signup">Inscription</a></>}
+            </div>
         </div>
       </div>
 
