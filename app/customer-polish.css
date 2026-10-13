@@ -162,3 +162,69 @@
 @media(prefers-reduced-motion:reduce){
  .home-category-links a,.exact-card,.exact-card-media img,.category-product-card,.all-product-card{transition:none}
 }
+
+
+/* One consistent studio backdrop for product imagery across the storefront. */
+.exact-card-media,
+.category-product-media,
+.all-product-media,
+.search-result-media,
+.favorite-product-media,
+.promotion-media,
+.new-arrival-media,
+.home-deal-media{
+  position:relative;
+  isolation:isolate;
+  background:
+    radial-gradient(ellipse at 50% 43%,rgba(255,255,255,.98) 0%,rgba(255,255,255,.72) 37%,transparent 74%),
+    linear-gradient(145deg,#f7f8fa 0%,#edf0f4 100%);
+}
+.exact-card-media::before,
+.category-product-media::before,
+.all-product-media::before,
+.search-result-media::before,
+.favorite-product-media::before,
+.promotion-media::before,
+.new-arrival-media::before,
+.home-deal-media::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:10% 14%;
+  border:1px solid rgba(255,255,255,.76);
+  border-radius:50%;
+  background:radial-gradient(ellipse,rgba(255,255,255,.6),rgba(255,255,255,0) 72%);
+  pointer-events:none;
+}
+.exact-card-media img,
+.category-product-media img,
+.all-product-media img,
+.search-result-media img,
+.favorite-product-media img,
+.promotion-media img,
+.new-arrival-media img,
+.home-deal-media img{
+  position:relative;
+  z-index:1;
+  object-fit:contain;
+  object-position:center;
+  filter:drop-shadow(0 12px 14px rgba(28,40,58,.12));
+  transition:transform .28s ease,filter .28s ease;
+}
+.exact-card:hover .exact-card-media img,
+.category-product-card:hover .category-product-media img,
+.all-product-card:hover .all-product-media img,
+.search-result-card:hover .search-result-media img,
+.favorite-product-card:hover .favorite-product-media img,
+.promotion-card:hover .promotion-media img,
+.new-arrival-card:hover .new-arrival-media img,
+.home-deal-card:hover .home-deal-media img{
+  filter:drop-shadow(0 16px 18px rgba(28,40,58,.16));
+}
+@media(max-width:620px){
+ .exact-card-media,.category-product-media,.all-product-media,.search-result-media,.favorite-product-media,.promotion-media,.new-arrival-media,.home-deal-media{padding:12px}
+ .exact-card-media::before,.category-product-media::before,.all-product-media::before,.search-result-media::before,.favorite-product-media::before,.promotion-media::before,.new-arrival-media::before,.home-deal-media::before{inset:12% 10%}
+}
+@media(prefers-reduced-motion:reduce){
+ .exact-card-media img,.category-product-media img,.all-product-media img,.search-result-media img,.favorite-product-media img,.promotion-media img,.new-arrival-media img,.home-deal-media img{transition:none}
+}
