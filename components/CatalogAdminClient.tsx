@@ -33,7 +33,7 @@ export default function CatalogAdminClient(){
  async function saveEntry(entry:Entry){setBusy(true);try{const r=await fetch("/api/catalog-management",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({...entry,variants:entry.variants.map(v=>({storage:v.storage,color:v.color,priceMad:Number(v.priceMad),compareAtPriceMad:v.compareAtPriceMad?Number(v.compareAtPriceMad):null,stock:Number(v.stock)}))})});const d=await r.json();if(!r.ok)throw Error(d.error||"Mise à jour impossible");setNotice("Options, prix et stocks enregistrés.");await load()}catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
  const setVariant=(index:number,key:keyof DraftVariant,value:string)=>setVariants(current=>current.map((v,i)=>i===index?{...v,[key]:value}:v));
  return <main className={styles.page}><StoreHeader/><section className={styles.wrap}>
- <nav className={styles.nav}><a href="/admin">Admin Panel</a><a href="/admin/orders">Commandes</a><a href="/admin/analytics">Historique & analyses</a><a href="/admin/catalog" aria-current="page">Produits</a></nav>
+ <nav className={styles.nav}><a href="/admin/orders">Commandes</a><a href="/admin/analytics">Historique & analyses</a><a href="/admin/catalog" aria-current="page">Produits</a></nav>
  <div className={styles.heading}><span className={styles.kicker}>ADMIN PANEL · PRODUITS</span><h1>Gestion des produits</h1><p>Publiez des produits et gérez leurs options, leurs stocks et leurs promotions.</p></div>
  {notice&&<p className={styles.notice} role="status">{notice}</p>}
  <section className={styles.panel}><div className={styles.panelHead}><div><span className={styles.sectionTag}>NOUVELLE FICHE</span><h2>Ajouter un produit</h2><p>Ajoutez une ligne par combinaison de stockage et de couleur.</p></div></div>
@@ -70,7 +70,7 @@ export default function CatalogAdminClient(){
    <label>Stock<input type="number" min="0" value={v.stock} onChange={e=>{const variants=entry.variants.map((x,j)=>j===i?{...x,stock:e.target.value}:x);setEntries({...entries,[p.slug]:{...entry,variants}})}}/></label>
    <button type="button" className={styles.removeOption} aria-label="Retirer cette option" disabled={entry.variants.length<=1} onClick={()=>setEntries({...entries,[p.slug]:{...entry,variants:entry.variants.filter((_,j)=>j!==i)}})}>×</button>
   </div>)}</div>
-  <div className={styles.builtInActions}><button type="button" className={styles.secondaryButton} onClick={()=>setEntries({...entries,[p.slug]:{...entry,variants:[...entry.variants,{storage:"Nouvelle option",color:"Noir",priceMad:String(entry.priceMad),compareAtPriceMad:"",stock:"0"}]}})}>+ Ajouter stockage / couleur</button><button type="button" className={styles.primaryButton} disabled={busy} onClick={()=>void saveEntry(entry)}>Enregistrer les modifications</button></div>
+  <div className={styles.builtInActions}><button type="button" className={styles.secondaryButton} onClick={()=>setEntries({...entries,[p.slug]:{...entry,variants:[...entry.variants,{storage:"Nouvelle capacité "+(entry.variants.length+1),color:"Nouvelle couleur "+(entry.variants.length+1),priceMad:String(entry.priceMad),compareAtPriceMad:"",stock:"0"}]}})}>+ Ajouter stockage / couleur</button><button type="button" className={styles.primaryButton} disabled={busy} onClick={()=>void saveEntry(entry)}>Enregistrer les modifications</button></div>
  </article>})}</div>
  </section></section></main>;
 }
