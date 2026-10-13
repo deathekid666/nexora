@@ -164,19 +164,29 @@
 }
 
 
-/* Keep homepage carousel cards on uniform, usable tracks. */
-.exact-product-grid{
-  grid-auto-columns:max(260px,calc((100% - 30px)/4));
+/* Match the most specific responsive carousel rules so every card uses one track size. */
+.exact-products .exact-product-grid{
+  display:grid!important;
+  grid-template-columns:none!important;
+  grid-auto-flow:column!important;
+  grid-auto-columns:max(260px,calc((100% - 30px)/4))!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  scroll-snap-type:x mandatory!important;
 }
-.exact-product-grid>.exact-card{
-  width:100%;
-  min-width:260px;
-  flex:none;
+.exact-products .exact-product-grid>.exact-card{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  flex:0 0 auto!important;
+  scroll-snap-align:start;
 }
 @media(max-width:1100px){
- .exact-product-grid{grid-auto-columns:max(260px,calc((100% - 20px)/3))}
+ .exact-products .exact-product-grid{grid-auto-columns:max(260px,calc((100% - 20px)/3))!important}
 }
-@media(max-width:720px){
- .exact-product-grid{grid-auto-columns:82%}
- .exact-product-grid>.exact-card{min-width:0}
+@media(max-width:600px){
+ .exact-products .exact-product-grid{grid-auto-columns:calc((100% - 10px)/2)!important}
+}
+@media(max-width:340px){
+ .exact-products .exact-product-grid{grid-auto-columns:82%!important}
 }
