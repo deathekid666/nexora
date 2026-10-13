@@ -162,3 +162,30 @@
 @media(prefers-reduced-motion:reduce){
  .home-category-links a,.exact-card,.exact-card-media img,.category-product-card,.all-product-card{transition:none}
 }
+
+
+/* Keep the homepage product rail independent from legacy grid declarations. */
+.exact-products .exact-product-grid{
+  display:flex!important;
+  flex-flow:row nowrap!important;
+  gap:16px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  scroll-snap-type:x mandatory!important;
+  scrollbar-width:none;
+}
+.exact-products .exact-product-grid::-webkit-scrollbar{display:none}
+.exact-products .exact-product-grid>.exact-card{
+  flex:0 0 calc((100% - 32px)/3)!important;
+  width:calc((100% - 32px)/3)!important;
+  min-width:260px!important;
+  max-width:none!important;
+  scroll-snap-align:start;
+}
+@media(max-width:900px){
+ .exact-products .exact-product-grid{gap:10px!important}
+ .exact-products .exact-product-grid>.exact-card{flex-basis:calc((100% - 20px)/3)!important;width:calc((100% - 20px)/3)!important;min-width:220px!important}
+}
+@media(max-width:600px){
+ .exact-products .exact-product-grid>.exact-card{flex-basis:82%!important;width:82%!important;min-width:0!important}
+}
