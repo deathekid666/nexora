@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { storeProducts } from "@/lib/store-products";
 import { getCatalogProductBySlug } from "@/lib/category-catalogs";
+import {findCustomProductForOrder} from "@/lib/catalog-admin";
 
 export const ORDER_STATUSES=["NOUVEAU","CONFIRME","EXPEDIE","LIVRE","ANNULE"] as const;
 export type OrderStatus=typeof ORDER_STATUSES[number];
@@ -98,7 +99,7 @@ export async function ensureOrderSchema(){
   }
 }
 
-function validateOrderInput(input:CreateOrderInput){
+async function validateOrderInput(input:CreateOrderInput){
   const customer={
     name:clean(input?.customer?.name,120),
     phone:clean(input?.customer?.phone,40),
@@ -115,12 +116,13 @@ function validateOrderInput(input:CreateOrderInput){
     throw new Error("INVALID_ORDER_ITEMS");
   }
 
-  const items=input.items.map(raw=>{
+  const items=await Promise.all(input.items.map(async raw=>{
     const slug=clean(raw.slug,120);
     const product=storeProducts[slug];
     const catalogProduct=product?null:getCatalogProductBySlug(slug);
+    const customProduct=!product&&!catalogProduct?await findCustomProductForOrder(slug):null;
 
-    if(!product&&!catalogProduct) throw new Error("UNKNOWN_PRODUCT");
+    if(!product&&!catalogProduct&&!customProduct) throw new Error("UNKNOWN_PRODUCT");
 
     const qty=Math.max(1,Math.min(20,Math.floor(Number(raw.qty)||1)));
     const variant=clean(raw.variant,120);
@@ -146,7 +148,10 @@ function validateOrderInput(input:CreateOrderInput){
       };
     }
 
-    if(!catalogProduct) throw new Error("UNKNOWN_PRODUCT");
+    if(!catalogProduct){
+      if(!customProduct||!customProduct.enabled||customProduct.stock<qty)throw new Error(customProduct?"PRODUCT_OUT_OF_STOCK":"UNKNOWN_PRODUCT");
+      return {id:crypto.randomUUID(),slug:customProduct.slug,brand:customProduct.brand,name:customProduct.name,variant:"Standard",color:"Standard",quantity:qty,unitPriceMad:customProduct.priceMad,lineTotalMad:customProduct.priceMad*qty};
+    }
     const safeVariant=variant||"Standard";
     const safeColor=color||"Standard";
     if(safeVariant!=="Standard") throw new Error("INVALID_VARIANT");
@@ -166,7 +171,7 @@ function validateOrderInput(input:CreateOrderInput){
       unitPriceMad,
       lineTotalMad:unitPriceMad*qty,
     };
-  });
+  }));
 
   return {customer,items};
 }
@@ -174,7 +179,7 @@ function validateOrderInput(input:CreateOrderInput){
 export async function createOrder(input:CreateOrderInput):Promise<SavedOrder>{
   await ensureOrderSchema();
   const sql=db();
-  const validated=validateOrderInput(input);
+  const validated=await validateOrderInput(input);
   await sql.query("CREATE TABLE IF NOT EXISTS lhawta_catalog_overrides (slug text PRIMARY KEY, price_mad integer NOT NULL CHECK(price_mad > 0), stock integer NOT NULL CHECK(stock >= 0), enabled boolean NOT NULL DEFAULT true, updated_at timestamptz NOT NULL DEFAULT now())");
   for(const item of validated.items){
     const overrides=await sql.query("SELECT price_mad,stock,enabled FROM lhawta_catalog_overrides WHERE slug=$1 LIMIT 1",[item.slug]) as Array<{price_mad:number;stock:number;enabled:boolean}>;
