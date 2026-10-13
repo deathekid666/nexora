@@ -72,5 +72,5 @@ export default function CatalogAdminClient(){
   </div>)}</div>
   <div className={styles.builtInActions}><button type="button" className={styles.secondaryButton} onClick={()=>setEntries({...entries,[p.slug]:{...entry,variants:[...entry.variants,{storage:"Nouvelle option",color:"Noir",priceMad:String(entry.priceMad),compareAtPriceMad:"",stock:"0"}]}})}>+ Ajouter stockage / couleur</button><button type="button" className={styles.primaryButton} disabled={busy} onClick={()=>void saveEntry(entry)}>Enregistrer les modifications</button></div>
  </article>})}</div>
- </section></main>;
+ </section></section></main>;
 }
