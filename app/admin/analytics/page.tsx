@@ -34,7 +34,7 @@ const where = " WHERE ($1::date IS NULL OR created_at >= ($1::date::timestamp AT
  }catch{failed=true}
  function pageUrl(n:number){const qs=new URLSearchParams();if(from)qs.set("from",from);if(to)qs.set("to",to);if(search)qs.set("q",search);qs.set("page",String(n));return "/admin/analytics?"+qs.toString()}
  return <main className="exact-page"><StoreHeader/><section className={styles.wrap}>
- <nav className={styles.nav}><a href="/admin/orders">Commandes</a><a href="/admin/analytics" aria-current="page">Historique & analyses</a><a href="/admin/catalog">Catalogue</a></nav>
+ <nav className={styles.nav}><a href="/admin/orders">Commandes</a><a href="/admin/analytics" aria-current="page">Historique & analyses</a></nav>
  <h1>Historique & analyses</h1><p>Vue d’ensemble des commandes enregistrées. Dates au fuseau du Maroc.</p>
  <form className={styles.filters} method="get"><label>Du<input type="date" name="from" defaultValue={from||""}/></label><label>Au<input type="date" name="to" defaultValue={to||""}/></label><label>Commande ou client<input name="q" defaultValue={search} placeholder="Rechercher…"/></label><button type="submit">Appliquer</button><a href="/admin/analytics">Réinitialiser</a></form>
  {reversed?<p role="alert">La date de début doit précéder la date de fin.</p>:failed?<p role="alert">Impossible de charger les analyses. Réessayez dans quelques instants.</p>:<>
