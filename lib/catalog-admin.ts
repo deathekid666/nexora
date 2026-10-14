@@ -2,7 +2,7 @@ import {neon} from "@neondatabase/serverless";
 import {storeProducts} from "@/lib/store-products";
 import {catalogs,type AllCatalogProduct,type CatalogVariant} from "@/lib/category-catalogs";
 export type CatalogOverride={slug:string;priceMad:number;stock:number;enabled:boolean;updatedAt:string};
-export type CustomCatalogProduct=AllCatalogProduct&{createdAt:string;stockCount:number};
+export type CustomCatalogProduct=AllCatalogProduct&{createdAt:string;stockCount:number;enabled:boolean};
 function db(){if(!process.env.DATABASE_URL)throw new Error("DATABASE_URL_NOT_CONFIGURED");return neon(process.env.DATABASE_URL);}
 export async function catalogSchema(){
  const sql=db();
@@ -78,9 +78,9 @@ export async function findBuiltInOverride(slug:string){
  return rows[0]||null;
 }
 
-export async function listCustomProducts():Promise<CustomCatalogProduct[]>{
+export async function listCustomProducts(includeDisabled=false):Promise<CustomCatalogProduct[]>{
  await catalogSchema();
- const rows=await db().query('SELECT slug,category_slug AS "categorySlug",brand,name,image,images,price_mad AS "priceMad",badge,specs,stock,variants,created_at::text AS "createdAt" FROM lhawta_custom_products WHERE enabled=true ORDER BY created_at DESC') as Array<Record<string,unknown>>;
+ const rows=await db().query('SELECT slug,category_slug AS "categorySlug",brand,name,image,images,price_mad AS "priceMad",badge,specs,stock,variants,enabled,created_at::text AS "createdAt" FROM lhawta_custom_products '+(includeDisabled?"":"WHERE enabled=true ")+'ORDER BY created_at DESC') as Array<Record<string,unknown>>;
  return rows.map(row=>{
   const categorySlug=String(row.categorySlug),category=catalogs[categorySlug];
   const variants=Array.isArray(row.variants)?row.variants as CatalogVariant[]:[];
@@ -91,7 +91,7 @@ export async function listCustomProducts():Promise<CustomCatalogProduct[]>{
   const compareAt=cheapest?.compareAtPriceMad;
   const sale=typeof compareAt==="number"&&compareAt>priceMad;
   const money=(v:number)=>new Intl.NumberFormat("fr-MA").format(v)+" DH";
-  return {brand:String(row.brand),name:String(row.name),image:images[0]||String(row.image),images,price:money(priceMad),old:sale?money(compareAt):undefined,rating:"Nouveau",specs:Array.isArray(row.specs)?row.specs as string[]:[],badge:row.badge?String(row.badge):sale?"Promo":undefined,stock:Number(row.stock)>0,variants,categorySlug,categoryTitle:category?.title||categorySlug,detailSlug:undefined,productSlug:String(row.slug),createdAt:String(row.createdAt),stockCount:Number(row.stock)} as CustomCatalogProduct;
+  return {brand:String(row.brand),name:String(row.name),image:images[0]||String(row.image),images,price:money(priceMad),old:sale?money(compareAt):undefined,rating:"Nouveau",specs:Array.isArray(row.specs)?row.specs as string[]:[],badge:row.badge?String(row.badge):sale?"Promo":undefined,stock:Number(row.stock)>0,variants,categorySlug,categoryTitle:category?.title||categorySlug,detailSlug:undefined,productSlug:String(row.slug),createdAt:String(row.createdAt),stockCount:Number(row.stock),enabled:row.enabled!==false} as CustomCatalogProduct;
  });
 }
 export async function createCustomProduct(input:Record<string,unknown>){
