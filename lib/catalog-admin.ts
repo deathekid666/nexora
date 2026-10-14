@@ -8,8 +8,10 @@ export async function catalogSchema(){
  const sql=db();
  await sql.query("CREATE TABLE IF NOT EXISTS lhawta_catalog_overrides (slug text PRIMARY KEY,price_mad integer NOT NULL CHECK(price_mad>0),stock integer NOT NULL CHECK(stock>=0),variants jsonb NOT NULL DEFAULT '[]'::jsonb,enabled boolean NOT NULL DEFAULT true,updated_at timestamptz NOT NULL DEFAULT now())");
  await sql.query("ALTER TABLE lhawta_catalog_overrides ADD COLUMN IF NOT EXISTS variants jsonb NOT NULL DEFAULT '[]'::jsonb");
- await sql.query("CREATE TABLE IF NOT EXISTS lhawta_custom_products (slug text PRIMARY KEY,category_slug text NOT NULL,brand text NOT NULL,name text NOT NULL,image text NOT NULL,price_mad integer NOT NULL CHECK(price_mad>0),badge text,specs jsonb NOT NULL DEFAULT '[]'::jsonb,stock integer NOT NULL DEFAULT 0 CHECK(stock>=0),enabled boolean NOT NULL DEFAULT true,created_at timestamptz NOT NULL DEFAULT now())");
+ await sql.query("CREATE TABLE IF NOT EXISTS lhawta_custom_products (slug text PRIMARY KEY,category_slug text NOT NULL,brand text NOT NULL,name text NOT NULL,image text NOT NULL,images jsonb NOT NULL DEFAULT '[]'::jsonb,price_mad integer NOT NULL CHECK(price_mad>0),badge text,specs jsonb NOT NULL DEFAULT '[]'::jsonb,stock integer NOT NULL DEFAULT 0 CHECK(stock>=0),enabled boolean NOT NULL DEFAULT true,created_at timestamptz NOT NULL DEFAULT now())");
  await sql.query("ALTER TABLE lhawta_custom_products ADD COLUMN IF NOT EXISTS variants jsonb NOT NULL DEFAULT '[]'::jsonb");
+ await sql.query("ALTER TABLE lhawta_custom_products ADD COLUMN IF NOT EXISTS images jsonb NOT NULL DEFAULT '[]'::jsonb");
+ await sql.query("UPDATE lhawta_custom_products SET images=jsonb_build_array(image) WHERE jsonb_array_length(images)=0 AND image IS NOT NULL AND image<>''");
 }
 export async function listCatalogOverrides():Promise<CatalogOverride[]>{await catalogSchema();return await db().query('SELECT slug,price_mad AS "priceMad",stock,enabled,updated_at::text AS "updatedAt" FROM lhawta_catalog_overrides ORDER BY slug') as CatalogOverride[];}
 export async function saveCatalogOverride(slug:string,priceMad:number,stock:number,enabled:boolean){
@@ -78,31 +80,36 @@ export async function findBuiltInOverride(slug:string){
 
 export async function listCustomProducts():Promise<CustomCatalogProduct[]>{
  await catalogSchema();
- const rows=await db().query('SELECT slug,category_slug AS "categorySlug",brand,name,image,price_mad AS "priceMad",badge,specs,stock,variants,created_at::text AS "createdAt" FROM lhawta_custom_products WHERE enabled=true ORDER BY created_at DESC') as Array<Record<string,unknown>>;
+ const rows=await db().query('SELECT slug,category_slug AS "categorySlug",brand,name,image,images,price_mad AS "priceMad",badge,specs,stock,variants,created_at::text AS "createdAt" FROM lhawta_custom_products WHERE enabled=true ORDER BY created_at DESC') as Array<Record<string,unknown>>;
  return rows.map(row=>{
   const categorySlug=String(row.categorySlug),category=catalogs[categorySlug];
   const variants=Array.isArray(row.variants)?row.variants as CatalogVariant[]:[];
+  const storedImages=Array.isArray(row.images)?row.images.filter((item):item is string=>typeof item==="string"&&/^https:\/\//i.test(item)):[];
+  const images=storedImages.length?storedImages:[String(row.image)];
   const cheapest=variants.length?variants.reduce((a,b)=>a.priceMad<=b.priceMad?a:b):null;
   const priceMad=cheapest?.priceMad??Number(row.priceMad);
   const compareAt=cheapest?.compareAtPriceMad;
   const sale=typeof compareAt==="number"&&compareAt>priceMad;
   const money=(v:number)=>new Intl.NumberFormat("fr-MA").format(v)+" DH";
-  return {brand:String(row.brand),name:String(row.name),image:String(row.image),price:money(priceMad),old:sale?money(compareAt):undefined,rating:"Nouveau",specs:Array.isArray(row.specs)?row.specs as string[]:[],badge:row.badge?String(row.badge):sale?"Promo":undefined,stock:Number(row.stock)>0,variants,categorySlug,categoryTitle:category?.title||categorySlug,detailSlug:undefined,productSlug:String(row.slug),createdAt:String(row.createdAt),stockCount:Number(row.stock)} as CustomCatalogProduct;
+  return {brand:String(row.brand),name:String(row.name),image:images[0]||String(row.image),images,price:money(priceMad),old:sale?money(compareAt):undefined,rating:"Nouveau",specs:Array.isArray(row.specs)?row.specs as string[]:[],badge:row.badge?String(row.badge):sale?"Promo":undefined,stock:Number(row.stock)>0,variants,categorySlug,categoryTitle:category?.title||categorySlug,detailSlug:undefined,productSlug:String(row.slug),createdAt:String(row.createdAt),stockCount:Number(row.stock)} as CustomCatalogProduct;
  });
 }
 export async function createCustomProduct(input:Record<string,unknown>){
  const categorySlug=typeof input.categorySlug==="string"?input.categorySlug:"",category=catalogs[categorySlug];
  const brand=typeof input.brand==="string"?input.brand.trim().slice(0,80):"";
  const name=typeof input.name==="string"?input.name.trim().slice(0,120):"";
- const image=typeof input.image==="string"?input.image.trim().slice(0,2000):"";
+ const rawImages=Array.isArray(input.images)?input.images:[];
+ if(rawImages.length>8)throw new Error("INVALID_PRODUCT");
+ const images=(rawImages.length?rawImages:[input.image]).map(value=>typeof value==="string"?value.trim().slice(0,2000):"");
+ const image=images[0]||"";
  const badge=typeof input.badge==="string"?input.badge.trim().slice(0,40):"";
  const specs=Array.isArray(input.specs)?input.specs.filter((s):s is string=>typeof s==="string").map(s=>s.trim().slice(0,100)).filter(Boolean).slice(0,8):[];
  const variants=parseVariants(input.variants);
- if(!category||brand.length<1||name.length<2||!/^https:\/\//i.test(image)||specs.length>8)throw new Error("INVALID_PRODUCT");
+ if(!category||brand.length<1||name.length<2||images.length<1||images.length>8||images.some(value=>!/^https:\/\//i.test(value))||specs.length>8)throw new Error("INVALID_PRODUCT");
  const base=safeSlug(categorySlug+"-"+name);if(base.length<2)throw new Error("INVALID_SLUG");
  const slug=base,priceMad=Math.min(...variants.map(v=>v.priceMad)),stock=variants.reduce((sum,v)=>sum+v.stock,0);
  await catalogSchema();
- const rows=await db().query("INSERT INTO lhawta_custom_products(slug,category_slug,brand,name,image,price_mad,badge,specs,stock,variants) VALUES($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10::jsonb) ON CONFLICT(slug) DO NOTHING RETURNING slug",[slug,categorySlug,brand,name,image,priceMad,badge||null,JSON.stringify(specs),stock,JSON.stringify(variants)]) as Array<{slug:string}>;
+ const rows=await db().query("INSERT INTO lhawta_custom_products(slug,category_slug,brand,name,image,images,price_mad,badge,specs,stock,variants) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9::jsonb,$10,$11::jsonb) ON CONFLICT(slug) DO NOTHING RETURNING slug",[slug,categorySlug,brand,name,image,JSON.stringify(images),priceMad,badge||null,JSON.stringify(specs),stock,JSON.stringify(variants)]) as Array<{slug:string}>;
  if(!rows.length)throw new Error("PRODUCT_EXISTS");return slug;
 }
 export async function deleteCustomProduct(slug:string){
