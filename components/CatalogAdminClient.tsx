@@ -60,8 +60,8 @@ export default function CatalogAdminClient(){
   const payload={...form,slug:editingSlug||undefined,image:images[0],images,variants:variants.map(v=>({storage:v.storage,color:v.color,priceMad:Number(v.priceMad),compareAtPriceMad:v.compareAtPriceMad?Number(v.compareAtPriceMad):null,stock:Number(v.stock)})),specs:form.specs.split("\n").map(s=>s.trim()).filter(Boolean)};
   const r=await fetch("/api/catalog-management",{method:editingSlug?"PUT":"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
   const d=await r.json();if(!r.ok)throw Error(d.error||(editingSlug?"Modification impossible.":"Création impossible."));
-  setNotice(editingSlug?"Produit modifié et enregistré.":"Produit publié sur le site.");setEditingSlug(null);setForm({name:"",brand:"",categorySlug:"smartphones",image:"",badge:"",specs:""});setImages([]);setVariants([emptyVariant()]);
-  await load();
+  const successMessage=editingSlug?"Produit modifié et enregistré.":"Produit publié sur le site.";setEditingSlug(null);setForm({name:"",brand:"",categorySlug:"smartphones",image:"",badge:"",specs:""});setImages([]);setVariants([emptyVariant()]);
+  await load();setNotice(successMessage);
  }catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
  function editCustom(p:Custom){setEditingSlug(p.productSlug);setForm({name:p.name,brand:p.brand,categorySlug:p.categorySlug,image:p.image,badge:p.badge||"",specs:(p.specs||[]).join("\n")});setImages(p.images?.length?p.images:[p.image]);setVariants(p.variants.length?p.variants.map(v=>({storage:v.storage,color:v.color,priceMad:String(v.priceMad),compareAtPriceMad:v.compareAtPriceMad?String(v.compareAtPriceMad):"",stock:String(v.stock)})):[emptyVariant()]);setNotice("Modification de « "+p.name+" ». Ajoutez une option sans recréer la fiche produit.");window.scrollTo({top:0,behavior:"smooth"})}
  function cancelEdit(){setEditingSlug(null);setForm({name:"",brand:"",categorySlug:"smartphones",image:"",badge:"",specs:""});setImages([]);setVariants([emptyVariant()]);setNotice("Modification annulée.")}
