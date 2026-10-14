@@ -220,7 +220,7 @@ export async function createOrder(input:CreateOrderInput,customerId?:string):Pro
   const result=await sql.query(
     "WITH new_order AS ("+
     " INSERT INTO lhawta_orders (id, order_number, status, customer_name, phone, city, address, note, subtotal_mad, shipping_mad, total_mad, payment_method, source, customer_id)"+
-    " VALUES ($1::uuid, 'LHW-' || EXTRACT(YEAR FROM now())::int::text || '-' || lpad(nextval('lhawta_order_seq')::text,5,'0'), 'NOUVEAU', $2,$3,$4,$5,$6,$7,$8,$9,'COD','WHATSAPP')"+
+    " VALUES ($1::uuid, 'LHW-' || EXTRACT(YEAR FROM now())::int::text || '-' || lpad(nextval('lhawta_order_seq')::text,5,'0'), 'NOUVEAU', $2,$3,$4,$5,$6,$7,$8,$9,'COD','WHATSAPP',$11::uuid)"+
     " RETURNING id::text AS id, order_number AS \"orderNumber\""+
     "), item_data AS ("+
     " SELECT * FROM jsonb_to_recordset($10::jsonb) AS x(id uuid, slug text, brand text, name text, variant text, color text, quantity integer, \"unitPriceMad\" integer, \"lineTotalMad\" integer)"+
