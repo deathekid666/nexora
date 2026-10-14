@@ -79,12 +79,22 @@ export default function AccountPageClient({isAdmin=false}:{isAdmin?:boolean}){
   const [lookupError,setLookupError]=useState("");
   const [loading,setLoading]=useState(false);
   const [order,setOrder]=useState<CustomerOrder|null>(null);
+  const [myOrders,setMyOrders]=useState<CustomerOrder[]>([]);
+  const [ordersLoading,setOrdersLoading]=useState(true);
 
   useEffect(()=>{
     const stored=readCustomerProfile();
     setProfile(stored);
-    const reference=new URLSearchParams(window.location.search).get("order")||"";
-    setLookup(current=>({...current,phone:stored.phone||current.phone,orderNumber:reference||current.orderNumber}));
+    void (async()=>{
+      try{
+        const response=await fetch("/api/orders/mine",{cache:"no-store"});
+        const payload=await response.json().catch(()=>({}));
+        if(response.ok&&Array.isArray(payload.orders)){
+          setMyOrders(payload.orders);
+          setOrder(payload.orders[0]||null);
+        }
+      }catch{}finally{setOrdersLoading(false)}
+    })();
   },[]);
 
   const profileComplete=useMemo(
@@ -223,74 +233,30 @@ export default function AccountPageClient({isAdmin=false}:{isAdmin?:boolean}){
             <div className="account-panel-head">
               <div>
                 <span>SUIVI DE COMMANDE</span>
-                <h2>Où en est ma commande ?</h2>
-                <p>Utilisez le numéro LHW reçu à la commande et le même numéro de téléphone.</p>
+                <h2>Mes commandes</h2>
+                <p>Vos commandes associées à ce compte apparaissent ici automatiquement, sans saisir de numéro.</p>
               </div>
               <PackageCheck size={25}/>
             </div>
 
-            <form className="account-order-lookup" onSubmit={trackOrder}>
-              <label>
-                <span>Numéro de commande</span>
-                <input
-                  value={lookup.orderNumber}
-                  onChange={event=>setLookup({...lookup,orderNumber:event.target.value})}
-                  placeholder="LHW-2026-01001"
-                  autoCapitalize="characters"
-                />
-              </label>
-              <label>
-                <span>Téléphone</span>
-                <input
-                  value={lookup.phone}
-                  onChange={event=>setLookup({...lookup,phone:event.target.value})}
-                  placeholder="06 XX XX XX XX"
-                  inputMode="tel"
-                />
-              </label>
-              <button type="submit" disabled={loading}><Search size={15}/>{loading?"Vérification...":"Suivre la commande"}</button>
-            </form>
-
-            {lookupError&&<div className="account-order-error">{lookupError}</div>}
-
-            {order&&(
-              <div className="account-order-card">
-                <div className="account-order-card-head">
-                  <div>
-                    <small>COMMANDE</small>
-                    <h3>{order.orderNumber}</h3>
-                    <span>{new Date(order.createdAt).toLocaleDateString("fr-MA",{day:"2-digit",month:"long",year:"numeric"})}</span>
-                  </div>
-                  <strong className={"account-order-status status-"+order.status.toLowerCase()}>{order.status}</strong>
-                </div>
-
-                {order.status==="ANNULE"?(
-                  <div className="account-order-cancelled">Cette commande a été annulée.</div>
-                ):(
-                  <div className="account-order-progress">
-                    {statusSteps.map((step,index)=>(
-                      <div className={index<=currentStep?"done":""} key={step.key}>
-                        <i>{index<currentStep?<CheckCircle2 size={16}/>:index+1}</i>
-                        <span>{step.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div className="account-order-items">
-                  {order.items.map(item=>(
-                    <a href={"/products/"+item.slug} key={item.id}>
-                      <span><b>{item.brand} {item.name}</b><small>{item.variant} · {item.color} · Qté {item.quantity}</small></span>
-                      <strong>{money(item.lineTotalMad)}</strong>
-                    </a>
-                  ))}
-                </div>
-
-                <div className="account-order-summary">
-                  <p><span>Livraison</span><b>{order.city}</b></p>
-                  <p><span>Paiement</span><b>Paiement à la livraison</b></p>
-                  <p className="total"><span>Total</span><strong>{money(order.totalMad)}</strong></p>
-                </div>
+            {ordersLoading?(
+              <div className="account-order-error">Chargement de vos commandes…</div>
+            ):myOrders.length===0?(
+              <div className="account-order-error">Aucune commande n’est encore associée à ce compte. Les prochaines commandes passées pendant votre connexion apparaîtront ici automatiquement.</div>
+            ):(
+              <div className="account-order-history">
+                {myOrders.map((item)=>{
+                  const step=statusIndex(item.status);
+                  return <article className="account-order-card" key={item.id}>
+                    <div className="account-order-card-head">
+                      <div><small>COMMANDE</small><h3>{item.orderNumber}</h3><span>{new Date(item.createdAt).toLocaleDateString("fr-MA",{day:"2-digit",month:"long",year:"numeric"})}</span></div>
+                      <strong className={"account-order-status status-"+item.status.toLowerCase()}>{item.status}</strong>
+                    </div>
+                    {item.status==="ANNULE"?<div className="account-order-cancelled">Cette commande a été annulée.</div>:<div className="account-order-progress">{statusSteps.map((s,index)=><div className={index<=step?"done":""} key={s.key}><i>{index<step?<CheckCircle2 size={16}/>:index+1}</i><span>{s.label}</span></div>)}</div>}
+                    <div className="account-order-items">{item.items.map(line=><a href={"/products/"+line.slug} key={line.id}><span><b>{line.brand} {line.name}</b><small>{line.variant} · {line.color} · Qté {line.quantity}</small></span><strong>{money(line.lineTotalMad)}</strong></a>)}</div>
+                    <div className="account-order-summary"><p><span>Livraison</span><b>{item.city}</b></p><p><span>Paiement</span><b>Paiement à la livraison</b></p><p className="total"><span>Total</span><strong>{money(item.totalMad)}</strong></p></div>
+                  </article>;
+                })}
               </div>
             )}
           </section>
