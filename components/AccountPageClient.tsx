@@ -85,16 +85,44 @@ export default function AccountPageClient({isAdmin=false}:{isAdmin?:boolean}){
   useEffect(()=>{
     const stored=readCustomerProfile();
     setProfile(stored);
-    void (async()=>{
+
+    let stopped=false;
+    let inFlight=false;
+    let firstLoad=true;
+
+    const refreshOrders=async()=>{
+      if(stopped||inFlight||document.visibilityState==="hidden")return;
+      inFlight=true;
       try{
         const response=await fetch("/api/orders/mine",{cache:"no-store"});
         const payload=await response.json().catch(()=>({}));
-        if(response.ok&&Array.isArray(payload.orders)){
+        if(!stopped&&response.ok&&Array.isArray(payload.orders)){
           setMyOrders(payload.orders);
           setOrder(payload.orders[0]||null);
         }
-      }catch{}finally{setOrdersLoading(false)}
-    })();
+      }catch{
+        // Keep the last known order state if the network is temporarily unavailable.
+      }finally{
+        inFlight=false;
+        if(firstLoad&&!stopped){
+          firstLoad=false;
+          setOrdersLoading(false);
+        }
+      }
+    };
+
+    void refreshOrders();
+    const interval=window.setInterval(()=>{void refreshOrders()},5000);
+    const onVisibilityChange=()=>{
+      if(document.visibilityState==="visible")void refreshOrders();
+    };
+    document.addEventListener("visibilitychange",onVisibilityChange);
+
+    return ()=>{
+      stopped=true;
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange",onVisibilityChange);
+    };
   },[]);
 
   const profileComplete=useMemo(
