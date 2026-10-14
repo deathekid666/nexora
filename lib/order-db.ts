@@ -84,7 +84,9 @@ export async function ensureOrderSchema(){
   schemaPromise=(async()=>{
     const sql=db();
     await sql.query("CREATE SEQUENCE IF NOT EXISTS lhawta_order_seq START WITH 1001");
-    await sql.query("CREATE TABLE IF NOT EXISTS lhawta_orders (id uuid PRIMARY KEY, order_number text NOT NULL UNIQUE, status text NOT NULL DEFAULT 'NOUVEAU' CHECK (status IN ('NOUVEAU','CONFIRME','EXPEDIE','LIVRE','ANNULE')), customer_name text NOT NULL, phone text NOT NULL, city text NOT NULL, address text NOT NULL, note text, subtotal_mad integer NOT NULL CHECK (subtotal_mad >= 0), shipping_mad integer NOT NULL DEFAULT 0 CHECK (shipping_mad >= 0), total_mad integer NOT NULL CHECK (total_mad >= 0), payment_method text NOT NULL DEFAULT 'COD', source text NOT NULL DEFAULT 'WHATSAPP', created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now())");
+    await sql.query("CREATE TABLE IF NOT EXISTS lhawta_orders (id uuid PRIMARY KEY, order_number text NOT NULL UNIQUE, status text NOT NULL DEFAULT 'NOUVEAU' CHECK (status IN ('NOUVEAU','CONFIRME','EXPEDIE','LIVRE','ANNULE')), customer_id uuid, customer_name text NOT NULL, phone text NOT NULL, city text NOT NULL, address text NOT NULL, note text, subtotal_mad integer NOT NULL CHECK (subtotal_mad >= 0), shipping_mad integer NOT NULL DEFAULT 0 CHECK (shipping_mad >= 0), total_mad integer NOT NULL CHECK (total_mad >= 0), payment_method text NOT NULL DEFAULT 'COD', source text NOT NULL DEFAULT 'WHATSAPP', created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now())");
+    await sql.query("ALTER TABLE lhawta_orders ADD COLUMN IF NOT EXISTS customer_id uuid");
+    await sql.query("CREATE INDEX IF NOT EXISTS lhawta_orders_customer_id_idx ON lhawta_orders (customer_id)");
     await sql.query("CREATE TABLE IF NOT EXISTS lhawta_order_items (id uuid PRIMARY KEY, order_id uuid NOT NULL REFERENCES lhawta_orders(id) ON DELETE CASCADE, slug text NOT NULL, brand text NOT NULL, product_name text NOT NULL, variant text NOT NULL, color text NOT NULL, quantity integer NOT NULL CHECK (quantity > 0), unit_price_mad integer NOT NULL CHECK (unit_price_mad >= 0), line_total_mad integer NOT NULL CHECK (line_total_mad >= 0), created_at timestamptz NOT NULL DEFAULT now())");
     await sql.query("CREATE INDEX IF NOT EXISTS lhawta_orders_created_at_idx ON lhawta_orders (created_at DESC)");
     await sql.query("CREATE INDEX IF NOT EXISTS lhawta_orders_phone_idx ON lhawta_orders (phone)");
@@ -192,7 +194,7 @@ async function validateOrderInput(input:CreateOrderInput){
   return {customer,items};
 }
 
-export async function createOrder(input:CreateOrderInput):Promise<SavedOrder>{
+export async function createOrder(input:CreateOrderInput,customerId?:string):Promise<SavedOrder>{
   await ensureOrderSchema();
   const sql=db();
   const validated=await validateOrderInput(input);
@@ -217,7 +219,7 @@ export async function createOrder(input:CreateOrderInput):Promise<SavedOrder>{
   const itemJson=JSON.stringify(validated.items);
   const result=await sql.query(
     "WITH new_order AS ("+
-    " INSERT INTO lhawta_orders (id, order_number, status, customer_name, phone, city, address, note, subtotal_mad, shipping_mad, total_mad, payment_method, source)"+
+    " INSERT INTO lhawta_orders (id, order_number, status, customer_name, phone, city, address, note, subtotal_mad, shipping_mad, total_mad, payment_method, source, customer_id)"+
     " VALUES ($1::uuid, 'LHW-' || EXTRACT(YEAR FROM now())::int::text || '-' || lpad(nextval('lhawta_order_seq')::text,5,'0'), 'NOUVEAU', $2,$3,$4,$5,$6,$7,$8,$9,'COD','WHATSAPP')"+
     " RETURNING id::text AS id, order_number AS \"orderNumber\""+
     "), item_data AS ("+
@@ -238,6 +240,7 @@ export async function createOrder(input:CreateOrderInput):Promise<SavedOrder>{
       shippingMad,
       totalMad,
       itemJson,
+      customerId||null,
     ]
   ) as Array<{id:string;orderNumber:string;itemCount:number}>;
 
@@ -287,6 +290,22 @@ export async function listOrders(options?:{
 
   if(!rows.length) return [];
 
+  return Promise.all(rows.map(async row=>{
+    const items=await sql.query(
+      "SELECT id::text AS id, slug, brand, product_name AS name, variant, color, quantity, unit_price_mad AS \"unitPriceMad\", line_total_mad AS \"lineTotalMad\" FROM lhawta_order_items WHERE order_id=$1::uuid ORDER BY created_at ASC",
+      [row.id]
+    ) as SavedOrderItem[];
+    return {...row,items};
+  }));
+}
+
+export async function listCustomerOrders(customerId:string):Promise<SavedOrder[]>{
+  await ensureOrderSchema();
+  const sql=db();
+  const rows=await sql.query(
+    "SELECT id::text AS id, order_number AS \"orderNumber\", status, customer_name AS \"customerName\", phone, city, address, note, subtotal_mad AS \"subtotalMad\", shipping_mad AS \"shippingMad\", total_mad AS \"totalMad\", payment_method AS \"paymentMethod\", source, created_at::text AS \"createdAt\", updated_at::text AS \"updatedAt\" FROM lhawta_orders WHERE customer_id=$1::uuid ORDER BY created_at DESC LIMIT 100",
+    [customerId]
+  ) as Array<Omit<SavedOrder,"items">>;
   return Promise.all(rows.map(async row=>{
     const items=await sql.query(
       "SELECT id::text AS id, slug, brand, product_name AS name, variant, color, quantity, unit_price_mad AS \"unitPriceMad\", line_total_mad AS \"lineTotalMad\" FROM lhawta_order_items WHERE order_id=$1::uuid ORDER BY created_at ASC",
