@@ -112,6 +112,23 @@ export async function createCustomProduct(input:Record<string,unknown>){
  const rows=await db().query("INSERT INTO lhawta_custom_products(slug,category_slug,brand,name,image,images,price_mad,badge,specs,stock,variants) VALUES($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9::jsonb,$10,$11::jsonb) ON CONFLICT(slug) DO NOTHING RETURNING slug",[slug,categorySlug,brand,name,image,JSON.stringify(images),priceMad,badge||null,JSON.stringify(specs),stock,JSON.stringify(variants)]) as Array<{slug:string}>;
  if(!rows.length)throw new Error("PRODUCT_EXISTS");return slug;
 }
+export async function updateCustomProduct(slug:string,input:Record<string,unknown>){
+ const categorySlug=typeof input.categorySlug==="string"?input.categorySlug:"",category=catalogs[categorySlug];
+ const brand=typeof input.brand==="string"?input.brand.trim().slice(0,80):"";
+ const name=typeof input.name==="string"?input.name.trim().slice(0,120):"";
+ const rawImages=Array.isArray(input.images)?input.images:[input.image];
+ const images=rawImages.map(value=>typeof value==="string"?value.trim().slice(0,2000):"");
+ const image=images[0]||"";
+ const badge=typeof input.badge==="string"?input.badge.trim().slice(0,40):"";
+ const specs=Array.isArray(input.specs)?input.specs.filter((s):s is string=>typeof s==="string").map(s=>s.trim().slice(0,100)).filter(Boolean).slice(0,8):[];
+ const variants=parseVariants(input.variants);
+ if(!slug||!category||brand.length<1||name.length<2||images.length<1||images.length>8||images.some(value=>!/^https:\/\//i.test(value))||specs.length>8)throw new Error("INVALID_PRODUCT");
+ const priceMad=Math.min(...variants.map(v=>v.priceMad)),stock=variants.reduce((sum,v)=>sum+v.stock,0);
+ await catalogSchema();
+ const rows=await db().query("UPDATE lhawta_custom_products SET category_slug=$2,brand=$3,name=$4,image=$5,images=$6::jsonb,price_mad=$7,badge=$8,specs=$9::jsonb,stock=$10,variants=$11::jsonb WHERE slug=$1 RETURNING slug",[slug,categorySlug,brand,name,image,JSON.stringify(images),priceMad,badge||null,JSON.stringify(specs),stock,JSON.stringify(variants)]) as Array<{slug:string}>;
+ if(!rows.length)throw new Error("PRODUCT_NOT_FOUND");
+ return slug;
+}
 export async function deleteCustomProduct(slug:string){
  await catalogSchema();const rows=await db().query("DELETE FROM lhawta_custom_products WHERE slug=$1 RETURNING slug",[slug]) as Array<{slug:string}>;return Boolean(rows.length);
 }
