@@ -18,6 +18,16 @@ import FavoriteButton from "@/components/FavoriteButton";
 import { ProductVisual } from "@/components/ProductVisual";
 import type { AllCatalogProduct } from "@/lib/category-catalogs";
 import { addToCart } from "@/lib/cart-client";
+type DisplaySpec={section:string;label:string;value:string};
+function readSpecs(values:string[]):DisplaySpec[]{
+ const result:DisplaySpec[]=[];
+ for(const raw of values||[]){
+  if(raw.startsWith("@@NEXORA_SPEC@@")){
+   try{const parsed=JSON.parse(raw.slice(15)) as DisplaySpec;if(parsed.section&&parsed.label&&parsed.value?.trim())result.push({section:String(parsed.section),label:String(parsed.label),value:String(parsed.value)});}catch{}
+  }else if(raw.trim())result.push({section:"Caractéristiques",label:"Spécification",value:raw});
+ }
+ return result;
+}
 
 export default function CatalogProductDetail({product}:{product:AllCatalogProduct}){
   const router=useRouter();
@@ -32,6 +42,8 @@ export default function CatalogProductDetail({product}:{product:AllCatalogProduc
   const compareAt=selected?.compareAtPriceMad;
   const discount=compareAt&&compareAt>selected.priceMad?Math.round((1-selected.priceMad/compareAt)*100):0;
   const favoriteSlug=product.detailSlug||("catalog:"+product.categorySlug+":"+product.brand+":"+product.name);
+  const displaySpecs=readSpecs(product.specs);
+  const groupedSpecs=displaySpecs.reduce<Record<string,DisplaySpec[]>>((groups,spec)=>{(groups[spec.section]??=[]).push(spec);return groups;},{});
 
   const addAndGoToCart=()=>{
     addToCart({
@@ -92,8 +104,8 @@ export default function CatalogProductDetail({product}:{product:AllCatalogProduc
           </div>
 
           {options.length>0&&<div className="catalog-variant-picker">\n            <label htmlFor="catalog-variant">Stockage et couleur</label>\n            <select id="catalog-variant" value={selectedIndex} onChange={e=>setSelectedIndex(Number(e.target.value))}>{options.map((v,index)=><option key={v.storage+"-"+v.color} value={index} disabled={v.stock<1}>{v.storage} · {v.color}{v.stock<1?" · Épuisé":""} — {new Intl.NumberFormat("fr-MA").format(v.priceMad)} DH</option>)}</select>\n            {selected&&<small>{selected.stock>0?selected.stock+" en stock":"Indisponible"}</small>}\n          </div>}\n\n          <div className="pdetail-highlight-grid">
-            {product.specs.slice(0,4).map((spec,index)=>(
-              <div key={spec}><small>Caractéristique {index+1}</small><strong>{spec}</strong></div>
+            {displaySpecs.slice(0,4).map((spec,index)=>(
+              <div key={spec.section+spec.label+index}><small>{spec.label}</small><strong>{spec.value}</strong></div>
             ))}
           </div>
 
@@ -140,14 +152,10 @@ export default function CatalogProductDetail({product}:{product:AllCatalogProduc
               <p><span>Prix</span><strong>{product.price}</strong></p>
             </div>
           </article>
-          <article className="pdetail-spec-card">
-            <h3>Caractéristiques</h3>
-            <div>
-              {product.specs.map((spec,index)=>(
-                <p key={spec}><span>Spécification {index+1}</span><strong>{spec}</strong></p>
-              ))}
-            </div>
-          </article>
+          {Object.entries(groupedSpecs).map(([section,items])=><article className="pdetail-spec-card" key={section}>
+            <h3>{section}</h3>
+            <div>{items.map((spec,index)=><p key={spec.label+index}><span>{spec.label}</span><strong>{spec.value}</strong></p>)}</div>
+          </article>)}
         </div>
       </section>
 
