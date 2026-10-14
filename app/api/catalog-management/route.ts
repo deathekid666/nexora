@@ -1,6 +1,6 @@
 import {NextRequest,NextResponse} from "next/server";
 import {isAuthorizedAdmin} from "@/lib/admin-auth";
-import {listCatalogOverrides,saveCatalogOverride,listCustomProducts,createCustomProduct,deleteCustomProduct,listManagedBuiltIns,saveBuiltInVariants} from "@/lib/catalog-admin";
+import {listCatalogOverrides,saveCatalogOverride,listCustomProducts,createCustomProduct,updateCustomProduct,deleteCustomProduct,listManagedBuiltIns,saveBuiltInVariants} from "@/lib/catalog-admin";
 import {storeProducts} from "@/lib/store-products";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -19,6 +19,11 @@ export async function POST(request:NextRequest){
  if(!(await authorized(request)))return NextResponse.json({error:"Unauthorized"},{status:401});
  try{const slug=await createCustomProduct(await request.json());return NextResponse.json({ok:true,slug},{status:201})}
  catch(error){const code=error instanceof Error?error.message:"INVALID_PRODUCT";return NextResponse.json({error:code==="PRODUCT_EXISTS"?"Un produit avec ce nom existe déjà.":"Informations produit invalides. Vérifiez les champs."},{status:400})}
+}
+export async function PUT(request:NextRequest){
+ if(!(await authorized(request)))return NextResponse.json({error:"Unauthorized"},{status:401});
+ try{const input=await request.json();const slug=typeof input.slug==="string"?input.slug:"";await updateCustomProduct(slug,input);return NextResponse.json({ok:true,slug})}
+ catch(error){const code=error instanceof Error?error.message:"INVALID_PRODUCT";return NextResponse.json({error:code==="PRODUCT_NOT_FOUND"?"Produit introuvable.":"Informations produit invalides. Vérifiez les champs."},{status:code==="PRODUCT_NOT_FOUND"?404:400})}
 }
 export async function DELETE(request:NextRequest){
  if(!(await authorized(request)))return NextResponse.json({error:"Unauthorized"},{status:401});
