@@ -7,7 +7,7 @@ export const dynamic="force-dynamic";
 async function authorized(request:NextRequest){return await isAuthorizedAdmin(request)}
 export async function GET(request:NextRequest){
  if(!(await authorized(request)))return NextResponse.json({error:"Unauthorized"},{status:401});
- try{return NextResponse.json({products:Object.values(storeProducts).map(p=>({slug:p.slug,name:p.name,price:p.price})),overrides:await listCatalogOverrides(),customProducts:await listCustomProducts(),managedProducts:await listManagedBuiltIns()})}
+ try{return NextResponse.json({products:Object.values(storeProducts).map(p=>({slug:p.slug,name:p.name,price:p.price})),overrides:await listCatalogOverrides(),customProducts:await listCustomProducts(true),managedProducts:await listManagedBuiltIns()})}
  catch{return NextResponse.json({error:"Database unavailable"},{status:503})}
 }
 export async function PATCH(request:NextRequest){
