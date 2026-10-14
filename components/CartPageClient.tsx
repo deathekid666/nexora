@@ -39,8 +39,10 @@ export default function CartPageClient(){
   const [submitting,setSubmitting]=useState(false);
   const [createdOrder,setCreatedOrder]=useState<string>("");
   const [whatsappLink,setWhatsappLink]=useState("");
+  const [signedIn,setSignedIn]=useState(false);
 
   useEffect(()=>{
+    fetch("/api/customer-auth",{cache:"no-store",credentials:"same-origin"}).then(response=>response.ok?response.json():null).then(data=>setSignedIn(Boolean(data?.user))).catch(()=>setSignedIn(false));
     setItems(readCart());
     const profile=readCustomerProfile();
     if(profile.name||profile.phone||profile.city||profile.address){
@@ -235,7 +237,7 @@ export default function CartPageClient(){
             <label>Adresse de livraison <span className="required-star" aria-hidden="true">*</span><textarea required value={customer.address} onChange={e=>setCustomer({...customer,address:e.target.value})} placeholder="Quartier, rue, immeuble, appartement..."/></label>
             <label>Note <small>(optionnel)</small><textarea value={customer.note} onChange={e=>setCustomer({...customer,note:e.target.value})} placeholder="Précision sur la livraison..."/></label>
 
-            {createdOrder&&<div className="cart-order-success"><CheckCircle2 size={17}/><span><b>Commande enregistrée : {createdOrder}</b><small>Merci ! Nous vous contactons bientôt pour confirmer la livraison. Conservez cette référence pour suivre votre commande.</small><a href={"/account?order="+encodeURIComponent(createdOrder)}>Suivre ma commande</a>{whatsappLink&&<a href={whatsappLink} target="_blank" rel="noopener noreferrer">Confirmer aussi sur WhatsApp (optionnel)</a>}</span></div>}
+            {createdOrder&&<div className="cart-order-success"><CheckCircle2 size={17}/><span><b>Commande enregistrée : {createdOrder}</b><small>{signedIn?"Votre commande est associée à votre compte. Son statut sera disponible dans Mes commandes, sans saisir cette référence.":"Merci ! Nous vous contactons bientôt pour confirmer la livraison. Conservez cette référence pour un suivi sans compte."}</small><a href={signedIn?"/account":"/account?order="+encodeURIComponent(createdOrder)}>{signedIn?"Voir mes commandes":"Suivre ma commande"}</a>{whatsappLink&&<a href={whatsappLink} target="_blank" rel="noopener noreferrer">Confirmer aussi sur WhatsApp (optionnel)</a>}</span></div>}
             {error&&<div className="cart-error" role="alert">{error}</div>}
 
             <button className="cart-whatsapp" type="submit" disabled={!items.length || submitting} aria-busy={submitting}>
