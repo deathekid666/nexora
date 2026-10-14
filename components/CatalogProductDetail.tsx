@@ -23,6 +23,9 @@ export default function CatalogProductDetail({product}:{product:AllCatalogProduc
   const router=useRouter();
   const categoryHref="/category/"+product.categorySlug;
   const options=product.variants||[];
+  const gallery=product.images?.length?product.images:[product.image];
+  const [imageIndex,setImageIndex]=useState(0);
+  const selectedImage=gallery[imageIndex]||gallery[0];
   const [selectedIndex,setSelectedIndex]=useState(0);
   const selected=options[selectedIndex];
   const displayPrice=selected?new Intl.NumberFormat("fr-MA").format(selected.priceMad)+" DH":product.price;
@@ -62,9 +65,10 @@ export default function CatalogProductDetail({product}:{product:AllCatalogProduc
           <div className="pdetail-main-image">
             {product.badge&&<span className="pdetail-badge">{product.badge}</span>}
             <FavoriteButton className="pdetail-heart" slug={favoriteSlug} size={19} label={"Ajouter "+product.name+" aux favoris"}/>
-            <ProductVisual src={product.image} alt={product.name}/>
+            <ProductVisual src={selectedImage} alt={product.name}/>
           </div>
-          <small className="pdetail-gallery-note">Visuel catalogue de référence. Les couleurs, dimensions apparentes et accessoires peuvent varier selon la version.</small>
+          {gallery.length>1&&<div className="pdetail-thumbs">{gallery.map((src,index)=><button key={src} type="button" className={index===imageIndex?"active":""} onClick={()=>setImageIndex(index)} aria-label={"Afficher l’image "+(index+1)}><ProductVisual src={src} alt={product.name+" vue "+(index+1)}/></button>)}</div>}
+          <small className="pdetail-gallery-note">{gallery.length>1?"Galerie produit · "+gallery.length+" images":"Visuel catalogue de référence. Les couleurs, dimensions apparentes et accessoires peuvent varier selon la version."}</small>
         </div>
 
         <aside className="pdetail-buy">
