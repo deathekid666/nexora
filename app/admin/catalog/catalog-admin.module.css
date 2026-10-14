@@ -15,3 +15,5 @@
 .imageItemActions button:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:720px){.imageGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.imageItem>img{height:112px}}
 @media(max-width:380px){.imageGrid{grid-template-columns:1fr}.imageItem>img{height:160px}}
+
+.specGroups{display:grid;gap:18px}.specGroup{padding:18px;border:1px solid #e1eaf4;border-radius:14px;background:#fbfdff}.specGroup h3{margin:0 0 14px;font-size:16px;color:#1d426b}.specGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.specAddRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.specCustomRow{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr auto;align-items:end;gap:12px;padding:14px;border:1px solid #e1eaf4;border-radius:12px;background:#f8fbff}@media(max-width:560px){.specGrid{grid-template-columns:1fr}.specCustomRow{grid-template-columns:1fr}.specAddRow>*{width:100%}}
