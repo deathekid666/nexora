@@ -4,6 +4,7 @@ export type CategoryProduct={
   brand:string;
   name:string;
   image:string;
+  images?:string[];
   price:string;
   old?:string;
   rating:string;

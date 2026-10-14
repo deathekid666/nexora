@@ -1,5 +1,7 @@
 "use client";
-import {useEffect,useState,type FormEvent} from "react";
+import {useEffect,useRef,useState,type ChangeEvent,type FormEvent} from "react";
+import {ArrowDown,ArrowUp,ImagePlus,Trash2} from "lucide-react";
+import {upload} from "@vercel/blob/client";
 import {catalogs,type CatalogVariant} from "@/lib/category-catalogs";
 import StoreHeader from "@/components/StoreHeader";
 import styles from "@/app/admin/catalog/catalog-admin.module.css";
@@ -15,6 +17,8 @@ export default function CatalogAdminClient(){
  const [notice,setNotice]=useState(""),[busy,setBusy]=useState(false);
  const [form,setForm]=useState({name:"",brand:"",categorySlug:"smartphones",image:"",badge:"",specs:""});
  const [variants,setVariants]=useState<DraftVariant[]>([emptyVariant()]);
+ const [images,setImages]=useState<string[]>([]),[uploadingImages,setUploadingImages]=useState(false);
+ const imageInputRef=useRef<HTMLInputElement>(null);
  async function load(){setBusy(true);setNotice("");try{
   const r=await fetch("/api/catalog-management",{cache:"no-store"}),d=await r.json();
   if(!r.ok)throw Error(d.error||"Impossible de charger le catalogue.");
@@ -23,10 +27,39 @@ export default function CatalogAdminClient(){
   setEntries(next);
  }catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
  useEffect(()=>{void load()},[]);
- async function save(e:FormEvent){e.preventDefault();setBusy(true);setNotice("");try{
-  const r=await fetch("/api/catalog-management",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...form,variants:variants.map(v=>({storage:v.storage,color:v.color,priceMad:Number(v.priceMad),compareAtPriceMad:v.compareAtPriceMad?Number(v.compareAtPriceMad):null,stock:Number(v.stock)})),specs:form.specs.split("\n").map(s=>s.trim()).filter(Boolean)})});
+ async function handleImageSelect(event:ChangeEvent<HTMLInputElement>){
+  const selected=Array.from(event.currentTarget.files||[]);event.currentTarget.value="";
+  if(!selected.length)return;
+  if(images.length+selected.length>8){setNotice("Vous pouvez ajouter jusqu’à 8 images par produit.");return;}
+  const allowed=new Set(["image/jpeg","image/png","image/webp","image/avif"]);
+  const invalid=selected.find(file=>!allowed.has(file.type)||file.size>5*1024*1024||file.size===0);
+  if(invalid){setNotice("Format non pris en charge ou fichier trop lourd : utilisez JPG, PNG, WEBP ou AVIF, jusqu’à 5 Mo par image.");return;}
+  setUploadingImages(true);setNotice("");
+  try{
+   const uploaded:string[]=[];
+   for(let i=0;i<selected.length;i++){
+    const file=selected[i];
+    const safeName=file.name.replace(/[^A-Za-z0-9._-]/g,"-").slice(-100)||"product-image";
+    const blob=await upload("products/"+crypto.randomUUID()+"-"+safeName,file,{access:"public",handleUploadUrl:"/api/admin/upload"});
+    uploaded.push(blob.url);setNotice("Téléversement des images… "+(i+1)+"/"+selected.length);
+   }
+   const next=[...images,...uploaded];setImages(next);setForm(current=>({...current,image:next[0]||""}));
+   setNotice(uploaded.length+" image"+(uploaded.length>1?"s":"")+" ajoutée"+(uploaded.length>1?"s":"")+". Vous pouvez choisir l’image principale et réorganiser la galerie.");
+  }catch(error){setNotice(error instanceof Error?error.message:"Échec du téléversement. Vérifiez votre connexion puis réessayez.");}
+  finally{setUploadingImages(false);}
+ }
+ function moveImage(index:number,direction:-1|1){
+  const target=index+direction;if(target<0||target>=images.length)return;
+  const next=[...images];[next[index],next[target]]=[next[target],next[index]];
+  setImages(next);setForm(current=>({...current,image:next[0]||""}));
+ }
+ function removeImage(index:number){
+  const next=images.filter((_,i)=>i!==index);setImages(next);setForm(current=>({...current,image:next[0]||""}));
+ }
+ async function save(e:FormEvent){e.preventDefault();if(!images.length){setNotice("Ajoutez au moins une image avant de publier.");return;}setBusy(true);setNotice("");try{
+  const r=await fetch("/api/catalog-management",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...form,image:images[0],images,variants:variants.map(v=>({storage:v.storage,color:v.color,priceMad:Number(v.priceMad),compareAtPriceMad:v.compareAtPriceMad?Number(v.compareAtPriceMad):null,stock:Number(v.stock)})),specs:form.specs.split("\n").map(s=>s.trim()).filter(Boolean)})});
   const d=await r.json();if(!r.ok)throw Error(d.error||"Création impossible.");
-  setNotice("Produit publié sur le site.");setForm({...form,name:"",brand:"",image:"",badge:"",specs:""});setVariants([emptyVariant()]);
+  setNotice("Produit publié sur le site.");setForm({...form,name:"",brand:"",image:"",badge:"",specs:""});setImages([]);setVariants([emptyVariant()]);
   await load();
  }catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
  async function remove(slug:string,name:string){if(!window.confirm("Supprimer « "+name+" » du catalogue du site ?"))return;setBusy(true);setNotice("");try{const r=await fetch("/api/catalog-management?slug="+encodeURIComponent(slug),{method:"DELETE"});const d=await r.json();if(!r.ok)throw Error(d.error||"Suppression impossible.");setNotice("Produit supprimé.");await load()}catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
@@ -41,7 +74,13 @@ export default function CatalogAdminClient(){
  <div className={styles.field}><label htmlFor="product-name">Nom du produit</label><input id="product-name" required minLength={2} maxLength={120} placeholder="Ex. Galaxy S26 Ultra" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></div>
  <div className={styles.field}><label htmlFor="product-brand">Marque</label><input id="product-brand" required maxLength={80} placeholder="Samsung" value={form.brand} onChange={e=>setForm({...form,brand:e.target.value})}/></div>
  <div className={styles.field}><label htmlFor="product-category">Catégorie</label><select id="product-category" value={form.categorySlug} onChange={e=>setForm({...form,categorySlug:e.target.value})}>{Object.entries(catalogs).map(([slug,c])=><option key={slug} value={slug}>{c.title}</option>)}</select></div>
- <div className={styles.field}><label htmlFor="product-image">Image du produit</label><input id="product-image" required type="url" placeholder="https://…" value={form.image} onChange={e=>setForm({...form,image:e.target.value})}/></div>
+ <div className={styles.field+" "+styles.wide}>
+  <label htmlFor="product-images">Images du produit (8 maximum)</label>
+  <input ref={imageInputRef} id="product-images" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple hidden onChange={handleImageSelect}/>
+  <div className={styles.imageUploadActions}><button className={styles.secondaryButton} type="button" disabled={busy||uploadingImages} onClick={()=>imageInputRef.current?.click()}><ImagePlus size={16}/>{uploadingImages?"Téléversement…":"Joindre des images depuis le PC"}</button><span>JPG, PNG, WEBP ou AVIF · 5 Mo maximum par image</span></div>
+  {images.length>0&&<div className={styles.imageGrid}>{images.map((url,index)=><article className={styles.imageItem} key={url}><img src={url} alt={"Aperçu image produit "+(index+1)}/><div className={styles.imageItemActions}><button type="button" className={index===0?styles.mainImageButton:styles.setMainButton} disabled={busy||uploadingImages||index===0} onClick={()=>{const next=[url,...images.filter((item)=>item!==url)];setImages(next);setForm(current=>({...current,image:next[0]||""}));}}>{index===0?"Image principale":"Définir principale"}</button><button type="button" className={styles.imageIconButton} aria-label="Déplacer vers le haut" title="Déplacer vers le haut" disabled={busy||uploadingImages||index===0} onClick={()=>moveImage(index,-1)}><ArrowUp size={15}/></button><button type="button" className={styles.imageIconButton} aria-label="Déplacer vers le bas" title="Déplacer vers le bas" disabled={busy||uploadingImages||index===images.length-1} onClick={()=>moveImage(index,1)}><ArrowDown size={15}/></button><button type="button" className={styles.imageIconButton+" "+styles.deleteImageButton} aria-label="Supprimer l’image" title="Supprimer l’image" disabled={busy||uploadingImages} onClick={()=>removeImage(index)}><Trash2 size={15}/></button></div></article>)}</div>}
+  {images.length===0&&<p className={styles.imageEmpty}>Aucune image jointe. Ajoutez au moins une image pour publier le produit.</p>}
+ </div>
  <div className={styles.field}><label htmlFor="product-badge">Badge (facultatif)</label><input id="product-badge" maxLength={40} placeholder="Nouveau, Promo…" value={form.badge} onChange={e=>setForm({...form,badge:e.target.value})}/></div>
  <div className={styles.field+" "+styles.wide}><label htmlFor="product-specs">Caractéristiques (une par ligne)</label><textarea id="product-specs" rows={3} placeholder={"Écran AMOLED\n256 Go de stockage"} value={form.specs} onChange={e=>setForm({...form,specs:e.target.value})}/></div>
  <div className={styles.variantsHead}><div><h3>Options et prix</h3><p>Chaque combinaison peut avoir son propre prix et son stock.</p></div><button className={styles.secondaryButton} type="button" onClick={()=>setVariants(v=>[...v,emptyVariant()])}>+ Ajouter une option</button></div>
