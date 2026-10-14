@@ -74,7 +74,7 @@ export default function NewArrivalsPage(){
               const href="/products/"+product.productSlug;
               const favoriteSlug=product.detailSlug||("catalog:"+product.categorySlug+":"+product.brand+":"+product.name);
               return (
-                <article className="new-arrival-card" key={product.categorySlug+"-"+product.name}>
+                <article className="new-arrival-card" key={product.categorySlug+"-"+product.name} role="link" tabIndex={0} onClick={event=>{if((event.target as HTMLElement).closest("a,button,input,select,textarea"))return;window.location.href=href;}} onKeyDown={event=>{if(event.key==="Enter"){window.location.href=href;}}}>
                   <span className="new-arrival-badge"><Sparkles size={12}/> Nouveau</span>
                   <FavoriteButton className="new-arrival-heart" slug={favoriteSlug} size={18} label={"Ajouter "+product.name+" aux favoris"}/>
 
