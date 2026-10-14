@@ -243,7 +243,7 @@ export default function AllProductsClient({products}:{products:AllCatalogProduct
                 const managed=managedPrices[product.detailSlug||product.productSlug];
                 const productHref="/products/"+product.productSlug;
                 return (
-                  <article className="all-product-card" key={product.categorySlug+"-"+product.name}>
+                  <article className="all-product-card" key={product.categorySlug+"-"+product.name} role="link" tabIndex={0} onClick={event=>{if((event.target as HTMLElement).closest("a,button,input,select,textarea"))return;window.location.href=productHref;}} onKeyDown={event=>{if(event.key==="Enter"){window.location.href=productHref;}}}>
                     {product.badge&&<span className="all-product-badge">{product.badge}</span>}
                     <FavoriteButton className="all-product-heart" slug={favoriteSlug} size={18} label={"Ajouter "+product.name+" aux favoris"}/>
 
