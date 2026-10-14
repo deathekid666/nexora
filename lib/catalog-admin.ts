@@ -103,9 +103,9 @@ export async function createCustomProduct(input:Record<string,unknown>){
  const images=(rawImages.length?rawImages:[input.image]).map(value=>typeof value==="string"?value.trim().slice(0,2000):"");
  const image=images[0]||"";
  const badge=typeof input.badge==="string"?input.badge.trim().slice(0,40):"";
- const specs=Array.isArray(input.specs)?input.specs.filter((s):s is string=>typeof s==="string").map(s=>s.trim().slice(0,100)).filter(Boolean).slice(0,8):[];
+ const specs=Array.isArray(input.specs)?input.specs.filter((s):s is string=>typeof s==="string").map(s=>s.trim().slice(0,500)).filter(Boolean).slice(0,80):[];
  const variants=parseVariants(input.variants);
- if(!category||brand.length<1||name.length<2||images.length<1||images.length>8||images.some(value=>!/^https:\/\//i.test(value))||specs.length>8)throw new Error("INVALID_PRODUCT");
+ if(!category||brand.length<1||name.length<2||images.length<1||images.length>8||images.some(value=>!/^https:\/\//i.test(value))||specs.length>80)throw new Error("INVALID_PRODUCT");
  const base=safeSlug(categorySlug+"-"+name);if(base.length<2)throw new Error("INVALID_SLUG");
  const slug=base,priceMad=Math.min(...variants.map(v=>v.priceMad)),stock=variants.reduce((sum,v)=>sum+v.stock,0);
  await catalogSchema();
