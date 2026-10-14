@@ -8,6 +8,7 @@ import {
   type OrderStatus,
 } from "@/lib/order-db";
 import { isAuthorizedAdmin } from "@/lib/admin-auth";
+import { currentCustomer } from "@/lib/customer-auth";
 
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
@@ -24,7 +25,8 @@ export async function POST(request:NextRequest){
 
   try{
     const body=await request.json() as CreateOrderInput;
-    const order=await createOrder(body);
+    const customer=await currentCustomer();
+    const order=await createOrder(body,customer?.id?String(customer.id):undefined);
     return NextResponse.json({ok:true,order},{status:201});
   }catch(error){
     const code=error instanceof Error?error.message:"ORDER_CREATE_FAILED";
