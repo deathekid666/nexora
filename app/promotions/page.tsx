@@ -86,7 +86,7 @@ export default function PromotionsPage(){
               const detailHref="/products/"+product.productSlug;
               const favoriteSlug=product.detailSlug||("catalog:"+product.categorySlug+":"+product.brand+":"+product.name);
               return (
-                <article className="promotion-card" key={product.categorySlug+"-"+product.name}>
+                <article className="promotion-card" key={product.categorySlug+"-"+product.name} role="link" tabIndex={0} onClick={event=>{if((event.target as HTMLElement).closest("a,button,input,select,textarea"))return;window.location.href=detailHref;}} onKeyDown={event=>{if(event.key==="Enter"){window.location.href=detailHref;}}}>
                   <span className="promotion-discount">-{product.discount.percent}%</span>
                   <FavoriteButton className="promotion-heart" slug={favoriteSlug} size={18} label={"Ajouter "+product.name+" aux favoris"}/>
 
