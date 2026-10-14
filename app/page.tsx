@@ -131,7 +131,7 @@ export default function Home(){
 
         <div className="exact-product-grid" ref={productTrackRef}>
           {products.filter(p=>managedPrices[p.slug]?.enabled!==false).map((p)=>(
-            <article className="exact-card" key={p.name}>
+            <article className="exact-card" key={p.name} role="link" tabIndex={0} onClick={event=>{if((event.target as HTMLElement).closest("a,button,input,select,textarea"))return;window.location.href=`/products/${p.slug}`;}} onKeyDown={event=>{if(event.key==="Enter"){window.location.href=`/products/${p.slug}`;}}}>
               <span className={"exact-badge "+p.tone}>{p.badge}</span>
               <FavoriteButton className="exact-heart" slug={p.slug} size={16} label={"Ajouter "+p.name+" aux favoris"}/>
               <div className="exact-card-media"><ProductVisual src={p.img} alt={p.name}/></div>
@@ -164,7 +164,7 @@ export default function Home(){
 
         <div className="home-deals-grid">
           {promotions.map(product=>(
-            <article className="home-deal-card" key={product.categorySlug+"-"+product.name}>
+            <article className="home-deal-card" key={product.categorySlug+"-"+product.name} role="link" tabIndex={0} onClick={event=>{if((event.target as HTMLElement).closest("a,button,input,select,textarea"))return;window.location.href="/products/"+product.productSlug;}} onKeyDown={event=>{if(event.key==="Enter"){window.location.href="/products/"+product.productSlug;}}}>
               <span className="home-deal-badge">PROMO</span>
               <FavoriteButton
                 className="home-deal-heart"
