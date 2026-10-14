@@ -6,7 +6,7 @@ import {catalogs,type CatalogVariant} from "@/lib/category-catalogs";
 import StoreHeader from "@/components/StoreHeader";
 import styles from "@/app/admin/catalog/catalog-admin.module.css";
 type Base={slug:string;name:string;price:string};
-type Custom={productSlug:string;categorySlug:string;categoryTitle:string;brand:string;name:string;price:string;image:string;stockCount:number;variants:CatalogVariant[]};
+type Custom={productSlug:string;categorySlug:string;categoryTitle:string;brand:string;name:string;price:string;image:string;images?:string[];badge?:string;specs:string[];stockCount:number;variants:CatalogVariant[]};
 type Entry={slug:string;priceMad:number;stock:number;enabled:boolean;variants:DraftVariant[]};
 type DraftVariant={storage:string;color:string;priceMad:string;compareAtPriceMad:string;stock:string};
 type Managed={slug:string;name:string;brand:string;category:string;image:string;price:string;oldPrice?:string;variants:{storage:string;color:string;priceMad:number;compareAtPriceMad:number|null;stock:number}[];enabled:boolean};
@@ -14,7 +14,7 @@ const money=(v:string)=>Number(v.replace(/[^0-9]/g,""))||0;
 const emptyVariant=():DraftVariant=>({storage:"128 Go",color:"Noir",priceMad:"",compareAtPriceMad:"",stock:"1"});
 export default function CatalogAdminClient(){
  const [products,setProducts]=useState<Base[]>([]),[custom,setCustom]=useState<Custom[]>([]),[entries,setEntries]=useState<Record<string,Entry>>({}),[managed,setManaged]=useState<Managed[]>([]);
- const [notice,setNotice]=useState(""),[busy,setBusy]=useState(false);
+ const [notice,setNotice]=useState(""),[busy,setBusy]=useState(false),[editingSlug,setEditingSlug]=useState<string|null>(null);
  const [form,setForm]=useState({name:"",brand:"",categorySlug:"smartphones",image:"",badge:"",specs:""});
  const [variants,setVariants]=useState<DraftVariant[]>([emptyVariant()]);
  const [images,setImages]=useState<string[]>([]),[uploadingImages,setUploadingImages]=useState(false);
@@ -57,11 +57,14 @@ export default function CatalogAdminClient(){
   const next=images.filter((_,i)=>i!==index);setImages(next);setForm(current=>({...current,image:next[0]||""}));
  }
  async function save(e:FormEvent){e.preventDefault();if(!images.length){setNotice("Ajoutez au moins une image avant de publier.");return;}setBusy(true);setNotice("");try{
-  const r=await fetch("/api/catalog-management",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...form,image:images[0],images,variants:variants.map(v=>({storage:v.storage,color:v.color,priceMad:Number(v.priceMad),compareAtPriceMad:v.compareAtPriceMad?Number(v.compareAtPriceMad):null,stock:Number(v.stock)})),specs:form.specs.split("\n").map(s=>s.trim()).filter(Boolean)})});
-  const d=await r.json();if(!r.ok)throw Error(d.error||"Création impossible.");
-  setNotice("Produit publié sur le site.");setForm({...form,name:"",brand:"",image:"",badge:"",specs:""});setImages([]);setVariants([emptyVariant()]);
+  const payload={...form,slug:editingSlug||undefined,image:images[0],images,variants:variants.map(v=>({storage:v.storage,color:v.color,priceMad:Number(v.priceMad),compareAtPriceMad:v.compareAtPriceMad?Number(v.compareAtPriceMad):null,stock:Number(v.stock)})),specs:form.specs.split("\\n").map(s=>s.trim()).filter(Boolean)};
+  const r=await fetch("/api/catalog-management",{method:editingSlug?"PUT":"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
+  const d=await r.json();if(!r.ok)throw Error(d.error||(editingSlug?"Modification impossible.":"Création impossible."));
+  setNotice(editingSlug?"Produit modifié et enregistré.":"Produit publié sur le site.");setEditingSlug(null);setForm({name:"",brand:"",categorySlug:"smartphones",image:"",badge:"",specs:""});setImages([]);setVariants([emptyVariant()]);
   await load();
  }catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
+ function editCustom(p:Custom){setEditingSlug(p.productSlug);setForm({name:p.name,brand:p.brand,categorySlug:p.categorySlug,image:p.image,badge:p.badge||"",specs:(p.specs||[]).join("\\n")});setImages(p.images?.length?p.images:[p.image]);setVariants(p.variants.length?p.variants.map(v=>({storage:v.storage,color:v.color,priceMad:String(v.priceMad),compareAtPriceMad:v.compareAtPriceMad?String(v.compareAtPriceMad):"",stock:String(v.stock)})):[emptyVariant()]);setNotice("Modification de « "+p.name+" ». Ajoutez une option sans recréer la fiche produit.");window.scrollTo({top:0,behavior:"smooth"})}
+ function cancelEdit(){setEditingSlug(null);setForm({name:"",brand:"",categorySlug:"smartphones",image:"",badge:"",specs:""});setImages([]);setVariants([emptyVariant()]);setNotice("Modification annulée.")}
  async function remove(slug:string,name:string){if(!window.confirm("Supprimer « "+name+" » du catalogue du site ?"))return;setBusy(true);setNotice("");try{const r=await fetch("/api/catalog-management?slug="+encodeURIComponent(slug),{method:"DELETE"});const d=await r.json();if(!r.ok)throw Error(d.error||"Suppression impossible.");setNotice("Produit supprimé.");await load()}catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
  async function saveEntry(entry:Entry){setBusy(true);try{const r=await fetch("/api/catalog-management",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({...entry,variants:entry.variants.map(v=>({storage:v.storage,color:v.color,priceMad:Number(v.priceMad),compareAtPriceMad:v.compareAtPriceMad?Number(v.compareAtPriceMad):null,stock:Number(v.stock)}))})});const d=await r.json();if(!r.ok)throw Error(d.error||"Mise à jour impossible");setNotice("Options, prix et stocks enregistrés.");await load()}catch(e){setNotice(e instanceof Error?e.message:"Erreur")}finally{setBusy(false)}}
  const setVariant=(index:number,key:keyof DraftVariant,value:string)=>setVariants(current=>current.map((v,i)=>i===index?{...v,[key]:value}:v));
@@ -69,7 +72,7 @@ export default function CatalogAdminClient(){
  <nav className={styles.nav}><a href="/admin/orders">Commandes</a><a href="/admin/analytics">Historique & analyses</a><a href="/admin/catalog" aria-current="page">Produits</a></nav>
  <div className={styles.heading}><span className={styles.kicker}>ADMIN PANEL · PRODUITS</span><h1>Gestion des produits</h1><p>Publiez des produits et gérez leurs options, leurs stocks et leurs promotions.</p></div>
  {notice&&<p className={styles.notice} role="status">{notice}</p>}
- <section className={styles.panel}><div className={styles.panelHead}><div><span className={styles.sectionTag}>NOUVELLE FICHE</span><h2>Ajouter un produit</h2><p>Ajoutez une ligne par combinaison de stockage et de couleur.</p></div></div>
+ <section className={styles.panel}><div className={styles.panelHead}><div><span className={styles.sectionTag}>{editingSlug?"MODIFICATION":"NOUVELLE FICHE"}</span><h2>{editingSlug?"Modifier le produit":"Ajouter un produit"}</h2><p>Les caractéristiques restent communes à la fiche. Ajoutez uniquement les combinaisons de stockage/couleur nécessaires.</p></div></div>
  <form onSubmit={save} className={styles.form}>
  <div className={styles.field}><label htmlFor="product-name">Nom du produit</label><input id="product-name" required minLength={2} maxLength={120} placeholder="Ex. Galaxy S26 Ultra" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></div>
  <div className={styles.field}><label htmlFor="product-brand">Marque</label><input id="product-brand" required maxLength={80} placeholder="Samsung" value={form.brand} onChange={e=>setForm({...form,brand:e.target.value})}/></div>
@@ -92,11 +95,11 @@ export default function CatalogAdminClient(){
  <div className={styles.field}><label>Stock</label><input required type="number" min="0" step="1" value={v.stock} onChange={e=>setVariant(i,"stock",e.target.value)}/></div>
  <button className={styles.removeOption} type="button" aria-label="Supprimer cette option" disabled={variants.length===1} onClick={()=>setVariants(v=>v.filter((_,n)=>n!==i))}>×</button>
  </div>)}</div>
- <div className={styles.formActions}><button className={styles.primaryButton} disabled={busy} type="submit">{busy?"Publication…":"Publier le produit"}</button><span>Les prix de promotion sont affichés sur la fiche produit.</span></div>
+ <div className={styles.formActions}><button className={styles.primaryButton} disabled={busy||uploadingImages} type="submit">{busy?(editingSlug?"Enregistrement…":"Publication…"):(editingSlug?"Enregistrer les modifications":"Publier le produit")}</button>{editingSlug&&<button className={styles.secondaryButton} type="button" disabled={busy||uploadingImages} onClick={cancelEdit}>Annuler</button>}<span>Les prix de promotion sont affichés sur la fiche produit.</span></div>
  </form></section>
  <section className={styles.listSection}><div className={styles.listHeading}><div><span className={styles.sectionTag}>VOTRE CATALOGUE</span><h2>Produits publiés <small>{custom.length}</small></h2></div><button className={styles.secondaryButton} type="button" disabled={busy} onClick={()=>void load()}>Actualiser</button></div>
  {custom.length===0?<div className={styles.empty}><strong>Aucun produit ajouté pour le moment</strong><span>Les produits que vous publiez apparaîtront ici et sur le site.</span></div>:<div className={styles.productList}>{custom.map(p=><article key={p.productSlug} className={styles.productCard}>
- <img src={p.image} alt="" width="72" height="72"/><div className={styles.productInfo}><strong>{p.brand} {p.name}</strong><span>{p.categoryTitle} · Dès {p.price} · Stock {p.stockCount}</span><small>{p.variants.length} option{p.variants.length===1?"":"s"} · {p.variants.filter(v=>v.compareAtPriceMad).length} en promotion</small><a href={"/products/"+p.productSlug}>Voir sur le site</a></div><button className={styles.deleteButton} type="button" disabled={busy} onClick={()=>void remove(p.productSlug,p.name)}>Supprimer</button></article>)}</div>}
+ <img src={p.image} alt="" width="72" height="72"/><div className={styles.productInfo}><strong>{p.brand} {p.name}</strong><span>{p.categoryTitle} · Dès {p.price} · Stock {p.stockCount}</span><small>{p.variants.length} option{p.variants.length===1?"":"s"} · {p.variants.filter(v=>v.compareAtPriceMad).length} en promotion</small><a href={"/products/"+p.productSlug}>Voir sur le site</a></div><button className={styles.secondaryButton} type="button" disabled={busy} onClick={()=>editCustom(p)}>Modifier</button><button className={styles.deleteButton} type="button" disabled={busy} onClick={()=>void remove(p.productSlug,p.name)}>Supprimer</button></article>)}</div>}
  </section>
  <section className={styles.listSection}><div className={styles.listHeading}><div><span className={styles.sectionTag}>RÉFÉRENCES DU SITE</span><h2>Produits déjà intégrés <small>{products.length}</small></h2><p>Modifiez les combinaisons, ajoutez des couleurs ou stockages, puis définissez prix, promotions et stock pour chaque option.</p></div></div>
  <div className={styles.builtInList}>{managed.map(p=>{const entry=entries[p.slug];if(!entry)return null;return <article key={p.slug} className={styles.builtInEditor}>
