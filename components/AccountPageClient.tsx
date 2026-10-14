@@ -164,7 +164,7 @@ export default function AccountPageClient({isAdmin=false}:{isAdmin?:boolean}){
           <div>
             <span><User size={15}/> ESPACE CLIENT LHAWTA</span>
             <h1>Votre espace client</h1>
-            <p>Enregistrez vos coordonnées de livraison sur cet appareil et suivez vos commandes avec votre numéro de commande.</p>
+            <p>Retrouvez ici les commandes passées pendant votre connexion, avec leur statut actualisé automatiquement.</p>
           </div>
           <div className="account-hero-security">
             <ShieldCheck size={24}/>
@@ -234,7 +234,7 @@ export default function AccountPageClient({isAdmin=false}:{isAdmin?:boolean}){
               <div>
                 <span>SUIVI DE COMMANDE</span>
                 <h2>Mes commandes</h2>
-                <p>Vos commandes associées à ce compte apparaissent ici automatiquement, sans saisir de numéro.</p>
+                <p>Vos commandes associées à ce compte apparaissent ici automatiquement, sans numéro de commande ni téléphone.</p>
               </div>
               <PackageCheck size={25}/>
             </div>
@@ -242,7 +242,7 @@ export default function AccountPageClient({isAdmin=false}:{isAdmin?:boolean}){
             {ordersLoading?(
               <div className="account-order-error">Chargement de vos commandes…</div>
             ):myOrders.length===0?(
-              <div className="account-order-error">Aucune commande n’est encore associée à ce compte. Les prochaines commandes passées pendant votre connexion apparaîtront ici automatiquement.</div>
+              <div className="account-order-error">Aucune commande n’est encore associée à ce compte. Les commandes passées pendant votre connexion apparaîtront ici automatiquement. Pour une commande passée avant de vous connecter, utilisez le suivi invité avec le numéro et le téléphone de commande.</div>
             ):(
               <div className="account-order-history">
                 {myOrders.map((item)=>{
