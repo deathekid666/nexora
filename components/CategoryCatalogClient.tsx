@@ -204,7 +204,7 @@ export default function CategoryCatalogClient({
                 const managed=priceFor(product);
                 const detailHref=`/products/${catalogProductSlug({name:product.name,categorySlug:slug,detailSlug})}`;
                 return (
-                  <article className="category-product-card" key={product.name}>
+                  <article className="category-product-card" key={product.name} role="link" tabIndex={0} onClick={event=>{if((event.target as HTMLElement).closest("a,button,input,select,textarea"))return;window.location.href=detailHref;}} onKeyDown={event=>{if(event.key==="Enter"){window.location.href=detailHref;}}}>
                     {product.badge&&<span className="category-badge">{product.badge}</span>}
                     <FavoriteButton className="category-wish" slug={detailSlug||("catalog:"+slug+":"+product.brand+":"+product.name)} size={18} label={"Ajouter "+product.name+" aux favoris"}/>
                     <a href={detailHref} className="category-product-media"><ProductVisual src={product.image} alt={product.name}/></a>
